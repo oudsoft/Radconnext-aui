@@ -8,7 +8,7 @@ module.exports = function ( jq ) {
 	function doShowUrgentData(urgentList, username) {
 		this.username = username;
 		let urgentTable = $('<table width="100%" cellpadding="5" cellspacing="0" border="1"></table>');
-		let headRow = $('<tr style="background-color: green;"></tr>');
+		let headRow = $('<tr style="background-color: blue;"></tr>');
 		let headColumns = $('<td width="30%" align="center"><b>Name</b></td><td width="20%" align="center"><b>ระยะเวลาตอบรับเคส</b></td><td width="20%" align="center"><b>ระยะเวลาอ่านผล</b></td><td width="20%" align="center"><b>แจ้งเตือนครั้ง 2 เมื่อเวลาอ่านผลน้อยกว่า</b></td><td width="*" align="center"><b>&nbsp;</b></td>');
 		$(headRow).append($(headColumns));
 		$(urgentTable).append($(headRow));

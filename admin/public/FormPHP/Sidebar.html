@@ -1,0 +1,408 @@
+<!-- Sidebar -->
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+    <!-- Sidebar - Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+        <div class="sidebar-brand-icon rotate-n-0">
+            <i class="fas fa-hospital"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">RadConnext</div>
+    </a>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider my-0">
+    <!-- Heading -->
+    <div class="sidebar-heading" id="GeneralTag"> General </div>
+    <!-- Nav Item - Pages Collapse Menu -->
+    <li class="nav-item" id="MainMenu">
+        <a class="nav-link collapsed" href="index.html">
+            <i class="far fa-id-badge"></i>
+            <span>หน้าแรก</span>
+        </a>
+    </li>
+
+    <li class="nav-item" id='MainMenu2'>
+        <!-- <a class="nav-link collapsed" href="case_histoty.html"> -->
+        <a class="nav-link collapsed">
+            <i class="far fa-id-badge"></i>
+            <span>เคสทั้งหมด</span>
+        </a>
+    </li>
+
+    <li class="nav-item" id='MainMenu3'>
+        <!-- <a class="nav-link collapsed" href="case_histoty.html"> -->
+        <a class="nav-link collapsed">
+            <i class="far fa-id-badge"></i>
+            <span>LocalFile</span>
+        </a>
+    </li>
+
+    <li class="nav-item" id='MainMenu4'>
+        <!-- <a class="nav-link collapsed" href="case_histoty.html"> -->
+        <a class="nav-link collapsed">
+            <i class="far fa-id-badge"></i>
+            <span>ManageUGType</span>
+        </a>
+    </li>
+
+    <div class="sidebar-heading" id="MHRadiologist"> Radiologist </div>
+
+    <li class="nav-item" id="Radiologist">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseRadiologistDoctor"
+            aria-expanded="true" aria-controls="collapseRadiologistDoctor">
+            <i class="fas fa-h-square"></i>
+            <span>รังสีแพทย์</span>
+        </a>
+        <div id="collapseRadiologistDoctor" class="collapse" aria-labelledby="headingTwo"
+            data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" id="RadiologistProfile">ข้อมูลส่วนตัว</a>
+            </div>
+        </div>
+    </li>
+
+    <!-- New Edit 22-Aug-2563 -->
+
+    <div class="sidebar-heading" id="MHReferringPhysician"> ReferringPhysician </div>
+
+    <li class="nav-item" id="ReferringPhysician">
+        <a class="nav-link collapsed" data-toggle="collapse" data-target="#collapseDoctor" aria-expanded="false"
+            aria-controls="collapseDoctor">
+            <i class="fas fa-h-square"></i>
+            <span>VRJPACS</span>
+        </a>
+        <div id="collapseDoctor" class="collapse show" aria-labelledby="headingTwo" aria-expanded="true"
+            data-parent="#accordionSidebar">
+            <div class="">
+                <!-- <a class="panel-collapse collapse" href="#collapseDoctor-Xray" data-toggle="collapse" data-target="#collapseDoctor-Xray" 
+                    aria-controls="collapseDoctor-Xray">X-ray</a> -->
+                <a class="nav-link Modality" data-toggle="collapse" data-target="#collapseDoctor-Xray">
+                    <i class="fab fa-audible"></i>X-ray</a>
+            </div>
+            <div id="collapseDoctor-Xray" class="collapse">
+                <div id="collapseDoctor-Xray-Date1" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date1(1Day)</a>
+                </div>
+                <div id="collapseDoctor-Xray-Date2" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date2(3Day)</a>
+                </div>
+                <div id="collapseDoctor-Xray-Date3" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date3(All)</a>
+                </div>
+                <div id="collapseDoctor-Xray-Read" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Read(มีผลอ่านแล้ว)</a>
+                </div>
+                <div id="collapseDoctor-Xray-UnRead" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>UnRead(ยังไม่มีผลอ่าน)</a>
+                </div>
+                <div id="collapseDoctor-Xray-All" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>All</a>
+                </div>
+            </div>
+        </div>
+        <div id="collapseDoctor" class="collapse show" aria-labelledby="headingTwo" aria-expanded="true"
+            data-parent="#accordionSidebar">
+            <div class="">
+                <a class="nav-link Modality" data-toggle="collapse" data-target="#collapseDoctor-MG">
+                    <i class="fab fa-audible"></i>MG</a>
+            </div>
+            <div id="collapseDoctor-MG" class="collapse">
+                <div id="collapseDoctor-MG-Date1" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date1(1Day)</a>
+                </div>
+                <div id="collapseDoctor-MG-Date2" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date2(3Day)</a>
+                </div>
+                <div id="collapseDoctor-MG-Date3" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date3(All)</a>
+                </div>
+                <div id="collapseDoctor-MG-Read" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Read(มีผลอ่านแล้ว)</a>
+                </div>
+                <div id="collapseDoctor-MG-UnRead" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>UnRead(ยังไม่มีผลอ่าน)</a>
+                </div>
+                <div id="collapseDoctor-MG-All" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>All</a>
+                </div>
+            </div>
+        </div>
+        <div id="collapseDoctor" class="collapse show" aria-labelledby="headingTwo" aria-expanded="true"
+            data-parent="#accordionSidebar">
+            <div class="">
+                <a class="nav-link Modality" data-toggle="collapse" data-target="#collapseDoctor-US">
+                    <i class="fab fa-audible"></i>US</a>
+            </div>
+            <div id="collapseDoctor-US" class="collapse">
+                <div id="collapseDoctor-US-Date1" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date1(1Day)</a>
+                </div>
+                <div id="collapseDoctor-US-Date2" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date2(3Day)</a>
+                </div>
+                <div id="collapseDoctor-US-Date3" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date3(All)</a>
+                </div>
+                <div id="collapseDoctor-US-Read" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Read(มีผลอ่านแล้ว)</a>
+                </div>
+                <div id="collapseDoctor-US-UnRead" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>UnRead(ยังไม่มีผลอ่าน)</a>
+                </div>
+                <div id="collapseDoctor-US-All" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>All</a>
+                </div>
+            </div>
+        </div>
+        <div id="collapseDoctor" class="collapse show" aria-labelledby="headingTwo" aria-expanded="true"
+            data-parent="#accordionSidebar">
+            <div class="">
+                <a class="nav-link Modality" data-toggle="collapse" data-target="#collapseDoctor-CT">
+                    <i class="fab fa-audible"></i>CT</a>
+            </div>
+            <div id="collapseDoctor-CT" class="collapse">
+                <div id="collapseDoctor-CT-Date1" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date1(1Day)</a>
+                </div>
+                <div id="collapseDoctor-CT-Date2" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date2(3Day)</a>
+                </div>
+                <div id="collapseDoctor-CT-Date3" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date3(All)</a>
+                </div>
+                <div id="collapseDoctor-CT-Read" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Read(มีผลอ่านแล้ว)</a>
+                </div>
+                <div id="collapseDoctor-CT-UnRead" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>UnRead(ยังไม่มีผลอ่าน)</a>
+                </div>
+                <div id="collapseDoctor-CT-All" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>All</a>
+                </div>
+            </div>
+        </div>
+        <div id="collapseDoctor" class="collapse show" aria-labelledby="headingTwo" aria-expanded="true"
+            data-parent="#accordionSidebar">
+            <div class="">
+                <a class="nav-link Modality" data-toggle="collapse" data-target="#collapseDoctor-MR">
+                    <i class="fab fa-audible"></i>MR</a>
+            </div>
+            <div id="collapseDoctor-MR" class="collapse">
+                <div id="collapseDoctor-MR-Date1" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date1(1Day)</a>
+                </div>
+                <div id="collapseDoctor-MR-Date2" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date2(3Day)</a>
+                </div>
+                <div id="collapseDoctor-MR-Date3" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date3(All)</a>
+                </div>
+                <div id="collapseDoctor-MR-Read" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Read(มีผลอ่านแล้ว)</a>
+                </div>
+                <div id="collapseDoctor-MR-UnRead" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>UnRead(ยังไม่มีผลอ่าน)</a>
+                </div>
+                <div id="collapseDoctor-MR-All" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>All</a>
+                </div>
+            </div>
+        </div>
+        <div id="collapseDoctor" class="collapse show" aria-labelledby="headingTwo" aria-expanded="true"
+            data-parent="#accordionSidebar">
+            <div class="">
+                <a class="nav-link Modality" data-toggle="collapse" data-target="#collapseDoctor-XA">
+                    <i class="fab fa-audible"></i>XA</a>
+            </div>
+            <div id="collapseDoctor-XA" class="collapse">
+                <div id="collapseDoctor-XA-Date1" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date1(1Day)</a>
+                </div>
+                <div id="collapseDoctor-XA-Date2" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date2(3Day)</a>
+                </div>
+                <div id="collapseDoctor-XA-Date3" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date3(All)</a>
+                </div>
+                <div id="collapseDoctor-XA-Read" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Read(มีผลอ่านแล้ว)</a>
+                </div>
+                <div id="collapseDoctor-XA-UnRead" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>UnRead(ยังไม่มีผลอ่าน)</a>
+                </div>
+                <div id="collapseDoctor-XA-All" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>All</a>
+                </div>
+            </div>
+        </div>
+        <div id="collapseDoctor" class="collapse show" aria-labelledby="headingTwo" aria-expanded="true"
+            data-parent="#accordionSidebar">
+            <div class="">
+                <a class="nav-link Modality" data-toggle="collapse" data-target="#collapseDoctor-All">
+                    <i class="fab fa-audible"></i>All</a>
+            </div>
+            <div id="collapseDoctor-All" class="collapse">
+                <div id="collapseDoctor-All-Date1" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date1(1Day)</a>
+                </div>
+                <div id="collapseDoctor-All-Date2" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date2(3Day)</a>
+                </div>
+                <div id="collapseDoctor-All-Date3" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Date3(All)</a>
+                </div>
+                <div id="collapseDoctor-All-Read" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>Read(มีผลอ่านแล้ว)</a>
+                </div>
+                <div id="collapseDoctor-All-UnRead" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>UnRead(ยังไม่มีผลอ่าน)</a>
+                </div>
+                <div id="collapseDoctor-All-All" class="PACS-item">
+                    <a class='collapse-item'><i class="far fa-hand-point-right"></i>All</a>
+                </div>
+            </div>
+        </div>
+        <!-- <div id="collapseDoctor" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="">
+                <a class="collapse-item" href="profile.html">ข้อมูลส่วนตัว</a>
+            </div>
+        </div> -->
+    </li>
+
+    <!-- New Edit 22-Aug-2563 -->
+
+    <div class="sidebar-heading" id="MHMtech"> Technician </div>
+
+    <li class="nav-item" id="Mtech">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTech" aria-expanded="true"
+            aria-controls="collapseTech">
+            <i class="far fa-id-badge"></i>
+            <span>ช่างเทคนิค</span>
+        </a>
+        <div id="collapseTech" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" id="MTechProfile">ข้อมูลส่วนตัว</a>
+            </div>
+        </div>
+        <div id="collapseTech" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <a class="collapse-item" id="MTechHospital">โรงพยาบาล</a>
+            </div>
+        </div>
+    </li>
+
+    <div class="sidebar-heading" id="MHAccount" href="Account.html"> Account </div>
+
+    <li class="nav-item" id="Maccount">
+        <a class="nav-link collapsed">
+            <i class="far fa-id-badge"></i>
+            <span>ธุระการ</span>
+        </a>
+    </li>
+
+    <div class="sidebar-heading" id="MHReportDesign" href="Account.html"> ReportDesign </div>
+
+    <li class="nav-item" id="MReportDesign">
+        <a class="nav-link collapsed">
+            <i class="far fa-id-badge"></i>
+            <span>รูปแแบบรายงานผลอ่าน</span>
+        </a>
+    </li>
+
+    <div class="sidebar-heading" id="MHadmin"> Administrator </div>
+    <!-- Nav Item - Pages Collapse Menu -->
+    <li class="nav-item" id="Hadmin">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" aria-expanded="true" data-target="#collapseAdmin" aria-expanded="true"
+            aria-controls="collapseAdmin">
+            <i class="fas fa-fw fa-cog"></i>
+            <span>Setting</span>
+        </a>
+        <div id="collapseAdmin" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">บัญชีผู้ใช้งาน</h6>
+                <a class="collapse-item" id="UserPage">จัดการบัญชีผู้ใช้งาน</a>
+    
+                <h6 class="collapse-header">ประเภทผู้ใช้งาน</h6>
+                <a class="collapse-item" id="UserTypePage">จัดการประเภทผู้ใช้งาน</a>
+    
+                <h6 class="collapse-header">สถานะผู้ใช้งาน</h6>
+                <a class="collapse-item" id="UserStatusPage">จัดการสถานะผู้ใช้งาน</a>
+    
+                <h6 class="collapse-header">สถานะการควบคุมทั่วๆ ไป</h6>
+                <a class="collapse-item" id="GeneralStatusPage">จัดการสถานะการควบคุมทั่วๆไป</a>
+    
+                <h6 class="collapse-header">สิทธิ์ผู้ป่วย</h6>
+                <a class="collapse-item" id="CliamerightsPage">จัดการสิทธิ์ผู้ป่วย</a>
+    
+                <h6 class="collapse-header">สถานะเคส</h6>
+                <a class="collapse-item" id="CaseStatusPage">จัดการสถานะเคส</a>
+    
+                <h6 class="collapse-header">รายการโรงพยาบาล</h6>
+                <a class="collapse-item" id="ManageHospitalPage">จัดการรายการโรงพยาบาล</a>
+
+                <!-- <h6 class="collapse-header">Hospital Case</h6>
+                <a class="collapse-item" id="ManageHospitalCasePage">จัดการHospital Case</a> -->
+                <!-- <h6 class="collapse-header">Hospital ImageFile</h6>
+                <a class="collapse-item" id="ManageHospitalImageFilePage">จัดการHospital ImageFile</a> -->
+                <!-- <h6 class="collapse-header">ManageOrder</h6>
+                <a class="collapse-item" id="OrderListPage">จัดการOrder</a>
+                <h6 class="collapse-header">Portal</h6>
+                <a class="collapse-item" id="PortalPage">Portal</a> -->
+    
+                <!-- <h6 class="collapse-header">User</h6>
+                <a class="collapse-item" id="RegisterPage" href="Register.html">จัดการUser</a>
+                <h6 class="collapse-header">Hospital</h6>
+                <a class="collapse-item" id="ManageHospitalPage" href="Hospital.html">จัดการHospital</a>
+                <h6 class="collapse-header">Order List</h6>
+                <a class="collapse-item" id="OrderListPage" href="OrderList.html">จัดการOrder</a> -->
+            </div>
+        </div>
+    </li>
+
+    <!-- <li class="nav-item" id="NewHadmin">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAdminNew" aria-expanded="true"
+            aria-controls="collapseAdminNew">
+            <i class="fas fa-fw fa-cog"></i>
+            <span>New-Setting</span>
+        </a>
+        <div id="collapseAdminNew" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">UserType</h6>
+                <a class="collapse-item" id="UserTypePage" href="/setting/usertype" target="_blank">จัดการUserType</a>
+                <h6 class="collapse-header">UserStatus</h6>
+                <a class="collapse-item" id="UserStatusPage" href="/setting/userstatus" target="_blank">จัดการUserStatus</a>
+                <h6 class="collapse-header">GeneralStatus</h6>
+                <a class="collapse-item" id="GeneralStatusPage" href="/setting/generalstatus" target="_blank">จัดการGeneralStatus</a>
+                <h6 class="collapse-header">Cliamerights</h6>
+                <a class="collapse-item" id="CliamerightsPage" href="/setting/cliamerights" target="_blank">จัดการCliamerights</a>
+                <h6 class="collapse-header">CaseStatus</h6>
+                <a class="collapse-item" id="CaseStatusPage" href="/setting/casestatus" target="_blank">จัดการCaseStatus</a>
+                <h6 class="collapse-header">Hospital</h6>
+                <a class="collapse-item" id="HospitalPage" href="/setting/hospital" target="_blank">จัดการHospital</a>
+            </div>
+        </div>
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAdminNewTools" aria-expanded="true"
+            aria-controls="collapseAdminNewTools">
+            <i class="fas fa-fw fa-cog"></i>
+            <span>Tools</span>
+        </a>
+        <div id="collapseAdminNewTools" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Dicom Web Viewer</h6>
+                <a class="collapse-item" id=">DicomWebViewerPage" href="/u-dicom-viewer/" target="_blank">Dicom Web Viewer</a>
+                <h6 class="collapse-header">Report Design</h6>
+                <a class="collapse-item" id="ReportDesignPage" href="/report-design/" target="_blank">Report Design</a>
+                <h6 class="collapse-header">Case</h6>
+                <a class="collapse-item" id="ManageCasePage" href="/case/" target="_blank">จัดการCase</a>
+            </div>
+        </div>
+    </li> -->
+
+    <hr class="sidebar-divider">
+
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+
+</ul>

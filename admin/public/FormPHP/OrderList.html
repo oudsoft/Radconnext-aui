@@ -1,0 +1,78 @@
+<div class="row">
+  <div class="col-xl-12 col-lg-12" id="ManageCase">
+    <div class="card shadow mb-4">
+      <!-- Card Header - Dropdown -->
+      <div class="card-header py-6 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary"> รายการตรวจ </h6>
+
+      </div>
+      <div class="card-body ">
+        <!--- mb-3 mb-sm-0-->
+        <form class="user">
+          <div class="form-group row">
+            <div class="col-sm-2">
+              <span class="text-info"> รหัส </span>
+              <input type="text" class="form-control" id="vOrder_ID">
+            </div>
+            <div class="col-sm-2">
+              <span class="text-info"> หัวข้อ </span>
+              <input type="text" class="form-control" id="vOrder_Header">
+            </div>
+            <div class="col-sm-6">
+              <span class="text-info"> รายการ </span>
+              <input type="text" class="form-control" id="vOrder_Detail">
+            </div>
+            <div class="col-sm-1">
+              <span class="text-info"> หน่วย </span>
+              <input type="text" class="form-control" id="vOrder_Unit">
+            </div>
+            <div class="col-sm-1">
+              <span class="text-info"> ราคา </span>
+              <input type="text" class="form-control" id="vOrder_Price">
+            </div>
+          </div>
+          <hr>
+          <div class="form-group row">
+            <div class="col-sm-2" id="frmSaveHos">
+              <input class="btn-sm btn-success btn-block center" id="SaveOrder" value="บันทึก" readonly="">
+            </div>
+            <div class="col-sm-2" id="frmCancelHos">
+              <input class="btn-sm btn-warning btn-block center" id="CancelOrder" value="ออก" readonly="">
+            </div>
+          </div>
+          <input type="hidden" id="vOrderID">
+        </form>
+        <div class="form-group row">
+          <div class="col-sm-12">
+            <div id="gridOrder"> </div>
+          </div>
+        </div>
+        <hr>
+        <div class="form-group row">
+          <div class="col-sm-6">
+            <h4> รหัส :: <span id="sOrder_ID"></span>
+              <h4>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-sm-2 center">
+            <span class="text-info"> Dicom Detail :: </span>
+          </div>
+          <div class="col-sm-4">
+            <input type="text" class="form-control" id="vDicomDetail">
+          </div>
+          <div class="col-sm-2">
+            <input class="btn-sm btn-success btn-block center" id="SaveOrderLink" value="บันทึก" readonly="">
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-sm-8">
+            <div id="gridOrderLink"> </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- <script src="js/widgets/OrderList.js"></script> -->

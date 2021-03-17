@@ -1,0 +1,68 @@
+{
+  "RadUserTypeSetup": [
+		{"UserType_Name": "Admin", "UserType_DESC": "System Administrator"},
+		{"UserType_Name": "Technician", "UserType_DESC": "System Technician"},
+		{"UserType_Name": "Accountant", "UserType_DESC": "Accountant"},
+		{"UserType_Name": "Radiologist", "UserType_DESC": "System Radiologist"},
+		{"UserType_Name": "RefferalDocter", "UserType_DESC": "Refferal Docter"},
+		{"UserType_Name": "DepartmentPublicComputer", "UserType_DESC": "Department of Public Computer"},
+		{"UserType_Name": "Patient", "UserType_DESC": "Patient"}
+	],
+
+  "RadUserStatusSetup": [
+		{"UserStatus_Name": "Active", "UserStatus_DESC": "Active Status"},
+		{"UserStatus_Name": "Inactive", "UserStatus_DESC": "Inactive Status"},
+		{"UserStatus_Name": "Pending", "UserStatus_DESC": "Pending Status"}
+	],
+
+  "RadUserSetup": [
+    {"username": "admin", "password": "admin@@"}
+  ],
+
+  "RadUserInfoSetup": [
+    {
+      "User_NameEN": "Administrator",
+      "User_LastNameEN": "System",
+      "User_NameTH": "ผู้ดูแลระบบ",
+      "User_LastNameTH": "อย่างเป็นทางการ",
+      "User_Email": "admin@radconnext.com",
+      "User_Phone": "0123456789",
+      "User_LineID": "jQWERTYmro789erDnfR...",
+      "User_PathRadiant": "local/path/to/Radiant"
+    }
+  ],
+
+  "RadHospitalSetup": [
+		{
+			"Hos_Name": "ชาตรีเวช",
+			"Hos_Address": "400 ถ.ชาตรี ต.ชาตรี อ.ชาตรี จ.ชาตรี",
+			"Hos_Tel": "0123456789",
+			"Hos_WebUrl": "www.chatrivech.com",
+			"Hos_Contact": "contactus@chatrivech.com",
+			"Hos_Remark": "first class for everyone."
+    }
+	],
+
+  "RadGeneralStatusSetup" : [
+    {"GS_Name": "active", "GS_Remark": "Active general status of system"},
+    {"GS_Name": "inactive", "GS_Remark": "Inactive general status of system"}
+  ],
+
+  "RadCliameRightsSetup" : [
+    {"CR_Name": "บัตรทอง 30 บาท", "CR_Remark": ""},
+    {"CR_Name": "ประกันสุขภาพ", "CR_Remark": ""},
+    {"CR_Name": "ข้าราชการทั่วไป", "CR_Remark": ""},
+    {"CR_Name": "ข้าราชการครู", "CR_Remark": ""},
+    {"CR_Name": "เจ้าหน้าที่โรงพยาบาล", "CR_Remark": ""}
+  ],
+
+  "RadCaseStatusSetup" : [
+    {"CS_Name_EN": "New", "CS_Name_TH": "ใหม่", "CS_DESC": "เคสใหม่เพิ่งสร้างเสร็จ รอรังสีแพทย์ตอบรับ"},
+    {"CS_Name_EN": "Accepted", "CS_Name_TH": "รังสีแพทย์ตอบรับแล้ว", "CS_DESC": "รังสีแพทย์ตอบรับแล้ว รออ่านผล"},
+    {"CS_Name_EN": "Not Accept", "CS_Name_TH": "รังสีแพทยไม่รับ", "CS_DESC": "รังสีแพทยปฏิเสธ"},
+    {"CS_Name_EN": "Expired", "CS_Name_TH": "เกินเวลารังสีแพทย์ตอบ่รับ", "CS_DESC": "หมดเวลาการตอบรับ"},
+    {"CS_Name_EN": "Success", "CS_Name_TH": "รังสีแพทย์ส่งผลอ่านแล้ว", "CS_DESC": "ส่งผลอ่านแล้ว รอพิมพ์ผล"},
+    {"CS_Name_EN": "Closed", "CS_Name_TH": "พิมพ์ผลอ่านแล้ว", "CS_DESC": "พิมพ์อ่านผลแล้ว ปิดเคส"},
+    {"CS_Name_EN": "Cancel", "CS_Name_TH": "ยกเลิก", "CS_DESC": "เคสถูกเลิก"}
+  ]
+}

@@ -1,7 +1,7 @@
 /* apiconnect.js */
 
 const apiExt = ".php";
-const proxyRootUri = '/webapp';
+const proxyRootUri = '/api';
 const proxyApi = '/apiproxy';
 const proxyEndPoint = "/callapi";
 const proxyUrl = proxyRootUri + proxyApi + proxyEndPoint;
@@ -98,6 +98,16 @@ module.exports = function ( jq ) {
 		});
 	}
 
+  const doGetApi = function (apiurl, params) {
+		return new Promise(function(resolve, reject) {
+			$.get(apiurl, params, function(data){
+				resolve(data);
+			}).fail(function(error) {
+				reject(error);
+			});
+		});
+	}
+
 	const doGetResourceByProxy = function(params) {
 		return new Promise(function(resolve, reject) {
 			let proxyEndPoint = proxyRootUri + proxyApi + '/getresource';
@@ -130,10 +140,10 @@ module.exports = function ( jq ) {
   	});
 	}
 
-	const doCallDownloadDicom = function(studyID, username){
+	const doCallDownloadDicom = function(studyID, hospitalId){
 		return new Promise(function(resolve, reject) {
   		let orthancProxyEndPoint = proxyRootUri + orthancProxyApi + '/loadarchive/' + studyID;
-  		let params = {username: username};
+  		let params = {hospitalId: hospitalId};
   		$.post(orthancProxyEndPoint, params, function(data){
 				resolve(data);
 			})
@@ -160,20 +170,20 @@ module.exports = function ( jq ) {
 		});
 	}
 
-	const doCallDeleteDicom = function (studyID, username) {
+	const doCallDeleteDicom = function (studyID, hospitalId) {
 		return new Promise(function(resolve, reject) {
   		let orthancProxyEndPoint = proxyRootUri + orthancProxyApi + '/deletedicom/' + studyID;
-  		let params = {username: username};
+  		let params = {hospitalId: hospitalId};
   		$.post(orthancProxyEndPoint, params, function(data){
 				resolve(data);
 			})
   	});
 	}
 
-  const doGetOrthancPort = function() {
+  const doGetOrthancPort = function(hospitalId) {
     return new Promise(function(resolve, reject) {
       let orthancProxyEndPoint = proxyRootUri + orthancProxyApi + '/orthancexternalport';
-      let params = {};
+      let params = {hospitalId: hospitalId};
       $.get(orthancProxyEndPoint, params, function(data){
 				resolve(data);
 			})
@@ -192,27 +202,144 @@ module.exports = function ( jq ) {
     });
   }
 
-  const doDownloadResult = function(pageUrl, patient, casedate){
+  const doDownloadResult = function(caseId, hospitalId, userId, patient){
+    return new Promise(async function(resolve, reject) {
+      let reportCreateCallerEndPoint = proxyRootUri + "/casereport/create";;
+      let params = {caseId: caseId, hospitalId: hospitalId, userId: userId, pdfFileName: patient};
+			let reportPdf = await $.post(reportCreateCallerEndPoint, params);
+      resolve(reportPdf);
+    });
+  }
+
+  const doConvertPdfToDicom = function(caseId, hospitalId, userId, studyID, modality, studyInstanceUID){
     return new Promise(function(resolve, reject) {
-      let convertorEndPoint = proxyRootUri + "/convertpdffile";;
-      let params = {url: pageUrl, name: patient, date: casedate};
+      let convertorEndPoint = proxyRootUri + "/casereport/convert";;
+      let params = {caseId, hospitalId, userId, studyID, modality, studyInstanceUID};
 			$.post(convertorEndPoint, params, function(data){
 				resolve(data);
 			}).fail(function(error) {
+        console.log('convert error', error);
 				reject(error);
 			});
     });
   }
 
-  const doConvertPdfToDicom = function(pdfFileName, studyID, modality, username){
+  /* Zoom API Connection */
+
+  const zoomUserId = 'vwrjK4N4Tt284J2xw-V1ew';
+
+  const meetingType = 2; // 1, 2, 3, 8
+  const totalMinute = 15;
+  const meetingTimeZone = "Asia/Bangkok";
+  const agenda = "RADConnext";
+  const joinPassword = "RAD1234";
+
+  const meetingConfig ={
+    host_video: false,
+    participant_video: true,
+    cn_meeting: false,
+    in_meeting: false,
+    join_before_host: true,
+    mute_upon_entry: false,
+    watermark: false,
+    use_pmi: false,
+    waiting_room: false,
+    approval_type: 0, // 0, 1, 2
+    registration_type: 1, // 1, 2, 3
+    audio: "both",
+    auto_recording: "none",
+    alternative_hosts: "",
+    close_registration: true,
+    //global_dial_in_countries: true,
+    registrants_email_notification: false,
+    meeting_authentication: false,
+  }
+
+  const doGetZoomMeeting = function(incident, startMeetingTime, hospitalName) {
     return new Promise(function(resolve, reject) {
-      let convertorEndPoint = proxyRootUri + "/converttodicom";;
-      let params = {pdfFileName, studyID, modality, username};
-			$.post(convertorEndPoint, params, function(data){
-				resolve(data);
-			}).fail(function(error) {
-				reject(error);
-			});
+      let reqParams = {};
+      reqParams.zoomUserId = zoomUserId;
+      let reqUrl = '/api/zoom/listmeeting';
+      doCallApi(reqUrl, reqParams).then((meetingsRes)=>{
+        //console.log(meetingsRes);
+        reqUrl = '/api/zoom/getmeeting';
+        reqParams = {};
+        let meetings = meetingsRes.response.meetings;
+        let readyMeetings = [];
+        var promiseList = new Promise(async function(inResolve, inReject){
+          await meetings.forEach(async (item, i) => {
+            reqParams.meetingId = item.id;
+            let meetingRes = await doCallApi(reqUrl, reqParams);
+            if (meetingRes.response.status === 'waiting') {
+              readyMeetings.push(item);
+              return;
+            } else if (meetingRes.response.status === 'end') {
+              reqUrl = '/api/zoom/deletemeeting';
+              meetingRes = await doCallApi(reqUrl, reqParams);
+            }
+          });
+          setTimeout(()=> {
+            inResolve(readyMeetings);
+          }, 1200);
+        });
+        Promise.all([promiseList]).then(async (ob)=>{
+          let patientFullNameEN = incident.case.patient.Patient_NameEN + ' ' + incident.case.patient.Patient_LastNameEN;
+          if (ob[0].length >= 1) {
+            let readyMeeting = ob[0][0];
+            console.log('readyMeeting =>', readyMeeting);
+            console.log('case dtail =>', incident);
+            //update meeting for user
+            let joinTopic = 'โรงพยาบาล' + hospitalName + ' ผู้ป่วยชื่อ ' + patientFullNameEN;
+            let startTime = startMeetingTime;
+            let zoomParams = {
+              topic: joinTopic,
+              type: meetingType,
+              start_time: startTime,
+              duration: totalMinute,
+              timezone: meetingTimeZone,
+              password: joinPassword,
+              agenda: agenda
+            };
+            zoomParams.settings = meetingConfig;
+            reqParams.params = zoomParams;
+            reqUrl = '/api/zoom/updatemeeting';
+            let meetingRes = await doCallApi(reqUrl, reqParams);
+            console.log('update result=>', meetingRes);
+            reqUrl = '/api/zoom/getmeeting';
+            reqParams = {meetingId: readyMeeting.id};
+            meetingRes = await doCallApi(reqUrl, reqParams);
+            console.log('updated result=>', meetingRes);
+            resolve(meetingRes.response);
+          } else {
+            //create new meeting
+            reqUrl = '/api/zoom/createmeeting';
+            reqParams.zoomUserId = zoomUserId;
+            let joinTopic =  'โรงพยาบาล' + hospitalName + ' ผู้ป่วยชื่อ ' + patientFullNameEN;
+            let startTime = startMeetingTime;
+            let zoomParams = {
+              topic: joinTopic,
+              type: meetingType,
+              start_time: startTime,
+              duration: totalMinute,
+              timezone: meetingTimeZone,
+              password: joinPassword,
+              agenda: agenda
+            };
+            zoomParams.settings = meetingConfig;
+            reqParams.params = zoomParams;
+            doCallApi(reqUrl, reqParams).then((meetingsRes)=>{
+              console.log('create meetingsRes=>', meetingsRes);
+              reqUrl = '/api/zoom/getmeeting';
+              reqParams = {};
+              reqParams.meetingId = meetingsRes.response.id;
+              doCallApi(reqUrl, reqParams).then((meetingRes)=>{
+                console.log('create meetingRes=>', meetingRes);
+                resolve(meetingRes.response);
+              });
+            });
+          }
+        });
+      });
     });
   }
 
@@ -238,6 +365,7 @@ module.exports = function ( jq ) {
 		doCallApiDirect,
 		doCallApiByProxy,
     doCallApi,
+    doGetApi,
 		doGetResourceByProxy,
 		doCallOrthancApiByProxy,
 		doCallDicomPreview,
@@ -248,6 +376,7 @@ module.exports = function ( jq ) {
     doGetOrthancPort,
     doConvertPageToPdf,
     doDownloadResult,
-    doConvertPdfToDicom
+    doConvertPdfToDicom,
+    doGetZoomMeeting
 	}
 }

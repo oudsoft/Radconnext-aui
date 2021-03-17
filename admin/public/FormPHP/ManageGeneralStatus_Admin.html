@@ -1,0 +1,81 @@
+<div class="container-fluid" id="GeneralStatusList">
+     <div class="row">
+          <div class="col-xl-12 col-lg-12">
+               <div class="card shadow mb-12">
+                    <!-- Card Header - Dropdown -->
+                    <div class="form-group row">
+                         <div class="col-sm-9 mt-2"></div>
+
+                         <div class="col-sm-3 mt-2" >
+                              <input class="btn btn-lg btn-success btn-block center" id="ButtonAdd"
+                                   value="เพิ่ม สถานะการควบคุมทั่วๆไป" readonly="">
+                         </div>
+                         
+                    </div>
+                    <div class="card-header py-3 flex-row align-items-center justify-content-between">
+                         <h3 class="m-0 font-weight-bold text-primary center">รายการ สถานะการควบคุมทั่วๆไป</h3>
+                    </div>
+
+                    <div class="form-group row m-1">
+                         <div class="col-sm-12">
+                              <!-- <span class="text-info"> UG-Types </span> -->
+                              <div class="form-control" id="GeneralStatus"></div>
+                         </div>
+                    </div>                    
+               </div>
+               <input type="hidden" id="HosID">
+               <input type="hidden" id="GeneralStatus">
+               <input type="hidden" id="GeneralStatusID">
+               <input type="hidden" id="GeneralStatusRemark">
+               <input type="hidden" id="GeneralStatusRecord">
+               <input type="hidden" id="TotalGeneralStatus">
+          </div>
+     </div>
+</div>
+
+
+<div id="GeneralStatusForm" class="center row">
+     <div class="col-xl-12 col-lg-12">
+          <div class="card shadow mb-4">
+               <!-- Card Header - Dropdown -->
+               <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 id="HeaderGeneralStatusForm" class="m-0 font-weight-bold text-primary"></h6>
+               </div>
+               <div class="card-body">
+                    <form class="user" method="post" autocomplete="off">
+                         <div class="form-group row m-1 pb-4">
+                              <div class="col-sm-6">
+                                   <span class="text-info"> Name </span>
+                                   <!-- <div class="form-control" id="typename"></div> -->
+                                   <input type="text" class="form-control" id="Name">
+                              </div>
+                              <div class="col-sm-6">
+                                   <span class="text-info"> Remark </span>
+                                   <!-- <div class="form-control" id="AcceptTime"></div> -->
+                                   <input type="text" class="form-control" id="Remark">
+                              </div>
+                         </div>
+                         <div class="form-group row float-right">
+                              <div class="col-sm-6" id="AddGeneralStatus">
+                                   <input class="btn btn-success btn-user btn-block" value="บันทึก" readonly="">
+                              </div>
+                              <div class="col-sm-6" id="EditGeneralStatus">
+                                   <input class="btn btn-success btn-user btn-block" value="แก้ไข" readonly="">
+                              </div>
+                              <div class="col-sm-6">
+                                   <input type="reset" class="btn btn-danger btn-user btn-block" id="BackGeneralStatusForm"
+                                        value="ยกเลิก" readonly="">
+                              </div>
+                         </div>
+
+                         <input type="hidden" id="HosID">
+                         <input type="hidden" id="GeneralStatus">
+                         <input type="hidden" id="GeneralStatusID">
+                         <input type="hidden" id="GeneralStatusRemark">
+                         <input type="hidden" id="GeneralStatusRecord">
+                         <input type="hidden" id="TotalGeneralStatus">
+                    </form>
+               </div>
+          </div>
+     </div>
+</div>

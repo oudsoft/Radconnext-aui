@@ -1,0 +1,331 @@
+.whileXXL {
+    color: #FFF;
+    font-size: xx-large;
+    font-weight: bold;
+}
+
+.white {
+    color: #FFF;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.white18 {
+    color: #FFF;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.black {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.black_s {
+    color: #000;
+    font-size: smaller;
+}
+
+.center {
+    text-align: center;
+}
+
+.black_xxl {
+    color: #000;
+    font-size: xx-large;
+}
+
+.greed {
+    color: #39e600;
+}
+
+.red {
+    color: #e60000;
+}
+
+.txtmedium {
+    font-size: medium;
+    font-weight: bold;
+}
+
+.center {
+    text-align: center;
+}
+
+.centerTable {
+    margin: 0px auto;
+}
+
+#btn_left {
+    text-align: left;
+}
+
+.siixmenu {
+    height: 120px;
+    width: 200px;
+}
+
+.mrpmenu {
+    height: 30px;
+    width: 150px;
+}
+
+.green {
+    color: black\9;
+    background-color: #adebad\9;
+}
+
+.yellow {
+    color: black\9;
+    background-color: #ffffb3\9;
+}
+
+.redII {
+    color: black\9;
+    background-color: #ffcccc\9;
+}
+
+.blue {
+    color: black\9;
+    background-color: #99bbff\9;
+}
+
+.brown {
+    color: black\9;
+    background-color: #d9b38c\9;
+}
+
+.purple {
+    color: black\9;
+    background-color: #e6b3ff\9;
+}
+
+.green:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected),
+.jqx-widget .green:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected) {
+    color: black;
+    background-color: #adebad;
+}
+
+.yellow:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected),
+.jqx-widget .yellow:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected) {
+    color: black;
+    background-color: #ffffb3;
+}
+
+.redII:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected),
+.jqx-widget .redII:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected) {
+    color: black;
+    background-color: #ffcccc;
+}
+
+.blue:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected),
+.jqx-widget .blue:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected) {
+    color: black;
+    background-color: #99bbff;
+}
+
+.brown:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected),
+.jqx-widget .brown:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected) {
+    color: black;
+    background-color: #d9b38c;
+}
+
+.purple:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected),
+.jqx-widget .purple:not(.jqx-grid-cell-hover):not(.jqx-grid-cell-selected) {
+    color: black;
+    background-color: #e6b3ff;
+}
+
+.urgent {
+    height: 50px;
+}
+
+.img {
+    opacity: 0.4;
+    filter: alpha(opacity=40);
+    /* For IE8 and earlier */
+}
+
+/* #######################  New Css ############################ */
+.card.border-left-primary.shadow.h-100.py-2:hover * {
+    color: white !important;
+
+}
+
+.card.border-left-primary.shadow.h-100.py-2:hover {
+    background-color: #4e73df;
+    color: white !important;
+    transition: 0.5s;
+
+}
+
+.card.border-left-warning.shadow.h-100.py-2:hover {
+    background-color: #f6c23e;
+    color: white !important;
+    transition: 0.5s;
+
+}
+
+.card.border-left-warning.shadow.h-100.py-2:hover * {
+    color: white !important;
+}
+
+.sidebar .nav-item .collapse .collapse-inner .collapse-item:hover,
+.sidebar .nav-item .collapsing .collapse-inner .collapse-item:hover {
+    background-color: #4e73df;
+    color: white;
+    transition: 0.5s;
+}
+
+.sidebar .nav-item .collapse .collapse-inner .collapse-item,
+.sidebar .nav-item .collapsing .collapse-inner .collapse-item {
+    padding: .25rem 0rem;
+    margin: 0 .5rem;
+    display: block;
+    color: #3a3b45;
+    text-decoration: none;
+    border-radius: .35rem;
+    white-space: nowrap;
+    text-align: center;
+}
+
+#collapseDoctor .collapse-inner {
+    padding: .5rem 0;
+    min-width: 10rem;
+    font-size: .85rem;
+    margin: 0 0 1rem 0;
+}
+
+#collapseDoctor * .collapse-inner {
+    margin: 0 0 .5rem 0;
+}
+
+#collapseDoctor {
+    width: 90%;
+}
+
+/*
+#collapseDoctor .collapse-inner .collapse-item {
+    background-color: #f6c23e;
+    font-weight: 700;
+}
+#collapseDoctor .collapse-inner .collapsed{
+    background-color: white;
+	color: #4e73df;
+}
+#collapseDoctor .collapse-inner .collapsed:hover{
+    background-color: #f6c23e;
+    color: white!important;
+    transition: 0.5s;
+}
+*/
+
+#collapseDoctor-Xray {
+    padding-left: 1rem;
+}
+
+#collapseDoctor-MG {
+    padding-left: 1rem;
+}
+
+#collapseDoctor-US {
+    padding-left: 1rem;
+}
+
+#collapseDoctor-CT {
+    padding-left: 1rem;
+}
+
+#collapseDoctor-MR {
+    padding-left: 1rem;
+}
+
+#collapseDoctor-XA {
+    padding-left: 1rem;
+}
+
+#collapseDoctor-All {
+    padding-left: 1rem;
+}
+
+#collapseDoctor .Modality {
+    width: 13rem;
+    /*border-bottom: 1px solid orange;*/
+}
+
+#collapseDoctor .PACS-item {
+    padding: .5rem .25rem;
+    color: rgb(255, 255, 255, 0.8);
+    font-size: .8rem;
+}
+
+#collapseDoctor .PACS-item:hover {
+    color: rgb(255, 255, 255, 1);
+    font-size: .9rem;
+    transition: 0.5s;
+}
+
+.row-historycase {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: 0rem;
+    margin-left: 0rem;
+}
+
+/* UploadFile and Preview */
+.imageThumb {
+    max-height: 150px;
+    max-width: 150px;
+    border: 2px solid;
+    padding: 1px;
+    cursor: pointer;
+}
+
+.pip {
+    display: inline-block;
+    margin: 10px 10px 0 0;
+}
+
+.remove {
+    display: block;
+    background: #444;
+    border: 1px solid black;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+}
+
+.remove:hover {
+    background: white;
+    color: black;
+}
+
+.gridFileUpdate_New {
+    background-color: whitesmoke;
+    border: 1px solid gray;
+    height: 300px;
+}
+
+/* .dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu a::after {
+    transform: rotate(-90deg);
+    position: absolute;
+    right: 6px;
+    top: .8em;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-left: .1rem;
+    margin-right: .1rem;
+} */
+
+#Calendar{
+    width: 100% !important;
+}
+
+/* #######################  New Css ############################ */

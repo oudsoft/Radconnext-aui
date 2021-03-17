@@ -1,0 +1,154 @@
+<div class="row">
+    <div class="col-xl-12 col-lg-12" id="ManageCase">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div class="card-header py-6 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary"> รายละเอียดโรงพยาบาล </h6>
+
+            </div>
+            <div class="card-body ">
+                <!--- mb-3 mb-sm-0-->
+                <form class="user">
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            <span class="text-info"> Hospital DICOM ID </span>
+                            <input type="text" class="form-control" id="vHosOrtancID" readonly>
+                        </div>
+                        <div class="col-sm-3">
+                            <span class="text-info"> ชื่อ </span>
+                            <input type="text" class="form-control" id="vHosName">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-6">
+                            <span class="text-info"> ที่อยู่ </span>
+                            <input type="text" class="form-control" id="vHosAdd">
+                        </div>
+                        <div class="col-sm-2">
+                            <span class="text-info"> เบอร์โทร </span>
+                            <input type="text" class="form-control" id="vHosPhone">
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-info"> ผู้ติดต่อ </span>
+                            <input type="text" class="form-control" id="vHosContact">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-12">
+                            <span class="text-info"> รายละเอียด </span>
+                            <input type="text" class="form-control" id="vHosDetail">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-group row">
+                        <div class="col-sm-2" id="frmSaveHos">
+                            <input class="btn-lg btn-success btn-block center" id="SaveCase" value="บันทึก" readonly="">
+                        </div>
+                        <div class="col-sm-2" id="frmCancelHos">
+                            <input class="btn-lg btn-warning btn-block center" id="CancelCase" value="ออก" readonly="">
+                        </div>
+                    </div>
+                    <input type="hidden" id="vHosID">
+                </form>
+                <hr>
+                <h4 class="text-danger"> ตั้งค่าราคารายการตรวจ </h4>
+                <div class="form-group row">
+                    <div class="col-sm-2">
+                        <span class="text-info"> รหัส </span>
+                        <input type="text" class="form-control" id="vOrder_ID" readonly>
+                        <input type="hidden" id="vOrderID" readonly>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="text-info"> หัวข้อ </span>
+                        <input type="text" class="form-control" id="vOrder_Header" readonly>
+                    </div>
+                    <div class="col-sm-5">
+                        <span class="text-info"> รายการ </span>
+                        <input type="text" class="form-control" id="vOrder_Detail" readonly>
+                    </div>
+                    <div class="col-sm-1">
+                        <span class="text-info"> หน่วย </span>
+                        <input type="text" class="form-control" id="vOrder_Unit" readonly>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="text-info"> ราคากลาง </span>
+                        <input type="text" class="form-control" id="vOrder_PriceMS" readonly>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-4">
+                        <span class="text-info"> Dicom Detail </span>
+                        <input type="text" class="form-control" id="vDicomDetail">
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="text-info"> ราคา </span>
+                        <input type="text" class="form-control" id="vOrder_Price">
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="text-info"> DF แพทย์ </span>
+                        <input type="text" class="form-control" id="vOrder_DF">
+                    </div>
+                </div>
+                <hr>
+                <div class="form-group row">
+                    <div class="col-sm-2" id="frmSaveHos">
+                        <input class="btn-sm btn-success btn-block center" id="AddOrder" value="บันทึกรายการ"
+                            readonly="">
+                    </div>
+                    <div class="col-sm-2" id="frmSaveHos">
+                        <input class="btn-sm btn-primary btn-block center" id="UpdateOrder" value="อัพเดต" readonly="">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-12">
+                        <div id="gridOrder"> </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="form-group row">
+                    <div class="col-sm-3 center">
+                        <span class="text-info"> สิทธิ์การรักษา </span>
+                        <input type="text" class="form-control" id="vRights">
+                    </div>
+                    <div class="col-sm-3 center">
+                        <span class="text-info"> Urgency </span>
+                        <input type="text" class="form-control" id="vUrgency">
+                        <input type="hidden" id="vUrgencyID">
+                    </div>
+                    <div class="col-sm-1 center">
+                        <span class="text-info"> วัน </span>
+                        <input type="text" class="form-control" id="vUrgencyDay">
+                    </div>
+                    <div class="col-sm-1 center">
+                        <span class="text-info"> ชั่วโมง </span>
+                        <input type="text" class="form-control" id="vUrgencyHour">
+                    </div>
+                    <div class="col-sm-1 center">
+                        <span class="text-info"> นาที </span>
+                        <input type="text" class="form-control" id="vUrgencyMins">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-3 center">
+                        <input class="btn-sm btn-success btn-block center" id="SaveRights" value="บันทึก" readonly="">
+                    </div>
+                    <div class="col-sm-3 center">
+                    </div>
+                    <div class="col-sm-3">
+                        <input class="btn-sm btn-success btn-block center" id="SaveUrgency" value="บันทึก" readonly="">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-3">
+                        <div id="gridTreatmentRights"> </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div id="gridUrgency"> </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <script src="js/widgets/Hospital.js"></script> -->

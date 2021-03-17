@@ -1,0 +1,441 @@
+<style>
+    /* makes main-menu open on hover */
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        background-color: white;
+        display: none;
+        position: absolute;
+        min-width: 300px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        right: 0;
+
+    }
+
+    .dropdown-content-NewCase {
+        display: none;
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        top: 110px;
+        /* top: 0; */
+        right: 13px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+        background-color: white;
+    }
+
+    .dropdown-content-WaitAccept {
+        display: none;
+        position: absolute;
+        width: 300px;
+        height: 60px;
+        top: 160px;
+        /* top: 0; */
+        right: 33px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1000;   
+        background-color: orange;
+    }
+    .dropdown-content-Accepted {
+        display: none; 
+        position: absolute;
+        width: 300px;
+        height: 60px;
+        top: 220px;
+        /* top: 0; */
+        right: 33px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        background-color: orange;
+    }
+    .dropdown-content-DoctorResponed {
+        display: none;
+        position: absolute;
+        width: 300px;
+        height: 60px;
+        top: 280px;
+        /* top: 0; */
+        right: 33px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        background-color: orange;
+    }
+
+    .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+    .dropdown-content .dropdown-header{
+        background-color: #4e73df;
+        border: 1px solid #4e73df;
+        padding-top: .75rem;
+        padding-bottom: .75rem;
+        color: #fff;
+        font-weight: 800;
+        font-size: 1rem;
+    }
+    .dropdown-content .dropdown-item{
+        white-space: normal;
+        padding-top: .5rem;
+        padding-bottom: .5rem;
+        border-left: 1px solid #e3e6f0;
+        border-right: 1px solid #e3e6f0;
+        border-bottom: 1px solid #e3e6f0;
+        line-height: 1.3rem;
+    }
+
+    .dropdown-content-sub a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+    .dropdown-content a:hover {
+        background-color: #ddd;
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .dropdown-content:hover .dropdown-content-sub {
+        display: block;
+    }
+
+    .dropdown:hover .dropbtn {
+        background-color: #3e8e41;
+    }
+
+    #NewCaseTab:hover{
+        display: block;
+    }
+    #WaitAcceptTab:hover{
+        display: block;
+    }
+    #AcceptedTab:hover{
+        display: block;
+    }
+    #DoctorResponedTab:hover{
+        display: block;
+    }
+
+    #HeaderContentSub {
+        background-color: #4e73df;
+        border: 1px solid #4e73df;
+        padding-top: .75rem;
+        padding-bottom: .75rem;
+        color: #fff;
+    }
+    
+</style>
+
+<script>
+    $(document).ready(function () {
+        $('#NewCaseDropdown').click(
+            function(){ $('#NewCaseTab').css('display', 'block') }
+            //function(){ $('#NewCaseTab').css('display', 'none') }
+        )
+        // $('#WaitAcceptDropdown').click(
+        //     function(){ $('#WaitAcceptTab').css('display', 'block') },
+        //     function(){ $('#WaitAcceptTab').css('display', 'none') }
+        // )
+        // $('#AcceptedDropdown').click(
+        //     function(){ $('#AcceptedTab').css('display', 'block') },
+        //     function(){ $('#AcceptedTab').css('display', 'none') }
+        // )
+        // $('#DoctorResponedDropdown').click(
+        //     function(){ $('#DoctorResponedTab').css('display', 'block') },
+        //     function(){ $('#DoctorResponedTab').css('display', 'none') }
+        // )
+
+        
+
+    });
+</script>
+
+<!-- Nav Item - Search Dropdown (Visible Only XS) -->
+<li class="nav-item dropdown no-arrow d-sm-none">
+    <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button" data-toggle="dropdown"
+        aria-haspopup="true" aria-expanded="false">
+        <i class="fas fa-search fa-fw"></i>
+    </a>
+    <!-- Dropdown - Messages -->
+    <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in" aria-labelledby="searchDropdown">
+        <form class="form-inline mr-auto w-100 navbar-search">
+            <div class="input-group">
+                <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                    aria-label="Search" aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button">
+                        <i class="fas fa-search fa-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</li>
+
+<!-- New Div Item - Alerts -->
+
+<nav class="nav-item dropdown no-arrow mx-1">
+    <a class="nav-link collapse" href="#" id="alertsDropdown" data-toggle="collapse"
+        data-target="#alertsDropdownTab" aria-expanded="true" aria-controls="alertsDropdownTab" >
+        <i class="fas fa-bell fa-fw"></i>
+        
+        <span class="badge badge-danger badge-counter"><span id="HNewCase"></span></span>
+    </a>
+    
+    <ul class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" id="alertsDropdownTab" style="width:550px !important" >
+        <h6 class="dropdown-header">
+            Alerts Center
+        </h6>
+
+        <div id="CaseDropdown">
+            
+        </div>
+
+        <div id="ClearMessages">
+            <p class="text-center text-white dropdown-header btn ">Clear All Messages</p>
+        </div>
+
+        <!-- <div id="NewCaseDropdown">
+            <a class="dropdown-item d-flex align-items-center">
+                <div class="mr-3" >
+                    <div class="icon-circle bg-danger">
+                        <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="small text-gray-500"></div>
+                    <span class="font-weight-bold"><span id="ANewCase"></span> New Case </span>
+                </div>
+            </a>
+        </div>
+
+        <div id="WaitAcceptDropdown">
+            <a class="dropdown-item d-flex align-items-center">
+                <div class="mr-3">
+                    <div class="icon-circle bg-warning">
+                        <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="small text-gray-500"></div>
+                    <span class="font-weight-bold"><span id="AWaitAccept"></span> Wait Accept </span>
+                </div>
+            </a>
+        </div>
+
+        <div id="AcceptedDropdown">
+            <a class="dropdown-item d-flex align-items-center">
+                <div class="mr-3">
+                    <div class="icon-circle bg-info">
+                        <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="small text-gray-500"></div>
+                    <span class="font-weight-bold"><span id="AAccepted"></span> Accepted </span>
+                </div>
+            </a>
+        </div>
+        <div id="DoctorResponedDropdown">
+            <a class="dropdown-item d-flex align-items-center">
+                <div class="mr-3">
+                    <div class="icon-circle bg-success">
+                        <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="small text-gray-500"></div>
+                    <span class="font-weight-bold"><span id="AResponed"></span> Doctor Responed </span>
+                </div>
+            </a>
+        </div> -->
+    </ul>
+</nav>
+
+<div id="NewCaseTab" class="dropdown-content-NewCase">
+    <a class="dropdown-item d-flex align-items-center" id="HeaderContentSub">
+        <div>
+            <div class="small text-gray-500"></div>
+            <span class="font-weight-bold"><span id="WaitAccept"></span> Cricital Result </span>
+        </div>
+    </a>
+    <a class="dropdown-item d-flex align-items-center">
+        <div>
+            <div class="small text-gray-500"></div>
+            <span class="font-weight-bold"><span id="WaitAccept"></span> รายชื่อ </span>
+        </div>
+    </a>
+</div>
+
+<div id="WaitAcceptTab" class="dropdown-content-WaitAccept">
+    <a class="dropdown-item d-flex align-items-center">
+        <div class="mr-3" >
+            <div class="icon-circle bg-danger">
+                <i class="fas fa-file-alt text-white"></i>
+            </div>
+        </div>
+        <div>
+            <div class="small text-gray-500"></div>
+            <span class="font-weight-bold"><span id="WaitAccept"></span> WaitAccept - Sub </span>
+        </div>
+    </a>
+</div>
+<div id="AcceptedTab" class="dropdown-content-Accepted">
+    <a class="dropdown-item d-flex align-items-center">
+        <div class="mr-3" >
+            <div class="icon-circle bg-danger">
+                <i class="fas fa-file-alt text-white"></i>
+            </div>
+        </div>
+        <div>
+            <div class="small text-gray-500"></div>
+            <span class="font-weight-bold"><span id="Accepted"></span> Accepted - Sub </span>
+        </div>
+    </a>
+</div>
+<div id="DoctorResponedTab" class="dropdown-content-DoctorResponed">
+    <a class="dropdown-item d-flex align-items-center">
+        <div class="mr-3" >
+            <div class="icon-circle bg-danger">
+                <i class="fas fa-file-alt text-white"></i>
+            </div>
+        </div>
+        <div>
+            <div class="small text-gray-500"></div>
+            <span class="font-weight-bold"><span id="DoctorResponed"></span> DoctorResponed - Sub </span>
+        </div>
+    </a>
+</div>
+
+<!-- New Nav Item - Alerts -->
+
+<!-- Nav Item - Alerts -->
+
+<!-- <nav class="nav-item dropdown no-arrow mx-1">
+    <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown"
+        aria-haspopup="true" aria-expanded="false">
+        <i class="fas fa-bell fa-fw"></i>
+        <span class="badge badge-danger badge-counter"><span id="HNewCase"></span></span>
+    </a>
+    
+    <ul class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+        aria-labelledby="alertsDropdown">
+        <h6 class="dropdown-header">
+            Alerts Center
+        </h6>
+
+        <a class="dropdown-item d-flex align-items-center" href="#">
+            <div class="mr-3">
+                <div class="icon-circle bg-danger">
+                    <i class="fas fa-file-alt text-white"></i>
+                </div>
+            </div>
+            <div>
+                <div class="small text-gray-500"></div>
+                <span class="font-weight-bold"><span id="ANewCase"></span> New Case </span>
+            </div>
+        </a>
+
+        <a class="dropdown-item d-flex align-items-center" href="#">
+            <div class="mr-3">
+                <div class="icon-circle bg-warning">
+                    <i class="fas fa-file-alt text-white"></i>
+                </div>
+            </div>
+            <div>
+                <div class="small text-gray-500"></div>
+                <span class="font-weight-bold"><span id="AWaitAccept"></span> Wait Accept </span>
+            </div>
+        </a>
+        <a class="dropdown-item d-flex align-items-center" href="#">
+            <div class="mr-3">
+                <div class="icon-circle bg-info">
+                    <i class="fas fa-file-alt text-white"></i>
+                </div>
+            </div>
+            <div>
+                <div class="small text-gray-500"></div>
+                <span class="font-weight-bold"><span id="AAccepted"></span> Accepted </span>
+            </div>
+        </a>
+        <a class="dropdown-item d-flex align-items-center" href="#">
+            <div class="mr-3">
+                <div class="icon-circle bg-success">
+                    <i class="fas fa-file-alt text-white"></i>
+                </div>
+            </div>
+            <div>
+                <div class="small text-gray-500"></div>
+                <span class="font-weight-bold"><span id="AResponed"></span> Doctor Responed </span>
+            </div>
+        </a>
+    </ul>
+</nav> -->
+
+<!-- <div class="topbar-divider d-none d-sm-block"></div> -->
+
+<!-- Nav Item - User Information -->
+<li class="nav-item dropdown no-arrow" style="border-left: 1px solid darkgray;">
+    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
+        aria-haspopup="true" aria-expanded="false">
+        <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="UserName"></span>
+        <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="LastName"></span>
+        <span class="mr-2 d-none d-lg-inline text-gray-600 small"> Type : </span>
+        <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="UserType"></span>
+        <!--img class="img-profile rounded-circle" src="https://source.unsplash.com/QAB-WJcbgJk/60x60" <?=$_SESSION["USER_NAME"]." ".$_SESSION["USER_LNAME"]." | Type : ".$_SESSION["Type"]?>-->
+    </a>
+    <!-- Dropdown - User Information -->
+    <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+        <a class="dropdown-item" id="TopBarProfile">
+            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+            Profile
+        </a>
+        <!--a class="dropdown-item" href="#">
+        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+        Settings
+      </a>
+      <a class="dropdown-item" href="#">
+        <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+        Activity Log
+      </a-->
+        <div id="LogOut">
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                Logout
+            </a>
+        </div>
+    </div>
+</li>
+
+<!-- Logout Modal-->
+<!-- <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <a class="btn btn-primary" id="LogOut" href="index.html" >Logout</a>
+            </div>
+        </div>
+    </div>
+</div> -->

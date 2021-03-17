@@ -1,0 +1,154 @@
+<div id="UserList" class="center row">
+    <div class="col-xl-12 col-lg-12 center-block">
+        <div class="card shadow mb-4">
+            <!-- <div class="row">
+                <div class="col-sm-11"></div>
+                <div class="col-sm-1">
+                    <input class="btn btn-success btn-user btn-block" id="AddUser" value="บันทึกผู้ใช้งาน"
+                        data-toggle="modal" data-target="#exampleModal" >
+                </div>
+                </div>
+            </div> -->
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-10"></div>
+                    <div class="col-sm-2">
+                        <input class="btn btn-success btn-user btn-block" id="AddUser" value="เพิ่มบัญชีผู้ใช้งาน">
+                    </div>
+                </div>
+                <div class="card-header py-3 flex-row align-items-center justify-content-between">
+                    <h4 class="m-0 font-weight-bold text-primary text-center">รายการบัญชีผู้ใช้งาน</h4>
+                </div>
+                <!-- <div class="h3">List User</div> -->
+                <div id="gridUser"> </div>
+                <!-- <h6 class="m-0 font-weight-bold text-primary text-right pb-4 pr-2">
+                    ดับเบิ้ลคลิ๊กเพื่อแสดงรายละเอียดของโรงพยาบาลต่างๆ</h6> -->
+                <hr>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="UserForm" class="center row">
+    <div class="col-xl-2"></div>
+    <div class="col-xl-8 col-lg-12" >
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 id="HeaderUserForm" class="m-0 font-weight-bold text-primary"></h6>
+                <div id="RegisterNotification"></div>
+            </div>
+            <div class="card-body">
+                <form class="user needs-validation" method="post" autocomplete="off">
+                    <div class="form-group">
+                        <span class="text-info float-left"> UserName </span> <span class="text-info text-danger float-left">**</span>
+                        <input type="text" class="form-control" id="User_FirstName" placeholder="UserName" required>
+                        <div id="Validation_UserName">
+                        </div>
+                    </div>
+                    <div class="form-group row" id="DivPassword">
+                        <div class="col-sm-12 mb-3 mb-sm-0">
+                            <span class="text-info float-left"> Password </span> <span class="text-info text-danger float-left">**</span>
+                            <input type="password" class="form-control" id="Password" placeholder="Password" required>
+                            <div id="Validation_Password">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row" id="DivReTryPassword">
+                        <div class="col-sm-12 mb-3 mb-sm-0">
+                            <span class="text-info float-left"> ReTryPassword </span> <span class="text-info text-danger float-left">**</span>
+                            <input type="password" class="form-control" id="ReTryPassword" placeholder="ReTryPassword" required>
+                            <div id="Validation_ReTryPassword">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <span class="text-info float-left"> ชื่อ(ภาษาอังกฤษ) </span> <span class="text-info text-danger float-left">**</span>
+                            <input type="text" class="form-control" id="FirstNameEng" placeholder="ชื่อ(ภาษาอังกฤษ)" required>
+                            <div id="Validation_FirstNameEng">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-info float-left"> นามสกุล(ภาษาอังกฤษ) </span> <span class="text-info text-danger float-left">**</span>
+                            <input type="text" class="form-control" id="LastNameEng" placeholder="นามสกุล(ภาษาอังกฤษ)" required>
+                            <div id="Validation_LastNameEng">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <span class="text-info float-left"> ชื่อ(ไทย) </span>
+                            <input type="text" class="form-control" id="FirstNameThai" placeholder="ชื่อ(ไทย)" value="">
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-info float-left"> นามสกุล(ไทย) </span> 
+                            <input type="text" class="form-control" id="LastNameThai" placeholder="นามสกุล(ไทย)" value="">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <span class="text-info float-left"> Email </span> <span class="text-info text-danger float-left">**</span>
+                            <input type="email" class="form-control" id="Email" placeholder="Email Address" required >
+                            <div id="Validation_Email">
+                                
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-info float-left"> เบอร์โทรศัพท์ </span> <span class="text-info text-danger float-left">**</span>
+                            <input type="text" class="form-control" id="Phone" placeholder="เบอร์โทรศัพท์" pattern="[0-9]{10}" maxlength="10" required >
+                            <div id="Validation_Phone">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <span class="text-info float-left"> LineID </span>
+                            <input type="text" class="form-control" id="LineID" placeholder="LineID" value="">
+                        </div>
+                        <!-- <div class="col-sm-4">
+                            <input type="text" class="form-control" id="LineCode" placeholder="LineCode">
+                        </div> -->
+                        <div class="col-sm-6">
+                            <span class="text-info float-left"> PathRadiant </span>
+                            <input type="text" class="form-control" id="PathRadiant" placeholder="PathRadiant" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 mb-3 mb-sm-0">
+                            <span class="text-info float-left"> สถานะผู้ใช้งาน </span>
+                            <select class="form-control" id="UserStatus"></select>
+                        </div>
+                        <div class="col-sm-4 mb-3 mb-sm-0">
+                            <span class="text-info float-left"> ประเภทผู้ใช้งาน </span>
+                            <select class="form-control" id="Type"></select>
+                        </div>
+                        <div class="col-sm-4 mb-3 mb-sm-0">
+                            <span class="text-info float-left"> โรงพยายาลสังกัด </span>
+                            <select class="form-control" id="HospitalType"></select>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-6" id="SaveUser">
+                            <input class="btn btn-success btn-user btn-block"  value="RegisterUser"
+                                readonly="">
+                        </div>
+                        <div class="col-sm-6" id="EditUser">
+                            <input class="btn btn-success btn-user btn-block"  value="บันทึก"
+                                readonly="">
+                        </div>
+                        <div class="col-sm-6">
+                            <input type="reset" class="btn btn-danger btn-user btn-block" id="BackUserForm" value="ยกเลิก" readonly="">
+                        </div>
+                    </div>
+                    <input type="hidden" id="User_ID">
+                    <input type="hidden" id="UserInfoID">
+                    <input type="hidden" id="UserTypeID">
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2"></div>
+</div>

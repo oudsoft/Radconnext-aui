@@ -1,0 +1,285 @@
+
+
+<div class="row">
+    <div class="col-xl-12 col-lg-12" id="ManageHospital">
+        <div class="card shadow mb-4">
+            <div class="form-group row">
+                <div class="col-sm-10 mt-2"></div>
+                <div class="col-sm-2 mt-2">
+                    <input class="btn btn-lg btn-success btn-block center" id="ButtonAdd" value="เพิ่มโรงพยาบาล"
+                        readonly="">
+                </div>
+            </div>
+            <!-- Card Header - Dropdown -->
+            <div class="card-header py-3 flex-row align-items-center justify-content-between">
+                <h3 class="m-0 font-weight-bold text-primary center">รายการ โรงพยาบาล</h3>
+           </div>
+            
+            <div class="form-group row">
+                <div class="col-sm-12">
+                    <div id="gridHospital"> </div>
+                </div>
+            </div>
+            <h6 class="m-0 font-weight-bold text-primary text-right pb-4 pr-2">
+                    ดับเบิ้ลคลิ๊กเพื่อแสดงรายละเอียดของโรงพยาบาลต่างๆ</h6>
+        </div>
+    </div>
+
+    <div class="col-xl-12 col-lg-12" id="HospitalForm">
+        <div class="card-header py-6 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary"> บันทึกโรงพยาบาล </h6>
+        </div>
+        <div class="card-body ">
+            <!--- mb-3 mb-sm-0-->
+            <form class="user">
+                <div class="form-group row">
+                    <div class="col-sm-4">
+                        <span class="text-info"> ชื่อโรงพยาบาล </span>
+                        <input type="text" class="form-control" id="vHosName">
+                    </div>
+                    <div class="col-sm-4">
+                        <span class="text-info"> ที่อยู่(Address) </span>
+                        <input type="text" class="form-control" id="vHos_Address">
+                    </div>
+                    <div class="col-sm-4">
+                        <span class="text-info"> WebUrl </span>
+                        <input type="text" class="form-control" id="vHos_WebUrl">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-4">
+                        <span class="text-info"> เบอร์โทรศัพท์ </span>
+                        <input type="text" class="form-control" id="vHos_Telphone">
+                    </div>
+                    <div class="col-sm-4">
+                        <span class="text-info"> Contact </span>
+                        <input type="text" class="form-control" id="vHos_Contact">
+                    </div>
+                    <div class="col-sm-4">
+                        <span class="text-info"> Remark </span>
+                        <input type="text" class="form-control" id="vHos_Remark">
+                    </div>
+                </div>
+                <hr>
+                <div class="form-group row">
+                    <div class="col-sm-8"></div>
+                    <div class="col-sm-2" id="AddHos">
+                        <input class="btn-lg btn-success btn-block center" style="cursor:pointer"
+                            value="บันทึก" readonly="">
+                    </div>
+                    <!-- <div class="col-sm-2" id="EditHos">
+                        <input class="btn-lg btn-success btn-block center" style="cursor:pointer" type="submit" value="แก้ไข" readonly="">
+                    </div> -->
+                    <div class="col-sm-2" id="frmBackHosDetail">
+                        <input class="btn-lg btn-warning btn-block center" style="cursor:pointer" id="BackHos"
+                            value="ยกเลิก" readonly="">
+                    </div>
+                    <!-- <div class="col-sm-2" id="ClearHos">
+                        <input class="btn-lg btn-warning btn-block center" value="ล้างค่า"
+                            type="reset" readonly="">
+                    </div> -->
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-xl-12 col-lg-12" id="HospitalDetail">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div class="card-header py-6 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary"> รายละเอียดโรงพยาบาล: <span
+                        class="text-left text-secondary" id="HospitalDisplayName"></span></h6>
+            </div>
+            <div class="card-body ">
+                <!--- mb-3 mb-sm-0-->
+                <form class="user">
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            <span class="text-info"> ชื่อโรงพยาบาล </span>
+                            <input type="text" class="form-control" id="vHosNameDetail">
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-info"> ที่อยู่(Address) </span>
+                            <input type="text" class="form-control" id="vHos_AddressDetail">
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-info"> WebUrl </span>
+                            <input type="text" class="form-control" id="vHos_WebUrlDetail">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            <span class="text-info"> เบอร์โทรศัพท์ </span>
+                            <input type="text" class="form-control" id="vHos_TelphoneDetail">
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-info"> Contact </span>
+                            <input type="text" class="form-control" id="vHos_ContactDetail">
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-info"> Remark </span>
+                            <input type="text" class="form-control" id="vHos_RemarkDetail">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-group row">
+                        <div class="col-sm-2" id="frmEditHosDetail">
+                            <input class="btn-lg btn-success btn-block center" style="cursor:pointer" id="EditHosDetail"
+                                value="บันทึก" readonly="">
+                        </div>
+                        <div class="col-sm-2" id="frmBackHosDetail">
+                            <input class="btn-lg btn-warning btn-block center" style="cursor:pointer" id="BackHosDetail"
+                                value="ยกเลิก" readonly="">
+                        </div>
+                        <!-- <div class="col-sm-2" id="frmCancelHosDetail">
+                            <input class="btn-lg btn-warning btn-block center" id="ClearHosDetail" value="ล้างค่า"
+                                type="reset" readonly="">
+                        </div> -->
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-6 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary"> รายการประเภท UrgentTypes: <span class="text-left text-secondary"id="HospitalDisplayName2"></span></h6>
+            </div>
+            
+            <div class="card shadow mb-12">
+                <!-- Card Header - Dropdown -->
+                <!-- <div class="card-header py-3 flex-row align-items-center justify-content-between">
+                    <h3 class="m-0 font-weight-bold text-primary center">ประเภท UG-Types</h3>
+                </div> -->
+
+                <div class="form-group row m-1">
+                    <div class="col-sm-12">
+                        <!-- <span class="text-info"> UG-Types </span> -->
+                        <div class="form-control" id="UrgentTypesGrid"></div>
+                    </div>
+                </div>
+
+                <h6 class="m-0 font-weight-bold text-primary text-right pb-4 pr-2">**ดับเบิ้ลคลิกแถวเพื่อเลือกข้อมูลจากตาราง</h6>
+
+                <div class="form-group row m-1 pb-4">
+                    <div class="col-sm-2">
+                        <span class="text-info"> TypeName </span>
+                        <!-- <div class="form-control" id="typename"></div> -->
+                        <input type="text" class="form-control" id="typenameUgType">
+                    </div>
+                    <div class="col-sm-3">
+                        <span class="text-info"> Accept Time </span>
+                        <!-- <div class="form-control" id="AcceptTime"></div> -->
+                        <input type="text" class="form-control" id="AcceptTimeUgType"
+                            value='{"dd": "00", "hh": "01", "mn": "00"}'>
+                    </div>
+                    <div class="col-sm-3">
+                        <span class="text-info"> Working Time </span>
+                        <!-- <div class="form-control" id="WorkingTime"></div> -->
+                        <input type="text" class="form-control" id="WorkingTimeUgType"
+                            value='{"dd": "00", "hh": "01", "mn": "00"}'>
+                    </div>
+
+                    <div class="col-sm-2 mt-2" id="EditUGType">
+                        <input class="btn btn-lg btn-success btn-block center" style="font: size 1rem;" id="ButtonUgTypeEdit" value="บันทึกการแก้ไข" readonly="">
+                    </div>
+
+
+                    <div class="col-sm-2 mt-2" id="AddUGType">
+                        <input class="btn btn-lg btn-success btn-block center" style="font: size 1rem;" id="ButtonUgTypeAdd" value="บันทึกรายการใหม่" readonly="">
+                    </div>
+
+                </div>
+
+                <input type="hidden" id="UGTypes">
+                <input type="hidden" id="UGTypesID">
+                <input type="hidden" id="WarningTime">
+                <input type="hidden" id="HosID">
+                <input type="hidden" id="ColorCode">
+                <input type="hidden" id="TotalRecordCount">
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-6 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary"> OrthanC: <span class="text-left text-secondary"id="HospitalDisplayName3"></span></h6>
+            </div>
+            
+            <div class="card shadow mb-12">
+
+                <div class="form-group row m-1">
+                    <div class="col-sm-12">
+                        <!-- <span class="text-info"> UG-Types </span> -->
+                        <div class="form-control" id="OrthanCGrid"></div>
+                    </div>
+                </div>
+
+                <h6 class="m-0 font-weight-bold text-primary text-right pb-4 pr-2">**ดับเบิ้ลคลิกแถวเพื่อเลือกข้อมูลจากตาราง</h6>
+
+                <div class="form-group row m-1 pb-4">
+                    <div class="col-sm-12">
+                        <span class="text-info"> Local </span>
+                        <!-- <div class="form-control" id="typename"></div> -->
+                        <input type="text" class="form-control" id="Local"
+                            value='{"os": "windows500", "ip": "192.168.0.0", "httpport": "8000", "dicomport": "4000"}'>
+                    </div>
+                </div>
+                <div class="form-group row m-1 pb-4">
+                    <div class="col-sm-12">
+                        <span class="text-info"> Cloud </span>
+                        <!-- <div class="form-control" id="AcceptTime"></div> -->
+                        <input type="text" class="form-control" id="Cloud"
+                            value='{"os": "windows500", "ip": "192.168.0.0", "httpport": "8000", "dicomport": "4000","user": "demo", "pass": "demo", "portex" : "8042", "ipex": "202.28.00.00"}'>
+                    </div>
+                </div>
+                <div class="form-group row m-1 pb-4">
+                    <div class="col-sm-12">
+                        <span class="text-info"> Remark </span>
+                        <!-- <div class="form-control" id="WorkingTime"></div> -->
+                        <input type="text" class="form-control" id="Remark">
+                    </div>
+                </div>
+
+                <div class="form-group row m-1 pb-4">
+                    <div class="col-sm-10 mt-2"></div>
+                    <div class="col-sm-2 mt-2" id="EditOrthanC">
+                        <input class="btn btn-lg btn-success btn-block center" id="ButtonOrthanCEdit" value="บันทึกข้อมูล" readonly="">
+                    </div>
+<!-- 
+                    <div class="col-sm-2 mt-2" id="AddOrthanC">
+                        <input class="btn btn-lg btn-success btn-block center" id="ButtonOrthanCAdd" value="บันทึกข้อมูล" readonly="">
+                    </div> -->
+                </div>
+                    
+                <input type="hidden" id="OrthanC">
+                <input type="hidden" id="OrthanCID">
+                <input type="hidden" id="OrthanCRecords">
+                <input type="hidden" id="TotalOrthanC">
+            </div>
+        </div>
+        <div class="card shadow mb-4">
+            <div class="card-header py-6 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary"> รูปแแบบรายงานผลอ่าน: <span class="text-left text-secondary"id="HospitalDisplayName4"></span></h6>
+            </div>
+            
+            <div class="card shadow mb-12">
+                
+                <div class="form-group row m-1 pb-4">
+                    <div class="col-sm-10 mt-2"></div>
+                    <div class="col-sm-2 mt-2" id="OpenReportDeign">
+                        <input class="btn btn-lg btn-success btn-block center" value="ปรับปรุงรายงานผลอ่าน" readonly="">
+                    </div>
+                </div>
+                    
+                <input type="hidden" id="OrthanC">
+                <input type="hidden" id="OrthanCID">
+                <input type="hidden" id="OrthanCRecords">
+                <input type="hidden" id="TotalOrthanC">
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="gridHospitalData" />
+<input type="hidden" id="vHosID">
+</div>
+
+<!-- <script    src="js/widgets/Hospital_Admin.js"></script> -->

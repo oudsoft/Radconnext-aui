@@ -1,0 +1,315 @@
+<!-- <div class="row" id="GridSelect">
+     <div id="HospitalList"></div>
+</div> -->
+
+<div class="row" id="ManageHospital">
+     <div class="col-xl-12 col-lg-12">
+          <div class="card shadow mb-4">
+               <!-- Card Header - Dropdown -->
+               <div class="card-header py-6 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary"> โรงพยาบาล </h6>
+               </div>
+               <div class="form-group row">
+                    <div class="col-sm-12">
+                         <div id="gridHospital"> </div>
+                    </div>
+               </div>
+               <h6 class="m-0 font-weight-bold text-primary text-right pb-4 pr-2">
+                    ดับเบิ้ลคลิ๊กเพื่อแสดงรายละเอียดของโรงพยาบาลต่างๆ</h6>
+          </div>
+     </div>
+</div>
+
+<div class="row" id="GridCase">
+     <div class="col-xl-12 col-lg-12 center-block">
+          <div class="card shadow mb-4">
+               <!-- Card Header - Dropdown -->
+               <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <div class="col-sm-4">
+                         <h6 class="m-0 font-weight-bold text-primary">รายการเคสของโรงพยาบาล: <span
+                              class="text-secondary font-weight-bold" id="HosName"></span></h6>
+                    </div>
+               </div>
+               <div class="card-body">
+                    <div class="form-group row">
+                         <div class="col-sm-10s"></div>
+                         <div class='col-sm-2'>
+                              <button id="BackManageHospital" class='btn-sm btn-success btn-block' >ยกเลิก</button>
+                         </div>
+                         <!-- <div class='col-sm-2'>
+                              <button id="openButton" class='btn-sm btn-success btn-block' data-toggle="modal"
+                                   data-target="#exampleModal">Custom Column</button>
+                         </div> -->
+                    </div>
+                    <div class="col-xl-12 col-lg-12" id="gridCaseActive"> </div>
+                    <h6 class="m-0 font-weight-bold text-primary text-right pb-4 pr-2">
+                         ดับเบิ้ลคลิ๊กเพื่อแสดงรายละเอียดของเคสต่างๆ</h6>
+               </div>
+          </div>
+     </div>
+</div>
+
+<div class="row" id="ManageCase">
+     <div class="col-xl-12 col-lg-12" >
+          <div class="card shadow mb-4">
+               <!-- Card Header - Dropdown -->
+               <div class="card-header py-6 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary"> รายละเอียดผู้รับการตรวจ </h6>
+               </div>
+               <div class="card-body ">
+                    <!--- mb-3 mb-sm-0-->
+                    <form class="user">
+                         <div class="form-group row">
+                              <div class="col-sm-4">
+                                   <span class="text-info"> สถานะ :: <span class="text-danger"
+                                             id="vDStatus"></span></span>
+                              </div>
+                         </div>
+                         <div class="form-group row">
+                              <div class="col-sm-3">
+                                   <span class="text-info"> HN </span>
+                                   <input type="text" class="form-control bg-white" id="vHN" readonly>
+                              </div>
+                              <div class="col-sm-3">
+                                   <span class="text-info"> ชื่อ </span>
+                                   <input type="text" class="form-control" id="vName">
+                              </div>
+                              <div class="col-sm-3">
+                                   <span class="text-info"> นามสกุล </span>
+                                   <input type="text" class="form-control" id="vLName">
+                              </div>
+                              <div class="col-sm-1">
+                                   <span class="text-info"> เพศ </span>
+                                   <input type="text" class="form-control bg-white" id="vSex" readonly>
+                              </div>
+
+                         </div>
+                         <div class="form-group row">
+
+                              <div class="col-sm-3">
+                                   <span class="text-info"> เลขประจำตัวประชาชน </span>
+                                   <input type="text" class="form-control" id="vCitizenID">
+                              </div>
+                              <div class="col-sm-3">
+                                   <span class="text-info"> วันเกิด </span>
+                                   <input type="text" class="form-control" id="Calendar">
+                                   <span class="text-info" id="CalendarDays"></span>
+                              </div>
+                              <div class="col-sm-3">
+                                   <span class="text-info"> อายุ </span>
+                                   <input type="text" class="form-control" id="PatientAge">
+                              </div>
+                         </div>
+                         <div class="form-group row">
+                              <div class="col-sm-3">
+                                   <span class="text-info"> โรงพยาบาล :: </span>
+                                   <input type="text" class="form-control " id="PHos" readonly>
+                                   <!-- <span class="text-primary" id="PHos"> </span> -->
+                              </div>
+                              <div class="col-sm-2">
+                                   <!-- <span class="text-info"> Modality :: <span class="text-danger" id="HModality"></span></span> -->
+                                   <span class="text-info"> Modality ::
+                                        <input type="text" class="form-control " id="HModality" readonly>
+                                   </span>
+                              </div>
+                              <div class="col-sm-3">
+                                   <!-- <span class="text-info"> Description :: <span class="text-danger" id="HCase"> - </span></span> -->
+                                   <span class="text-info"> Description ::
+                                        <input type="text" class="form-control " id="HCase" readonly>
+                                   </span>
+                              </div>
+                              <div class="col-sm-3">
+                                   <span class="text-info"> Protocol ::
+                                        <input type="text" class="form-control " id="HProtocol" readonly>
+                                   </span>
+                              </div>
+                         </div>
+                         <div class="form-group row">
+                              <div class="col-sm-3">
+                                   <span class="text-info"> แพทย์เจ้าของไข้ </span>
+                                   <div class="form-control" id="vPatientDoctor"></div>
+                                   <!-- <input type="text" class="form-control" id="vPatientDoctor"> -->
+                              </div>
+                              <div class="col-sm-1">
+                                   <input type="button" class="btn btn-group-sm btn-primary" style="margin-top:1.5rem"
+                                        data-toggle="modal" data-target="#RefferalDocterResgister2" value="บันทึกหมอ">
+                              </div>
+                              <div class="col-sm-4">
+                                   <span class="text-info"> สิทธิ์การรักษา : <span class="text-primary"
+                                             id="sRights"></span></span>
+                                   <div class="form-control" id="vRight"></div>
+                              </div>
+                              <div class="col-sm-4">
+                                   <span class="text-info"> Urgency : <span class="text-primary"
+                                             id="sUrgentType"></span></span>
+                                   <div class="form-control" id="vUrgentType"></div>
+                              </div>
+                         </div>
+                         <div class="form-group row" id="PMFileImage">
+
+                              <div class="col-sm-6">
+                                   <div class="text-info">รายละเอียดบันทึกเติม:</div>
+                                   <textarea type="text" class="form-control" style="height:160px" id="vCaseDescrpition"
+                                        placeholder="รายละเอียดบันทึกเติม">ไม่มี</textarea>
+                              </div>
+
+                              <!-- <div class="col-sm-6 center">
+                             <span class="text-info"> ไฟล์ประวัติ </span>
+                             <form method="post">
+                                 <input type="file" class="form-control" id="vFileImage" name="patienthistory">
+                             </form>
+                         </div> -->
+
+                              <div class="col-sm-3">
+                                   <div class="text-info">ค่าตรวจ:</div>
+                                   <input type="text" class="form-control" id="vCaseAMT" value='0'>
+                              </div>
+                              <div class="col-sm-3">
+                                   <div class="text-info">ค่า DF:</div>
+                                   <input type="text" class="form-control" id="vCaseDFAMT" value='0'>
+                              </div>
+                         </div>
+ 
+                         <div class="form-group row">
+                              <div id="gridFileUpdate_New" style="display:none">
+                                   <div class="text-info">รายละเอียดภาพ:</div>
+                              </div>
+                         </div>
+
+                         <!-- <div class="form-group row" id="GridFileImage">
+                         <div class="col-sm-5">
+                             <div id="gridFileUpdate"> </div>
+                         </div>
+                         <div class="col-sm-3">
+                             <img id="vShowImg" width="185" height="185">
+                         </div>
+                         <div class="col-sm-4">
+                             <div class="text-info">รายละเอียดบันทึกเติม:</div>
+                             <textarea type="text" class="form-control" style="height:160px" id="vCaseDescrpition"
+                                 placeholder="รายละเอียดบันทึกเติม">ไม่มี</textarea>
+                         </div>
+                     </div> -->
+
+                         <!-- <div class="card-header py-6 d-flex flex-row align-items-center justify-content-between mb-2">
+                              <h6 class="m-0 font-weight-bold text-primary"> อัพไฟล์รูป </h6>
+                         </div>
+
+                         <div id="main" class="form-group" style="display:inline-block">
+                              <div>
+                                   <div id="Contaner"></div>
+                              </div>
+                              <div>
+                                   <button type="button" id="result-button">Get Image</button>
+                              </div>
+                         </div> -->
+                         <div id="result" style="display:inline-block;"></div>
+
+
+                         <!-- <div class="form-group row" id="buttonImage">
+                         <div class="col-sm-3 center">
+                             <div class="text-info">&nbsp;
+                                 <input class="btn btn-info" id="UploadImage" value="Upload" readonly>
+                             </div>
+                         </div>
+                         <div class="col-sm-4 center">
+                             <div class="text-info">&nbsp;
+                                 <input class="btn btn-info" id="bScanImage" value="Scan" readonly>
+                             </div>
+                         </div>
+                         <div class="col-sm-4 center">
+                             <div class="text-info">&nbsp;
+                                 <input class="btn  btn-info" id="bSnipImage" value="Snip" readonly>
+                             </div>
+                         </div>
+                         <div class="col-sm-4 center">
+                             <div class="text-info">&nbsp;
+                                 <input class="btn btn-info" id="bCameraImage" value="Camera" readonly>
+                             </div>
+                         </div>
+                     </div> -->
+
+                         <hr>
+                         <div class="form-group row" id="vMtypeDetail">
+                              <div class="col-sm-2">
+                                   <h6 class="m-1 font-weight-bold text-primary"> รังสีแพทย์ </h6>
+                                   <div class="form-control" id="vListDoctor"></div>
+                              </div>
+                              <div class="col-sm-10 right">
+                                   <h6 class="m-1 font-weight-bold text-primary"> การติดต่อ </h6>
+                                   <span class="form-control">
+                                        <span class="text-info"> Phone :: <span id="vDPhone"></span></span>
+                                        <span class="text-dark"> Email :: <span id="vDEmail"></span></span>
+                                        <span class="text-danger"> Line ID :: <span id="vDLine"></span></span>
+                                        <span class="text-primary"> สถานะแพทย์ :: <span id="vDocSts"></span></span>
+                                   </span>
+                              </div>
+                         </div>
+                         <div class="form-group row">
+                              <div class="col-sm-2" id="frmSaveCase">
+                                   <input class="btn btn-lg btn-success btn-block center" id="SaveCase"
+                                        value="ส่งรายการตรวจ" readonly="">
+                              </div>
+                              <div class="col-sm-2" id="frmCancelCase">
+                                   <input class="btn btn-lg btn-warning btn-block center" id="CancelCase" value="ออก"
+                                        readonly="">
+                              </div>
+                              <div class="col-sm-2" id="frmViewCase">
+                                   <input class="btn btn-lg btn-info btn-block center" id="ViewCase" value="เปิดภาพ"
+                                        readonly="">
+                              </div>
+                              <div class="col-sm-2" id="frmDownLoadCase">
+                                   <input class="btn btn-lg btn-primary btn-block center" id="DownLoadCase"
+                                        value="ดาวน์โหลด" readonly="">
+                              </div>
+                              <!-- <div class="col-sm-2" id="frmReportCase">
+                                   <input class="btn btn-lg btn-success btn-block center" id="ReportCase"
+                                        value="พิมพ์ผล" readonly="">
+                              </div> -->
+                              <!-- <div class="col-sm-2" id="frmRenewCase">
+                                   <input class="btn btn-lg btn-danger btn-block center" id="RenewCase" value="ยกเลิก"
+                                        readonly="">
+                              </div> -->
+                         </div>
+                         <input type="hidden" id="vCaseID">
+                         <input type="hidden" id="CaseStatus">
+                         <input type="hidden" id="TechID">
+                         <input type="hidden" id="DoctorID">
+                         <input type="hidden" id="RightID">
+                         <input type="hidden" id="UrgentTypeID">
+                         <input type="hidden" id="Result_Path_IMG">
+                         <input type="hidden" id="vDoc_UID">
+                         <input type="hidden" id="vDocFullName">
+                         <!-- <input type="hidden" id="PatientAge"> -->
+                         <input type="hidden" id="PatientTel">
+                         <input type="hidden" id="PatientID">
+                         <input type="hidden" id="SearchPatientData">
+                         <input type="hidden" id="PatientData">
+                         <input type="hidden" id="InstancesOrthanC">
+                    </form>
+               </div>
+          </div>
+     </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" data-backdrop="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" data-keyboard="false" data-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-lg" style='width: 350px;' role="document">
+        <div class="modal-content">
+            <div class="modal-header card-header">
+                <h5 class="modal-title" style="text-align: center;margin-left:70px;" id="exampleModalLabel">Custom</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style='text-align:center;margin-left: 60px;' id="jqxlistbox"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="gridcase" />
+<input type="hidden" id="vHosID" />

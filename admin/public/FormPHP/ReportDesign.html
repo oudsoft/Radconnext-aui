@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <link href="icon.png" rel="shortcut icon" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rad Connext Report Design</title>
+    <link href="../lib/jquery-ui.min.css" rel="stylesheet">
+    <link href="report-design/report.css" rel="stylesheet">
+    <!-- <script type="text/javascript" src="../lib/jquery.js"></script>
+    <script type="text/javascript" src="../lib/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="../lib/simpleUpload.min.js"></script>
+  	<script type="text/javascript" src="../lib/notify.min.js"></script>
+    <script type="text/javascript" src="jquery-report-plugin.js"></script> -->
+</head>
+
+<body>
+    <div class="topnav">
+        <!-- <a href="#" id="Home-Cmd">หน้าแรก</a> -->
+        <a class="cmd" id="New-Cmd">New</a>
+        <a class="cmd" id="Clear-Cmd">Clear</a>
+        <a class="cmd" id="Preview-Cmd">Preview</a>
+        <a class="cmd" id="Export-Cmd">Export</a>
+        <a class="cmd" id="Save-Cmd">Save</a>
+        <a class="cmd" id="Back-Cmd">Back</a>
+    </div>
+
+    <div class="row">
+        <div class="column side">
+            <div id="report-item">
+                <ol id="selectable">
+                    <li class="ui-widget-content" id="text-element">Text Element</li>
+                    <li class="ui-widget-content" id="hr-element">HR Element</li>
+                    <li class="ui-widget-content" id="image-element">Image Element</li>
+                </ol>
+                <div id="report-item-cmd" style="padding:5px; text-align: center; margin-top: 20px;">
+                    <input type="button" id="add-item-cmd" value=" Add " />
+                    <input type="button" id="remove-item-cmd" value=" Remove " />
+                </div>
+                <div id="report-property"></div>
+            </div>
+        </div>
+
+        <div class="column middle">
+            <div id="report-container">
+
+            </div>
+        </div>
+
+        <!--
+      <div class="column side">
+      	<div id="report-property"></div>
+      </div>
+      -->
+    </div>
+    <div id="PrevieDialogBox"></div>
+</body>
+
+</html>
+
+<script type="text/javascript">
+    
+
+
+</script>

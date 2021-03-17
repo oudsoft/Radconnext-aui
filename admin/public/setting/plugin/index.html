@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="icon.png" rel="shortcut icon" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rad Connext Plugin</title>
+    <link rel="stylesheet" href="../../lib/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="../../lib/tui-image-editor.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../lib/tui-color-picker.css" type="text/css" />
+    <link rel="stylesheet" href="plugin.css"/>
+    <script type="text/javascript" src="../../lib/jquery.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="jquery-patient-history-image-plugin.js"></script>
+    <script type="text/javascript" src="jquery-countdown-clock-plugin.js"></script>
+  </head>
+  <body>
+    <div id="main" style="position: relative;">
+      <div style="position: relative;">
+        <div id="Contaner"></div>
+      </div>
+      <div style="position: relative;">
+        <button type="button" id="result-button">Get Image</button>
+      </div>
+    </div>
+    <div id="result" style="position: relative;"></div>
+    <div id="Clock"></div>
+  </body>
+</html>
+<style>
+  .blink {color: white}
+  .danger { color: red}
+</style>
+<script type="text/javascript">
+
+  let phProp = {
+    attachFileUploadApiUrl: '/api/uploadpatienthistory',
+    scannerUploadApiUrl: '/api/scannerupload',
+    captureUploadApiUrl: '/api/captureupload',
+    attachFileUploadIconUrl: '/images/attach-icon.png',
+    scannerUploadIconUrl: '/images/scanner-icon.png',
+    captureUploadIconUrl: '/images/screen-capture-icon.png'
+  };
+  //var patientHistoryBox = $("<div></div>").appendTo($("#Contaner")).imagehistory( phProp ).data("custom-imagehistory");
+  var patientHistoryBox = $("<div></div>").appendTo($("#Contaner"));
+  $(patientHistoryBox).imagehistory( phProp ).data("custom-imagehistory");
+
+  $('#result-button').click(()=> {
+    let imagesResult = patientHistoryBox.images();
+    console.log(imagesResult);
+    $('#result').empty();
+    $('#result').append("<p>" + JSON.stringify(imagesResult) + "</p>")
+  });
+
+  let countTo = {countToHH: 0, countToMN: 5};
+  $('#Clock').countdownclock(countTo);
+  $('#Clock').on('countdowntrigger', (e, data)=>{
+    alert(JSON.stringify(data));
+  });
+</script>

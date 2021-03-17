@@ -1,447 +1,345 @@
 /* main.js */
-//const $ = require('jquery');
-window.$ = window.jQuery = require('jquery');
-//require('jquery-ui-browserify');
-//$.mobile = require('jquery-mobile');
-require('./lib/jquery.cookie.js');
-require('./mod/jquery-ex.js');
-const home = require('./mod/home.js')($);
-const cases = require('./mod/case.js')($);
-const doctor = require('./mod/doctor.js')($);
-const hospital = require('./mod/hospital.js')($);
-const urgent = require('./mod/urgent.js')($);
-const apiconnector = require('./mod/apiconnect.js')($);
 
+window.$ = window.jQuery = require('jquery');
+require('./mod/jquery-ex.js');
+const cases = require('./mod/case.js')($);
+const apiconnector = require('./mod/apiconnect.js')($);
+const util = require('./mod/utilmod.js')($);
+const dicomfilter = require('./mod/dicomfilter.js')($);
+const newcase = require('./mod/createnewcase.js')($);
+const common = require('./mod/commonlib.js')($);
+const userinfo = require('./mod/userinfolib.js')($);
+const userprofile = require('./mod/userprofilelib.js')($);
+const casecounter = require('./mod/casecounter.js')($);
+const consult = require('./mod/consult.js')($);
 /*
 ต
 */
 
-window.jQuery.cachedScript = function( url, options ) {
-  // Allow user to set any option except for dataType, cache, and url
-  options = $.extend( options || {}, {
-    dataType: "script",
-    cache: true,
-    url: url
-  });
+const isMobile = util.isMobileDeviceCheck();
+//const isMobile = true;
 
-  // Use $.ajax() since it is more flexible than $.getScript
-  // Return the jqXHR object so we can chain callbacks
-  return jQuery.ajax( options );
-};
-
-window.jQuery.postCORS = function(url, data, func) {
-  if(func == undefined) func = function(){};
-    return $.ajax({
-      type: 'POST',
-      url: url,
-      data: data,
-      dataType: 'json',
-      contentType: 'application/x-www-form-urlencoded',
-      xhrFields: { withCredentials: true },
-      success: function(res) { func(res) },
-      error: function(err) { func({err})
-    }
-  });
-};
-
-const cookieName = "readconnext";
-
-var cookie, upwd, noti, wsm, wsl;
+var noti, wsm, wsl;
 
 $( document ).ready(function() {
-	console.log('page on ready ...');
-	const initPage = function() {
-		var cookieValue = $.cookie(cookieName);
-		if (cookieValue) {
-			cookie = JSON.parse(cookieValue);
-			if (cookie) {
-				if ((cookie.id) && (cookie.username)) {
-					doLoadMainPage()
-				} else {
-					doLoadLogin()
-				}
-			} else {
-				doLoadLogin()
-			}
+  const initPage = function() {
+		var token = doGetToken();
+		if (token) {
+			doLoadMainPage()
 		} else {
 			doLoadLogin()
 		}
 	};
+  const doLoadLogin = function(){
+    window.location.replace('/index.html');
+  }
 
-	const doLoadServiceworker = function() {
-		if ('serviceWorker' in navigator) {
-			window.addEventListener('load', function() {
-				const MAXAGE = 10; // seconds until recheck
-				const HASH = Math.floor(Date.now() / (MAXAGE * 1000)); // or a hash of lib.js
-				const URL = `/sw.js?hash=${HASH}`;
-				navigator.serviceWorker.register('sw.js?hash=' + HASH).then( async reg => {
-					console.log(`Registration:`, reg);
-					if (reg) {
-						noti = require('./mod/notimod.js')(reg);
-						noti.triggerPush();
-					}
-				});
-				navigator.serviceWorker.addEventListener('message', function(event) {
-					console.log("Got reply from service worker: " + event.data);
-				});
-			});
-		} else {
-			console.error('Service workers are not supported in this browser');
-		}
-	}
-	/*
-		Service Worker on https <type of sign self> of localhost, it 'll ssl's error massage
-		DOMException: Failed to register a ServiceWorker for scope ('https://192.168.1.108:8443/webapp/') with script ('https://192.168.1.108:8443/webapp/sw.js?hash=159800668'): An SSL certificate error occurred when fetching the script.
-	*/
-	//doLoadServiceworker();
 	initPage();
 
 });
 
-function doCallLoginApi(user) {
-	return new Promise(function(resolve, reject) {
-    /*
-		const loginApiName = 'chk_login'
-		const body = { username: user.username, password: user.password };
-		var realUrl = apiconnector.hostURL + '/' + loginApiName + apiconnector.apiExt;
-		var params = {method: 'post', body: body, url: realUrl, apiname: loginApiName};
-		apiconnector.doCallApiByProxy(loginApiName, params).then((response) => {
-		*/
-    var loginApiUri = '/api/login/';
-    var params = user;
-    apiconnector.doCallApi(loginApiUri, params).then((response) => {
-			resolve(response);
-		}).catch((err) => {
-			console.log(JSON.stringify(err));
-		})
-	});
-}
-
-function doLogin(){
-	var username = $("#username").val();
-	var password = $("#password").val();
-	// Checking for blank fields.
-	if( username == '' || password == ''){
-		$('input[type="text"],input[type="password"]').css("border","2px solid red");
-		$('input[type="text"],input[type="password"]').css("box-shadow","0 0 3px red");
-		$('#login-msg').html('<p>Please fill all fields...!!!!!!</p>');
-		$('#login-msg').show();
-	} else {
-    $('#login-msg').hide();
-		let user = {username: username, password: password};
-		console.log(user);
-		doCallLoginApi(user).then((response) => {
-			// var resBody = JSON.parse(response.res.body); <= ใช้ในกรณีเรียก API แบบ By Proxy
-			//var resBody = JSON.parse(response); <= ใช้ในกรณีเรียก API แบบ Direct
-
-			if (response.success == false) {
-				$('input[type="text"]').css({"border":"2px solid red","box-shadow":"0 0 3px red"});
-				$('input[type="password"]').css({"border":"2px solid #00F5FF","box-shadow":"0 0 5px #00F5FF"});
-				$('#login-msg').html('<p>Username or Password incorrect. Please try with other username and password again.</p>');
-				$('#login-msg').show();
-			} else {
-				//Save resBody to cookie.
-        $('#login-msg').show();        
-				$.cookie(cookieName, JSON.stringify(resBody), { expires : 1 });
-				upwd = password;
-				doLoadMainPage();
-			}
-		});
-	}
-}
-
-function doLoadLogin() {
-	$('#app').load('form/login.html', function(){
-		$(".container").css({"min-height": "100%"});
-		$(".main").center();
-		$("#login-cmd").click(function(){
-			doLogin();
-		});
-    $("#password").on('keypress',function(e) {
-      if(e.which == 13) {
-        doLogin();
-      };
-    });
-	});
-}
-
 function doUserLogout() {
-	const logoutApiName = 'logout'
-	const body = {username: cookie.username};
-
-	var realUrl = apiconnector.hostURL + '/' + logoutApiName + apiconnector.apiExt;
-	var params = {method: 'post', body: body, url: realUrl, apiname: logoutApiName};
-	apiconnector.doCallApiByProxy(logoutApiName, params).then((response) => {
-		if (response.status.code == 200) {
-			$.removeCookie(cookieName);
-			doLoadLogin();
-		}
-	}).catch((err) => {
-		console.log(JSON.stringify(err));
-		alert('Error form Api with message:\n' + JSON.stringify(err));
-	})
-	/*
-	var params = JSON.stringify(body);
-	doCallApiDirect(logoutApiName, params)=> {
-		resolve(response);
-	}).catch((err) => {
-		console.log(JSON.stringify(err));
-	})
-	*/
+  const userdata = JSON.parse(localStorage.getItem('userdata'));
+  if (wsm) {
+    wsm.send(JSON.stringify({type: 'logout', username: userdata.username}));
+  }
+  localStorage.removeItem('token');
+	localStorage.removeItem('userdata');
+	localStorage.removeItem('dicomfilter');
+  $('#LogoutCommand').hide();
+  let url = '/index.html';
+  window.location.replace(url);
 }
 
 function doLoadMainPage(){
-	let paths = window.location.pathname.split('/');
-	let rootname = paths[1];
-	let jqueryUiCssUrl = "/" + rootname + "/lib/jquery-ui.min.css";
-	let jqueryUiJsUrl = "/" + rootname + "/lib/jquery-ui.min.js";
-	let jqueryLoadingUrl = 'lib/jquery.loading.min.js';
-	let jqueryNotifyUrl = 'lib/notify.min.js';
+	/*
+		jquery loading api
+		https://carlosbonetti.github.io/jquery-loading/
+	*/
+  let jqueryUiCssUrl = "../lib/jquery-ui.min.css";
+	let jqueryUiJsUrl = "../lib/jquery-ui.min.js";
+	let jqueryLoadingUrl = '../lib/jquery.loading.min.js';
+	let jqueryNotifyUrl = '../lib/notify.min.js';
+  let printjs = '../lib/print/print.min.js';
+
+	let patientHistoryPluginUrl = "../setting/plugin/jquery-patient-history-image-plugin.js";
+	let countdownclockPluginUrl = "../setting/plugin/jquery-countdown-clock-plugin.js";
+	let scanpartPluginUrl = "../setting/plugin/jquery-scanpart-plugin.js";
+	let customUrgentPlugin = "../setting/plugin/jquery-custom-urgent-plugin.js";
+	let controlPagePlugin = "../setting/plugin/jquery-controlpage-plugin.js"
+  let customSelectPlugin = "../setting/plugin/jquery-custom-select-plugin.js";
+  let chatBoxPlugin = "../setting/plugin/jquery-chatbox-plugin.js";
+  let utilityPlugin = "../setting/plugin/jquery-radutil-plugin.js";
+
 	$('head').append('<script src="' + jqueryUiJsUrl + '"></script>');
 	$('head').append('<link rel="stylesheet" href="' + jqueryUiCssUrl + '" type="text/css" />');
 	//https://carlosbonetti.github.io/jquery-loading/
 	$('head').append('<script src="' + jqueryLoadingUrl + '"></script>');
 	//https://notifyjs.jpillora.com/
 	$('head').append('<script src="' + jqueryNotifyUrl + '"></script>');
+  //https://printjs.crabbly.com/
+  $('head').append('<script src="' + printjs + '"></script>');
+
+	$('head').append('<script src="' + patientHistoryPluginUrl + '"></script>');
+	$('head').append('<script src="' + countdownclockPluginUrl + '"></script>');
+	$('head').append('<script src="' + scanpartPluginUrl + '"></script>');
+	$('head').append('<script src="' + customUrgentPlugin + '"></script>');
+	$('head').append('<script src="' + controlPagePlugin + '"></script>');
+  $('head').append('<script src="' + customSelectPlugin + '"></script>');
+  $('head').append('<script src="' + utilityPlugin + '"></script>');
+  $('head').append('<script src="' + chatBoxPlugin + '"></script>');
+
+	$('head').append('<link rel="stylesheet" href="../lib/tui-image-editor.min.css" type="text/css" />');
+	$('head').append('<link rel="stylesheet" href="../lib/tui-color-picker.css" type="text/css" />');
+  $('head').append('<link rel="stylesheet" href="../lib/print/print.min.css" type="text/css" />');
+	$('head').append('<link rel="stylesheet" href="./css/scanpart.css" type="text/css" />');
+  $('head').append('<link rel="stylesheet" href="./css/custom-select.css" type="text/css" />');
 
   $('body').append($('<div id="overlay"><div class="loader"></div></div>'));
 
   $('body').loading({overlay: $("#overlay"), stoppable: true});
-  $('body').loading('stop');
 
+	$('body').on('loading.start', function(event, loadingObj) {
+	  //console.log('=== loading show ===');
+	});
+
+	$('body').on('loading.stop', function(event, loadingObj) {
+	  //console.log('=== loading hide ===');
+	});
   $('#HistoryDialogBox').dialog({
     modal: true, autoOpen: false, width: 350, resizable: false, title: 'ประวัติผู้ป่วย'
   });
 
-	$('#app').load('form/main.html', function(){
-		var cookieValue = $.cookie(cookieName);
-		cookie = JSON.parse(cookieValue);
-		$("#User-Identify").text(cookie.name);
-		$("#User-Identify").click(function(){
-			doShowUserProfile();
-		});
-		/*
-		$("#Home-Cmd").click(function(){
-			doShowHome();
-		});
-		*/
-		$("#Case-Cmd").click(function(){
-			doShowCase()
-		});
-		$("#Doctor-Cmd").click(function(){
-			doShowMainDoctor();
-		});
-		$("#Hotpital-Cmd").click(function(){
-			doShowMainHotpital();
-		});
-		$("#Setting-Cmd").click(function(){
-			doShowSetting();
-		});
-		$("#Logout-Cmd").click(function(){
-			doUserLogout();
-		});
+  document.addEventListener("triggercounter", casecounter.onCaseChangeStatusTrigger);
+  document.addEventListener("triggernewdicom", onNewDicomTransferTrigger);
 
-		//doShowHome();
-		doShowCase();
-    doConnectWebsocketMaster(cookie.username);
-    doConnectWebsocketLocal(cookie.username);
+  let userdata = JSON.parse(doGetUserData());
+	//console.log(userdata);
+
+  let mainFile, menufile;
+  if (isMobile) {
+    mainFile= 'form/main.html';
+    menuFile = 'form/menu.html';
+  } else {
+    mainFile= 'form/main-fix.html';
+    menuFile = 'form/menu-fix.html';
+  }
+
+	$('#app').load(mainFile, function(){
+		$('#Menu').load(menuFile, function(){
+
+			$(document).on('openedituserinfo', (evt, data)=>{
+				userinfo.doShowUserProfile();
+			});
+			$(document).on('userlogout', (evt, data)=>{
+				doUserLogout();
+			});
+			$(document).on('openhome', (evt, data)=>{
+				doSaveQueryOrthanc(data);
+				newcase.doLoadDicomFromOrthanc();
+			});
+
+			$(document).on('opennewstatuscase', async (evt, data)=>{
+				let resultTitle = $('<div class="title-content"></div>');
+				let logoPage = $('<img src="/images/case-incident-icon.png" width="40px" height="auto" style="float: left;"/>');
+				$(logoPage).appendTo($(resultTitle));
+				let titleResult = $('<div style="float: left; margin-left: 10px; margin-top: -5px;"><h3>รายการเคสใหม่ (รอตอบรับจากรังสีแพทย์)</h3></div>');
+				$(titleResult).appendTo($(resultTitle));
+				$(".mainfull").empty().append($(resultTitle));
+				let rqParams = { hospitalId: userdata.hospitalId, userId: userdata.id, statusId: common.caseReadWaitStatus };
+				cases.doLoadCases(rqParams);
+			});
+
+			$(document).on('openacceptedstatuscase', async (evt, data)=>{
+				let resultTitle = $('<div class="title-content"></div>');
+				let logoPage = $('<img src="/images/case-incident-icon.png" width="40px" height="auto" style="float: left;"/>');
+				$(logoPage).appendTo($(resultTitle));
+				let titleResult = $('<div style="float: left; margin-left: 10px; margin-top: -5px;"><h3>รายการเคสหมอตอบรับแล้ว (รอผลอ่าน)</h3></div>');
+				$(titleResult).appendTo($(resultTitle));
+				$(".mainfull").empty().append($(resultTitle));
+				let rqParams = { hospitalId: userdata.hospitalId, userId: userdata.id, statusId: common.casePositiveStatus };
+				cases.doLoadCases(rqParams);
+			});
+
+			$(document).on('opensuccessstatuscase', async (evt, data)=>{
+				let resultTitle = $('<div class="title-content"></div>');
+				let logoPage = $('<img src="/images/case-incident-icon.png" width="40px" height="auto" style="float: left;"/>');
+				$(logoPage).appendTo($(resultTitle));
+				let titleResult = $('<div style="float: left; margin-left: 10px; margin-top: -5px;"><h3>รายการเคสได้ผลอ่านแล้ว</h3></div>');
+				$(titleResult).appendTo($(resultTitle));
+				$(".mainfull").empty().append($(resultTitle));
+				let rqParams = { hospitalId: userdata.hospitalId, userId: userdata.id, statusId: common.caseReadSuccessStatus };
+				cases.doLoadCases(rqParams);
+			});
+			$(document).on('opennegativestatuscase', async (evt, data)=>{
+				let resultTitle = $('<div class="title-content"></div>');
+				let logoPage = $('<img src="/images/case-incident-icon.png" width="40px" height="auto" style="float: left;"/>');
+				$(logoPage).appendTo($(resultTitle));
+				let titleResult = $('<div style="float: left; margin-left: 10px; margin-top: -5px;"><h3>รายการเคสไม่สมบูรณ์/รอคำสั่ง</h3></div>');
+				$(titleResult).appendTo($(resultTitle));
+				$(".mainfull").empty().append($(resultTitle));
+				let rqParams = { hospitalId: userdata.hospitalId, userId: userdata.id, statusId: common.caseNegativeStatus };
+				cases.doLoadCases(rqParams);
+			});
+			$(document).on('opensearchcase', async (evt, data)=>{
+				$('body').loading('start');
+				let toDayFormat = util.getTodayDevFormat();
+
+				let defaultSearchKey = {fromDateKeyValue: toDayFormat, patientNameENKeyValue: '*', patientHNKeyValue: '*', bodypartKeyValue: '*', caseStatusKeyValue: 0};
+				let defaultSearchParam = {key: defaultSearchKey, hospitalId: userdata.hospitalId, userId: userdata.id, usertypeId: userdata.usertypeId};
+
+				let searchTitlePage = cases.doCreateSearchTitlePage();
+
+				$(".mainfull").empty().append($(searchTitlePage));
+				let response = await common.doCallApi('/api/cases/search/key', defaultSearchParam);
+				$('body').loading('stop');
+				if (response.status.code === 200) {
+					let searchResultViewDiv = $('<div id="SearchResultView"></div>');
+					$(".mainfull").append($(searchResultViewDiv));
+					await cases.doShowSearchResultCallback(response);
+				} else {
+					$(".mainfull").append('<h3>ระบบค้นหาเคสขัดข้อง โปรดแจ้งผู้ดูแลระบบ</h3>');
+				}
+			});
+
+			$(document).on('openreportdesign', (evt, data)=>{
+				$('body').loading('start');
+				$(".mainfull").empty();
+				let reportDesignUrl = '../report-design/index.html?hosid=' + data.hospitalId;
+				window.location.replace(reportDesignUrl);
+				$('body').loading('stop');
+			});
+
+			$(document).on('openscanpartprofile', (evt, data)=>{
+				showScanpartAux();
+			});
+
+			$(document).on('defualsettingschange', (evt, data)=>{
+				doUpdateDefualSeeting(data.key, data.value)
+			});
+
+      $(document).on('gotoportal', (evt, data)=>{
+        window.location.replace('/portal/index.html');
+      });
+
+      $(document).on('newconsult', (evt, data)=>{
+        consult.doCreateNewConsultForm();
+      });
+
+      $(document).on('myconsult', (evt, data)=>{
+
+      });
+
+			doUseFullPage();
+			newcase.doLoadDicomFromOrthanc();
+      casecounter.doSetupCounter();
+
+      /*
+			util.doConnectWebsocketLocal(userdata.username).then((localWsl) => {
+				if ((localWsl.readyState == 0) || (localWsl.readyState == 1)) {
+		    	wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'local');
+				} else {
+					wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
+				}
+				$('body').loading('stop');
+			}).catch ((err) =>{
+				console.log(err);
+				$('body').loading('stop');
+			});
+      */
+      wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
+			$('body').loading('stop');
+		});
 	});
 }
 
-function doShowHome(){
-	$(".row").hide();
+function doUseFullPage() {
+	$(".row").show();
 	$(".mainfull").show();
 	$(".mainfull").empty();
-	home.doLoadSummaryDoctor(cookie.username);
 }
 
-function doShowCase() {
-	$(".row").hide();
-	$(".mainfull").show();
-	$(".mainfull").empty();
-	cases.doLoadCasePage(cookie.username);
+const doUpdateDefualSeeting = function (key, value){
+	let lastDefualt = JSON.parse(localStorage.getItem('defualsettings'));
+	if (lastDefualt.hasOwnProperty(key)) {
+		lastDefualt[key] = value;
+		localStorage.setItem('defualsettings', JSON.stringify(lastDefualt));
+	}
 }
 
-function doShowMainDoctor(){
-	$(".row").show();
-	$(".mainfull").hide();
-	$(".submenu").empty();
-	$(".submenu").show();
-	$(".main").empty();
-	$(".submenu").append($('<div class="sub-menu-item"><a href="#" id="DoctorData-Cmd">ข้อมูลแพทย์</a></div>'));
-	$(".submenu").append($('<div class="sub-menu-item"><a href="#" id="DoctorSchedule-Cmd">ตารางเวร</a></div>'));
-	$("#DoctorData-Cmd").click(function(){
-		$(".main").empty();
-    $('body').loading('start');
-		home.doCallSummaryDoctor(cookie.username).then((response) => {
-			let drList = JSON.parse(response.res.body);
-			doctor.doShowAllDoctor(drList, cookie.username, cookie.org[0].id);
-      $('body').loading('stop');
-		})
-	});
-	$("#DoctorSchedule-Cmd").click(function(){
-		alert('#DoctorSchedule');
-		$(".main").empty();
-	});
-	$("#DoctorData-Cmd").trigger("click");
+const showScanpartAux = async function() {
+  const userdata = JSON.parse(doGetUserData());
+	const deleteCallback = async function(scanpartAuxId) {
+		$('body').loading('start');
+		let rqParams = {id: scanpartAuxId};
+		let scanpartauxRes = await common.doCallApi('/api/scanpartaux/delete', rqParams);
+		if (scanpartauxRes.status.code == 200) {
+			$.notify("ลบรายการ Scan Part สำเร็จ", "success");
+			showScanpartAux();
+		} else {
+			$.notify("ไม่สามารถลบรายการ Scan Part ได้ในขณะนี้", "error");
+		}
+		$('body').loading('stop');
+	}
+
+	$('body').loading('start');
+	let resultTitle = $('<div class="title-content"><h3>รายการ Scan Part ของคุณ</h3></div>');
+	$(".mainfull").empty().append($(resultTitle));
+	let userId = userdata.id;
+	let rqParams = {userId: userId};
+	let scanpartauxs = await common.doCallApi('/api/scanpartaux/user/list', rqParams);
+	if (scanpartauxs.Records.length > 0) {
+		let scanpartAuxBox = await userprofile.showScanpartProfile(scanpartauxs.Records, deleteCallback);
+		$(".mainfull").append($(scanpartAuxBox));
+	} else {
+		$(".mainfull").append($('<h4>ไม่พบรายการ Scan Part ของคุณ</h4>'));
+	}
+	$('body').loading('stop');
 }
 
-function doShowMainHotpital() {
-	$(".row").show();
-	$(".mainfull").hide();
-	$(".submenu").empty();
-	$(".submenu").show();
-	$(".main").empty();
-	$(".submenu").append($('<div class="sub-menu-item"><a href="#" id="HotpitalData-Cmd">ข้อมูลโรงพยาบาล</a></div>'));
-	$(".submenu").append($('<div class="sub-menu-item"><a href="#" id="ReportForm-Cmd">Set Report Form</a></div>'));
-	$(".submenu").append($('<div class="sub-menu-item"><a href="#" id="UrgentLevel-Cmd">Urgent Level</a></div>'));
-	$("#HotpitalData-Cmd").click(function(){
-		$(".main").empty();
-    $('body').loading('start');
-		home.doCallHospitalData(cookie.username).then((response) => {
-			let hospData = JSON.parse(response.res.body);
-			hospital.doShowHospitalData(hospData);
-      $('body').loading('stop');
-		});
-	});
-	$("#ReportForm-Cmd").click(function(){
-		$(".main").empty();
-    $('body').loading('start');
-    $('head').append('<script src="lib/jquery-ui.min.js"></script>');
-    $('head').append('<link rel="stylesheet" href="lib/jquery-ui.min.css" type="text/css" />');
-    $('body').loading('start');
-  	$(".main").load('form/design.html', function(oo){
-
-      $('body').loading('stop');
-    });
-  });
-
-	$("#UrgentLevel-Cmd").click(function(){
-		$(".main").empty();
-    $('body').loading('start');
-		home.doCallUrgentData(cookie.username).then((response) => {
-			let urgentData = JSON.parse(response.res.body);
-			urgent.doShowUrgentData(urgentData.data, cookie.username);
-      $('body').loading('stop');
-		});
-	});
-	$("#HotpitalData-Cmd").trigger("click");
+const onNewDicomTransferTrigger = function(evt){
+  let trigerData = evt.detail.data;
+  let dicom = trigerData.dicom;
+  console.log(dicom);
 }
 
-function doShowSetting() {
-	$("#dialog").load('form/setting-dialog.html', function(){
-		$(".modal-footer").css('text-align', 'center');
-		$("#SaveSetting-Cmd").click(function(){
-			doSaveSetting();
-		});
-	})
+function doSaveQueryOrthanc(filterData) {
+	let queryStr = '{"Level": "Study", "Expand": true, "Query": {"Modality": "' + filterData.dm;
+	if (filterData.dd === '*') {
+		queryStr += '"}}';
+	} else {
+		let dDate;
+		if (filterData.dd == 1) {
+			dDate = util.getToday() + '-';
+		} else if (filterData.dd == 3) {
+			dDate = util.getDateLastThreeDay() + '-';
+		}
+		queryStr += '", "StudyDate": "' + dDate + '"}}';
+	}
+	let newDicomFilter = JSON.parse(queryStr);
+	localStorage.setItem('dicomfilter', JSON.stringify(newDicomFilter));
 }
 
-function doShowUserProfile() {
-	$("#dialog").load('form/dialog.html', function() {
-		$("#UserStaus").text(cookie.curr_status);
-		$("#OrgName").text(cookie.org[0].name);
-		$("#OrgName").text(cookie.org[0].name);
-		$("#PositionName").val(cookie.org[0].position);
-		$("#Username").text(cookie.username);
-		$("#Password").val(upwd);
-		$("#Name").val(cookie.name);
-		$("#Telno").val(cookie.tel);
-		$("#Email").val(cookie.email);
-		$("#LineId").val(cookie.LineId);
-		$("#Comment").val(cookie.comment);
-		$(".modal-footer").css('text-align', 'center');
-		$("#SaveUserProfile-Cmd").click(function(){
-			doSaveUserProfile();
-		});
-	});
+function doGetToken(){
+	return localStorage.getItem('token');
 }
 
-function doSaveUserProfile(){
-	/*
-	let positionName = $("#PositionName").val();
-	let password = $("#Password").val();
-	let name = $("#Name").val();
-	let telno = $("#Telno").val();
-	let email = $("#Email").val();
-	let lineId = $("#LineId").val();
-	let comment = $("#Comment").val();
-	*/
-	alert('Now have not support yet.');
-	$("#myModal").css("display", "none");
+function doGetUserData(){
+  return localStorage.getItem('userdata');
 }
 
-function doSaveSetting() {
-	alert('Now have not support yet.');
+function doGetUserItemPerPage(){
+	let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
+  return userDefualtSetting.itemperpage;
 }
 
-function doConnectWebsocketMaster(username){
-  const hostname = window.location.hostname;
-  const port = window.location.port;
-  const paths = window.location.pathname.split('/');
-  const rootname = paths[1];
-
-  let wsUrl = 'wss://' + hostname + ':' + port + '/' + rootname + '/' + username + '?type=test';
-  wsm = new WebSocket(wsUrl);
-	wsm.onopen = function () {
-		console.log('Master Websocket is connected to the signaling server')
-	};
-
-	wsm.onmessage = function (msgEvt) {
-    let data = JSON.parse(msgEvt.data);
-    console.log(data);
-    if (data.type == 'test') {
-      $.notify(data.message, "success");
-    } else if (data.type == 'trigger') {
-      let message = {type: 'trigger', dcmname: data.dcmname};
-      wsl.send(JSON.stringify(message));
-      $.notify('The system will be start store dicom to your local.', "success");
-    } else if (data.type == 'notify') {
-      $.notify(data.message, "warnning");
-    }
-  };
-
-  wsm.onclose = function(event) {
-		console.log("Master WebSocket is closed now. with  event:=> ", event);
-	};
-
-	wsm.onerror = function (err) {
-	   console.log("Master WS Got error", err);
-	};
-}
-
-function doConnectWebsocketLocal(username){
-  let wsUrl = 'ws://localhost:3000/webapp/' + username + '?type=test';
-  wsl = new WebSocket(wsUrl);
-	wsl.onopen = function () {
-		console.log('Local Websocket is connected to the signaling server')
-	};
-
-	wsl.onmessage = function (msgEvt) {
-    let data = JSON.parse(msgEvt.data);
-    console.log(data);
-    if (data.type == 'test') {
-      $.notify(data.message, "success");
-    } else if (data.type == 'result') {
-      $.notify(data.message, "success");
-    } else if (data.type == 'notify') {
-      $.notify(data.message, "warnning");
-    }
-  };
-
-  wsl.onclose = function(event) {
-		console.log("Local WebSocket is closed now. with  event:=> ", event);
-	};
-
-	wsl.onerror = function (err) {
-	   console.log("Local WS Got error", err);
-	};
-}
-
-function doGetCookie(){
-	return cookie;
+function doGetWsm(){
+	return wsm;
 }
 
 module.exports = {
-	doGetCookie
+  doGetToken,
+  doGetUserData,
+	doGetUserItemPerPage,
+	doGetWsm
 }

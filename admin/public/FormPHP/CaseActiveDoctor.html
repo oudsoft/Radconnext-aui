@@ -1,0 +1,219 @@
+<div class="row" id="GridCase">
+    <div class="col-xl-12 col-lg-12 center-block">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <div class="col-sm-4">
+                    <h6 class="m-0 font-weight-bold text-primary">รายการตรวจ</h6>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group row">
+                    <div class="col-sm-10"></div>
+                    <div class='col-sm-2'>
+                        <button id="openButton" class='btn-sm btn-success btn-block' data-toggle="modal" data-target="#exampleModal" >Custom Column</button>
+                    </div>
+                </div>
+                <div class="col-xl-12 col-lg-12" id="gridCaseActive"> </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" data-backdrop="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true" >
+    <div class="modal-dialog" style='width: 350px;' role="document">
+        <div class="modal-content">
+            <div class="modal-header card-header">
+                <h5 class="modal-title" style="text-align: center;margin-left:70px;" id="exampleModalLabel">Custom</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style='text-align:center;margin-left: 60px;' id="jqxlistbox"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-12 col-lg-12" id="ManageCase">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">รายละเอียดผู้รับการตรวจ</h6>
+            </div>
+            <div class="card-body">
+                <!--- mb-3 mb-sm-0-->
+                <form class="user">
+                    <!-- <div class="form-group row">
+            <div class="col-sm-4">
+                <span class="text-info"> สถานะ :: <span class="text-danger" id="vDStatus"></span></span>
+            </div>
+          </div> -->
+                    <div class="form-group row">
+                        <div class="col-sm-3">
+                            <span class="text-info"> HN :: </span>
+                            <span class="text-primary" id="vHN"> HN </span>
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-info"> ชื่อ :: </span>
+                            <span class="text-primary" id="PName"></span>
+                        </div>
+                        <div class="col-sm-3">
+                            <span class="text-info"> เพศ :: </span>
+                            <span class="text-primary" id="vSex"></span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span class="text-info"> อายุ :: </span>
+                            <span class="text-primary" id="vAge"></span>
+                        </div>
+                        <!--div class="col-sm-4">
+              <span class="text-info"> เลขประจำตัวประชาชน :: </span>
+              <span class="text-info" id="vCitizenID"> </span>
+            </div-->
+                    </div>
+                    <div class="form-group row">
+                        <!-- <div class="col-sm-2">
+                <span class="text-info"> Modality :: <span class="text-danger" id="HModality"></span></span>
+            </div> -->
+                        <div class="col-sm-3">
+                            <span class="text-info"> โรงพยาบาล :: </span>
+                            <span class="text-primary" id="PHos"> </span>
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-info"> แพทย์เจ้าของไข้ :: </span>
+                            <span class="text-primary" id="vPatientDoctor"> </span>
+                        </div>
+                        <div class="col-sm-3">
+                            <span class="text-info"> Desc/Protocol ::
+                                <span class="text-danger" id="HCase"> -</span>
+                                <span class="text-danger">/</span>
+                                <span class="text-danger" id="HProtocol"> -</span>
+                            </span>
+                        </div>
+                        <!-- <div class="col-sm-3">
+                <span class="text-info"> Description :: <span class="text-danger" id="HCase"> - </span></span>
+            </div>
+            <div class="col-sm-3">
+                <span class="text-info"> Protocol :: <span class="text-danger" id="HProtocol"> - </span></span>
+            </div> -->
+                        <div class="col-sm-2">
+                            <span class="text-info"> Urgency :: </span> <span class="text-danger" id="sUrgentType"> -
+                            </span>
+                        </div>
+                    </div>
+                    <!-- <div class="form-group row">
+            <div class="col-sm-4">
+              <span class="text-info"> โรงพยาบาล :: </span>
+              <span class="text-primary" id="PHos"> </span>
+            </div>
+            <div class="col-sm-5">
+              <span class="text-info"> แพทย์เจ้าของไข้ :: </span>
+              <span class="text-primary" id="vPatientDoctor"> </span>
+            </div>
+            <div class="col-sm-3">
+              <span class="text-info"> สิทธิ์การรักษา :: </span>
+              <span class="text-primary" id="sRights"></span>
+            </div>
+          </div> -->
+                    <div class="form-group row" id="DMFileImage">
+                        <div class="col-sm-5">
+                            <span class="text-info"> ไฟล์ประวัติ </span>
+                        </div>
+                    </div>
+                    <div class="form-group row" id="GridFileImage">
+                        <div class="col-sm-5">
+                            <div id="gridFileUpdate"> </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <img id="vShowImg" width="185" height="185">
+                        </div>
+                        <div class="col-sm-2" id="frmViewCase">
+                            <input type='button' class="btn-lg btn-info btn-block center" id="ViewCase" value="เปิดภาพ"
+                                readonly="">
+                            <input type='button' class="btn-lg btn-success btn-block center" id="Radiant"
+                                value="Radiant" readonly="">
+                        </div>
+                        <div class="col-sm-2" id="frmDownLoadCase">
+                            <input type='button' class="btn-lg btn-primary btn-block center" id="DownLoadCase"
+                                value="ดาวโหลด" readonly="">
+                        </div>
+                    </div>
+                    <hr>
+
+                    <div class="row col-12" id="PatientHistoryTab" >
+                        <div class="card-header py-3 align-items-center justify-content-between col-12" id="HistoryTab" >
+                            <span class="text-info" style="cursor: pointer;"  > ประวัติการตรวจ </span>
+                            <br/>
+                        </div>
+                        <div class="row col-12" id="gridCasePatientTab">
+                            <div id="gridCasePatient"></div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- <div class="form-group row"> -->
+                    <div class='card-header py-3 d-flex flex-row align-items-center justify-content-between' >
+                        <div class="col-sm-3">
+                            <span class="text-info" style="cursor: pointer;" id="TemplateTab" > Template </span>
+                        </div>
+                        <div class="col-sm-9">
+                            <span class="text-info"> ผลอ่าน </span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group row">
+                        <div class="col-sm-3">
+                            <div id="gridTemplate"></div>
+                        </div>
+                        <div class="col-sm-9">
+                            <!-- <textarea id="pRespone" class="form-control" rows="20" cols="50"></textarea> -->
+                            <textarea id="pRespone" ></textarea>
+                        </div>
+                    </div>
+                    <hr>
+
+                    <div class="form-group row">
+                        <div class="col-sm-2" id="frmAccept">
+                            <input type='button' class="btn-lg btn-success btn-block center" id="AcceptCase" value="รับอ่านผล"
+                                readonly="">
+                        </div>
+                        <div class="col-sm-2" id="frmCancelAccept">
+                            <input type='button' class="btn-lg btn-danger btn-block center" id="Reject" value="ปฏิเสษ" readonly="">
+                        </div>
+                        <div class="col-sm-2" id="frmRespone">
+                            <input type='button' class="btn-lg btn-success btn-block center" id="Respone" value="ส่งผลอ่าน"
+                                readonly="">
+                        </div>
+                        <div class="col-sm-2" id="frmCancelCase">
+                            <input type='button' class="btn-lg btn-warning btn-block center" id="CancelCase" value="ออก" readonly="">
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="vCaseID">
+                    <input type="hidden" id="CaseStatus">
+                    <input type="hidden" id="TechID">
+                    <input type="hidden" id="DoctorID">
+                    <input type="hidden" id="vDocFullName">
+                    <input type="hidden" id="RadiantPaht">
+                    <input type="hidden" id="TechUID">
+                    <input type="hidden" id="dataRecord">
+                    <input type="hidden" id="OrthancStudyID">
+                    <input type="hidden" id="gridcase">
+
+                </form>
+                <hr>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <script src="js/widgets/CaseActiveDoctor.js"></script> -->

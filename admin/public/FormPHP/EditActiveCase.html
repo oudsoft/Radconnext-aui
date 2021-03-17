@@ -1,0 +1,159 @@
+<div class="row" id="GridCase">
+    <div class="col-xl-12 col-lg-12 center-block">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">รายการตรวจ</h6>
+            </div>
+            <div class="card-body">
+                <div class="col-xl-12 col-lg-12" id="gridCaseActive"> </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-12 col-lg-12" id="ManageCase">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div class="card-header py-6 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary"> รายละเอียดผู้รับการตรวจ </h6>
+
+            </div>
+            <div class="card-body ">
+                <!--- mb-3 mb-sm-0-->
+                <form class="user">
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            <span class="text-info"> สถานะ :: <span class="text-danger" id="vDStatus"></span></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-2">
+                            <span class="text-info"> HN </span>
+                            <input type="text" class="form-control" id="vHN" readonly>
+                        </div>
+                        <div class="col-sm-3">
+                            <span class="text-info"> ชื่อ </span>
+                            <input type="text" class="form-control" id="vName">
+                        </div>
+                        <div class="col-sm-3">
+                            <span class="text-info"> นามสกุล </span>
+                            <input type="text" class="form-control" id="vLName">
+                        </div>
+                        <div class="col-sm-1">
+                            <span class="text-info"> เพศ </span>
+                            <input type="text" class="form-control" id="vSex" readonly>
+                        </div>
+                        <div class="col-sm-3">
+                            <span class="text-info"> เลขประจำตัวประชาชน </span>
+                            <input type="text" class="form-control" id="vCitizenID">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-3">
+                            <span class="text-info"> โรงพยาบาล :: </span>
+                            <span class="text-primary" id="PHos"> </span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span class="text-info"> Modality :: <span class="text-danger" id="HModality"></span></span>
+                        </div>
+                        <div class="col-sm-3">
+                            <span class="text-info"> Description :: <span class="text-danger" id="HCase"> -
+                                </span></span>
+                        </div>
+                        <div class="col-sm-3">
+                            <span class="text-info"> Protocol :: <span class="text-danger" id="HProtocol"> -
+                                </span></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-3">
+                            <span class="text-info"> แพทย์เจ้าของไข้ </span>
+                            <input type="text" class="form-control" id="vPatientDoctor">
+                        </div>
+                        <div class="col-sm-2">
+                            <span class="text-info"> สิทธิ์การรักษา : <span class="text-primary"
+                                    id="sRights"></span></span>
+                            <div class="form-control" id="vRight"></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-info"> Urgency : <span class="text-primary"
+                                    id="sUrgentType"></span></span>
+                            <div class="form-control" id="vUrgentType"></div>
+                        </div>
+                    </div>
+                    <div class="form-group row" id="PMFileImage">
+                        <div class="col-sm-3 center">
+                            <span class="text-info"> ไฟล์ประวัติ </span>
+                            <form action="" method="post" enctype="multipart/form-data">
+                                <input type="file" class="form-control" id="vFileImage" name="vFileImage">
+                            </form>
+                        </div>
+                        <div class="col-sm-3 center">
+                            <div class="text-info">&nbsp;</div>
+                            <input class="btn btn-info" id="UploadImage" value="Upload" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group row" id="DMFileImage">
+                        <div class="col-sm-3">
+                            <span class="text-info"> Image File</span>
+                        </div>
+                    </div>
+                    <div class="form-group row" id="GridFileImage">
+                        <div class="col-sm-6">
+                            <div id="gridFileUpdate"> </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <img id="vShowImg" width="185" height="185">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-group row" id="vMtypeDetail">
+                        <div class="col-sm-2">
+                            <h6 class="m-1 font-weight-bold text-primary"> รังสีแพทย์ </h6>
+                            <div class="form-control" id="vListDoctor"></div>
+                        </div>
+                        <div class="col-sm-10 right">
+                            <h6 class="m-1 font-weight-bold text-primary"> การติดต่อ </h6>
+                            <span class="form-control">
+                                <span class="text-info"> Phone :: <span id="vDPhone"></span></span>
+                                <span class="text-dark"> Email :: <span id="vDEmail"></span></span>
+                                <span class="text-danger"> Line ID :: <span id="vDLine"></span></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-2" id="frmSaveCase">
+                            <input class="btn-lg btn-success btn-block center" id="SaveCase" value="ส่งรายการตรวจ"
+                                readonly="">
+                        </div>
+                        <div class="col-sm-2" id="frmCancelCase">
+                            <input class="btn-lg btn-warning btn-block center" id="CancelCase" value="ออก" readonly="">
+                        </div>
+                        <div class="col-sm-2" id="frmViewCase">
+                            <input class="btn-lg btn-info btn-block center" id="ViewCase" value="เปิดภาพ" readonly="">
+                        </div>
+                        <div class="col-sm-2" id="frmDownLoadCase">
+                            <input class="btn-lg btn-primary btn-block center" id="DownLoadCase" value="ดาวโหลด"
+                                readonly="">
+                        </div>
+                        <div class="col-sm-2" id="frmReportCase">
+                            <input class="btn-lg btn-success btn-block center" id="ReportCase" value="พิมพ์ผล"
+                                readonly="">
+                        </div>
+                    </div>
+                    <input type="hidden" id="vCaseID">
+                    <input type="hidden" id="CaseStatus">
+                    <input type="hidden" id="TechID">
+                    <input type="hidden" id="DoctorID">
+                    <input type="hidden" id="RightID">
+                    <input type="hidden" id="UrgentTypeID">
+                    <input type="hidden" id="Result_Path_IMG">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <script type="text/javascript" src="js/widgets/CaseActiveTech.js"></script> -->

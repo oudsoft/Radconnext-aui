@@ -12,7 +12,7 @@ $( document ).ready(function() {
 			doLoadHospitalPage()
 		} else {
 			//doLoadLogin();
-      let url = '/';
+      let url = '/staff.html';
       window.location.replace(url);
 		}
 	};
@@ -86,7 +86,7 @@ function doLoadLogin() {
 function doUserLogout() {
   localStorage.removeItem('token');
   $('#LogoutCommand').hide();
-  let url = '/';
+  let url = '/staff.html';
   window.location.replace(url);
 }
 
@@ -108,6 +108,7 @@ function doLoadHospitalPage(){
   $('body').loading('stop');
 
   let userdata = JSON.parse(doGetUserData());
+	console.log(userdata);
 
   $('#app').load('form/main.html', function(){
 		$("#User-Identify").text(userdata.userinfo.User_NameEN + ' ' + userdata.userinfo.User_LastNameEN);

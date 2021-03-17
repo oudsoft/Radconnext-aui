@@ -1,0 +1,57 @@
+<div class="container-fluid">
+     <div class="row">
+          <div class="col-xl-12 col-lg-12">
+               <div class="card shadow mb-12">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header py-3 flex-row align-items-center justify-content-between">
+                         <h3 class="m-0 font-weight-bold text-primary center">รายการประเภท UrgentTypes</h3>
+                    </div>
+
+                    <div class="form-group row m-1">
+                         <div class="col-sm-12">
+                              <!-- <span class="text-info"> UG-Types </span> -->
+                              <div class="form-control" id="UrgentTypes"></div>
+                         </div>
+                    </div>
+
+                    <h6 class="m-0 font-weight-bold text-primary text-right pb-4 pr-2">**ดับเบิ้ลคลิกแถวเพื่อเลือกข้อมูลจากตาราง</h6>
+
+                    <div class="form-group row m-1 pb-4">
+                         <div class="col-sm-2">
+                              <span class="text-info"> TypeName </span>
+                              <!-- <div class="form-control" id="typename"></div> -->
+                              <input type="text" class="form-control" id="typename">
+                         </div>
+                         <div class="col-sm-3">
+                              <span class="text-info"> Accept Time </span>
+                              <!-- <div class="form-control" id="AcceptTime"></div> -->
+                              <input type="text" class="form-control" id="AcceptTime" value='{"dd": "00", "hh": "01", "mn": "00"}'>
+                         </div>
+                         <div class="col-sm-3">
+                              <span class="text-info"> Working Time </span>
+                              <!-- <div class="form-control" id="WorkingTime"></div> -->
+                              <input type="text" class="form-control" id="WorkingTime" value='{"dd": "00", "hh": "01", "mn": "00"}'>
+                         </div>
+                         
+                         <div class="col-sm-2 mt-2" id="EditUGType">
+                              <input class="btn btn-lg btn-success btn-block center" id="ButtonEdit"
+                                   value="แก้ไข UrgentTypes" readonly="">
+                         </div>
+                    
+                    
+                         <div class="col-sm-2 mt-2" id="AddUGType">
+                              <input class="btn btn-lg btn-success btn-block center" id="ButtonAdd"
+                                   value="บันทึก UrgentTypes" readonly="">
+                         </div>
+                         
+                    </div>
+               </div>
+
+               <input type="hidden" id="UGTypes">
+               <input type="hidden" id="UGTypesID">
+               <input type="hidden" id="WarningTime">
+               <input type="hidden" id="HosID">
+               <input type="hidden" id="ColorCode">
+          </div>
+     </div>
+</div>
