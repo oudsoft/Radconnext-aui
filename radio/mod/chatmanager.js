@@ -20,6 +20,7 @@ module.exports = function ( jq ) {
 		$(chatBoxContainer).appendTo($(contactContainer));
 
 		$(contactContainer).on('newconversation', async (evt, data) =>{
+			console.log(data);
 			if (data.topicId == caseId){
 				let isHide = $(chatBoxContainer).css('display');
 				if (isHide === 'none') {
@@ -28,7 +29,7 @@ module.exports = function ( jq ) {
 				let contact = await doCreateNewAudience(data.audienceId, data.audienceName, data.topicId, data.topicName);
 				if (contact) {
 					$(contact).appendTo($(contactIconBar));
-					let simpleChat = doCreateSimpleChatBox(data.topicId, data.topicName, data.audienceId, data.audienceName, data.topicStatusId);
+					let simpleChat = doCreateSimpleChatBox(data.topicId, data.topicName, data.topicType, data.audienceId, data.audienceName, data.topicStatusId);
 					$(simpleChat.chatBox).css('display', 'none');
 					$(simpleChat.chatBox).appendTo($(chatBoxContainer));
 					simpleChat.handle.restoreLocal();
@@ -70,10 +71,11 @@ module.exports = function ( jq ) {
 						let audienceInfo = await apiconnector.doGetApi('/api/users/searchusername/' + audienceId, {});
 						let audienceName = audienceInfo.result[0].userinfo.User_NameTH + ' ' + audienceInfo.result[0].userinfo.User_LastNameTH;
 						let topicName = openCase.case.patient.Patient_HN + ' ' + openCase.case.patient.Patient_NameEN + ' ' + openCase.case.patient.Patient_LastNameEN + ' ' + openCase.case.patient.Patient_Sex + '/' + openCase.case.patient.Patient_Age + ' ' + openCase.case.Case_BodyPart;
+						let topicType = 'case';
 						let contact = await doCreateNewAudience(audienceId, audienceName, caseId, topicName);
 						if (contact) {
 							$(contact).appendTo($(contactIconBar));
-							let simpleChat = doCreateSimpleChatBox(caseId, topicName, audienceId, audienceName, openCase.case.casestatusId);
+							let simpleChat = doCreateSimpleChatBox(caseId, topicName, topicType, audienceId, audienceName, openCase.case.casestatusId);
 							$(chatBoxContainer).css('display', 'block');
 							$(simpleChat.chatBox).css('display', 'block');
 							$(simpleChat.chatBox).appendTo($(chatBoxContainer));
@@ -113,7 +115,7 @@ module.exports = function ( jq ) {
         let contactIcon = doCreateContactIcon(Id, Name, onContactIconClickCallback, onCloseContactClickCallback);
         resolve($(contactIcon));
       } else {
-        resolve();
+        resolve(chatBoxTarget);
       }
     });
   }
@@ -194,7 +196,7 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doCreateSimpleChatBox = function(topicId, topicName, audienceId, audienceName, topicStatusId) {
+	const doCreateSimpleChatBox = function(topicId, topicName, topicType, audienceId, audienceName, topicStatusId) {
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
 		let simpleChatBoxOption = {
 			myId: userdata.username,
@@ -203,6 +205,7 @@ module.exports = function ( jq ) {
 			topicId: topicId,
 			topicName: topicName,
 			topicStatusId: topicStatusId,
+			topicType: topicType,
 			audienceId: audienceId,
 			audienceName: audienceName,
 			wantBackup: true,
@@ -219,7 +222,7 @@ module.exports = function ( jq ) {
 	    topicId: options.topicId,
 	    topicName: options.topicName,
 			topicStatusId: options.topicStatusId,
-			topicType: 'case',
+			topicType: options.topicType,
 	    myId: options.myId,
 	    myName: options.myName,
 	    myDisplayName: options.myDisplayName,
@@ -238,7 +241,6 @@ module.exports = function ( jq ) {
 
 	const doSendMessageCallback = function(msg, sendto, from, context){
 	  return new Promise(async function(resolve, reject){
-			console.log(msg, sendto, from, context);
 			const main = require('../main.js');
 			const myWsm = main.doGetWsm();
 	    let msgSend = {type: 'message', msg: msg, sendto: sendto, from: from, context: context};

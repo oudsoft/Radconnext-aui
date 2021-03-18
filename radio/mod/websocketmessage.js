@@ -65,7 +65,7 @@ module.exports = function ( jq ) {
 			doSaveMessageToLocal(data.msg ,data.from, data.context.topicId, 'new');
 			/* จุดระวัง */
 			/* จุด Swap หรือ จุดไขว้ค่า myId กับ audienceId ระหว่าง sendto กับ from */
-			let newConversationData = {topicId: data.context.topicId, topicName: data.context.topicName, topicStatusId: data.context.topicStatusId, audienceId: data.context.myId, audienceName: data.context.myName, myId: data.context.audienceId, myName: data.context.audienceName };
+			let newConversationData = {topicId: data.context.topicId, topicName: data.context.topicName, topicType: data.context.topicType, topicStatusId: data.context.topicStatusId, audienceId: data.context.myId, audienceName: data.context.myName, myId: data.context.audienceId, myName: data.context.audienceName };
 			newConversationData.message = {msg: data.msg, from: data.from, context: data.context};
 			$('#ContactContainer').trigger('newconversation', [newConversationData]);
     }

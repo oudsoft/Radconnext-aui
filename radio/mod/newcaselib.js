@@ -250,7 +250,7 @@ module.exports = function ( jq ) {
 			let consultUG = consultItem.UGType;
       let consultHosName = consultItem.hospital.Hos_Name;
 
-			let consultCMD = doCreateConsultItemCommand(consultItem);
+			let consultCMD = await doCreateConsultItemCommand(consultItem);
 
       let consultRow = $('<div style="display: table-row; width: 100%;" class="case-row"></div>');
 
@@ -259,20 +259,21 @@ module.exports = function ( jq ) {
   		$(consultColumn).appendTo($(consultRow));
 
       consultColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
-      if ((consultTask.Tasks) && (consultTask.Tasks.length > 0) && (consultTask.Tasks[0]) && (consultTask.Tasks[0].triggerAt)){
-				console.log(consultTask.Tasks[0].triggerAt);
-        let consultTriggerAt = new Date(consultTask.Tasks[0].triggerAt);
-        let diffTime = Math.abs(consultTriggerAt - new Date());
-        let hh = parseInt(diffTime/(1000*60*60));
-        let mn = parseInt((diffTime - (hh*1000*60*60))/(1000*60));
-				console.log(hh);
-				console.log(mn);
-        let clockCountdownDiv = $('<div></div>');
-        $(clockCountdownDiv).countdownclock({countToHH: hh, countToMN: mn});
-        $(consultColumn).append($(clockCountdownDiv));
-      } else {
-        $(consultColumn).append($('<span>not found Task</span>'));
-  		}
+			if (consultItem.casestatusId == 1){
+	      if ((consultTask.Tasks) && (consultTask.Tasks.length > 0) && (consultTask.Tasks[0]) && (consultTask.Tasks[0].triggerAt)){
+	        let consultTriggerAt = new Date(consultTask.Tasks[0].triggerAt);
+	        let diffTime = Math.abs(consultTriggerAt - new Date());
+	        let hh = parseInt(diffTime/(1000*60*60));
+	        let mn = parseInt((diffTime - (hh*1000*60*60))/(1000*60));
+	        let clockCountdownDiv = $('<div></div>');
+	        $(clockCountdownDiv).countdownclock({countToHH: hh, countToMN: mn});
+	        $(consultColumn).append($(clockCountdownDiv));
+	      } else {
+	        $(consultColumn).append($('<span>not found Task</span>'));
+	  		}
+			} else {
+				$(consultColumn).append($('<span>-</span>'));
+			}
   		$(consultColumn).appendTo($(consultRow));
 
       consultColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
@@ -280,6 +281,7 @@ module.exports = function ( jq ) {
   		$(consultColumn).append($(ugValue));
   		$(consultColumn).appendTo($(consultRow));
 			$(ugValue).load('/api/urgenttypes/urgname/select/' + consultUG);
+
       consultColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
   		$(consultColumn).append($('<span>' + patientHN + '</span>'));
   		$(consultColumn).appendTo($(consultRow));
@@ -301,50 +303,74 @@ module.exports = function ( jq ) {
 	}
 
 	const doCreateConsultItemCommand = function(consultItem){
-		const userdata = JSON.parse(localStorage.getItem('userdata'));
-    let consultCmdBox = $('<div style="text-align: center; padding: 4px; width: 100%;"></div>');
-    let acceptCmd = $('<div>Accept</div>');
-    $(acceptCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'green', 'color': 'white'});
-    $(acceptCmd).on('click', async (evt)=>{
-      let response = await common.doUpdateConsultStatus(consultItem.id, 2);
-			if (response.status.code == 200) {
-				//$('#NewCaseCmd').click();
-				let consultId = consultItem.id;
-				let fakPaient = {
-					Patient_HN: consultItem.patientHN,
-					Patient_NameEN: consultItem.patientName,
-					Patient_LastNameEN: '',
-					Patient_Sex: '',
-					Patient_Age: ''
-				}
-				let caseData = {
-					casestatusId: consultItem.casestatusId,
-					Case_BodyPart: '',
-					patient: fakPaient
-				}
-				let fakeCase = {
-					case: caseData
-				}
-				doOpenChatbox(consultId, fakeCase);
-			} else {
-				alert('เกิดข้อผิดพลาด ไม่สามารถตอบรับ Consult ได้ในขณะนี้');
+		return new Promise(async function(resolve, reject) {
+			const userdata = JSON.parse(localStorage.getItem('userdata'));
+			let consultId = consultItem.id;
+			let fakPaient = {
+				Patient_HN: consultItem.patientHN,
+				Patient_NameEN: consultItem.patientName,
+				Patient_LastNameEN: '',
+				Patient_Sex: '',
+				Patient_Age: ''
 			}
-    });
-    $(consultCmdBox).append($(acceptCmd));
-
-    let notAacceptCmd = $('<div>Reject</div>');
-    $(notAacceptCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'red', 'color': 'white'});
-    $(notAacceptCmd).on('click', async (evt)=>{
-      let response = await common.doUpdateConsultStatus(consultItem.id, 3);
-			if (response.status.code == 200) {
-				$('#NewCaseCmd').click();
-			} else {
-				alert('เกิดข้อผิดพลาด ไม่สามารถตอบปฏิเสธ Consult ได้ในขณะนี้');
+			let caseData = {
+				casestatusId: consultItem.casestatusId,
+				Case_BodyPart: '',
+				patient: fakPaient
 			}
-    });
-    $(consultCmdBox).append($(notAacceptCmd))
+			let fakeCase = {
+				case: caseData
+			}
+	    let consultCmdBox = $('<div style="text-align: center; padding: 4px; width: 100%;"></div>');
+			if (consultItem.casestatusId == 1){
+		    let acceptCmd = $('<div>Accept</div>');
+		    $(acceptCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'green', 'color': 'white'});
+		    $(acceptCmd).on('click', async (evt)=>{
+		      let response = await common.doUpdateConsultStatus(consultItem.id, 2);
+					console.log(response);
+					if (response.status.code == 200) {
+						console.log(consultItem);
+						await doOpenChatbox(consultId, fakeCase, consultItem);
 
-    return $(consultCmdBox);
+					} else {
+						alert('เกิดข้อผิดพลาด ไม่สามารถตอบรับ Consult ได้ในขณะนี้');
+					}
+		    });
+		    $(consultCmdBox).append($(acceptCmd));
+
+		    let notAacceptCmd = $('<div>Reject</div>');
+		    $(notAacceptCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'red', 'color': 'white'});
+		    $(notAacceptCmd).on('click', async (evt)=>{
+		      let response = await common.doUpdateConsultStatus(consultItem.id, 3);
+					if (response.status.code == 200) {
+						$('#NewCaseCmd').click();
+					} else {
+						alert('เกิดข้อผิดพลาด ไม่สามารถตอบปฏิเสธ Consult ได้ในขณะนี้');
+					}
+		    });
+		    $(consultCmdBox).append($(notAacceptCmd))
+			} else if (consultItem.casestatusId == 2){
+				let openCmd = $('<div>Open</div>');
+				$(openCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'orange', 'color': 'white'});
+				$(consultCmdBox).append($(openCmd));
+				$(openCmd).on('click', async (evt)=>{
+					await doOpenChatbox(consultId, fakeCase, consultItem);
+				});
+				let closeCmd = $('<div>Close</div>');
+				$(closeCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'grey', 'color': 'white'});
+				$(consultCmdBox).append($(closeCmd));
+				$(closeCmd).on('click', async (evt)=>{
+					let response = await common.doUpdateConsultStatus(consultItem.id, 6);
+					if (response.status.code == 200) {
+						$.notify('Close Consult Success', 'success');
+						$('#NewCaseCmd').click();
+					} else {
+						alert('เกิดข้อผิดพลาด ไม่สามารถตอบรับ Consult ได้ในขณะนี้');
+					}
+				});
+			}
+	    resolve($(consultCmdBox));
+		});
 	}
 
   const doCallMyNewCase = function(){
@@ -366,7 +392,7 @@ module.exports = function ( jq ) {
     return new Promise(async function(resolve, reject) {
 			const userdata = JSON.parse(localStorage.getItem('userdata'));
 			let userId = userdata.id;
-			let rqParams = {userId: userId, statusId: common.caseReadWaitStatus};
+			let rqParams = {userId: userId, statusId: [1 ,2]};
 			let apiUrl = '/api/consult/filter/radio';
 			try {
 				let response = await common.doCallApi(apiUrl, rqParams);
@@ -415,7 +441,7 @@ module.exports = function ( jq ) {
           $(myNewConsultView ).append($(consultRow));
         }
       } else {
-        let notFoundConsultMessage = $('<h3>ไม่พบรายการเคสใหม่ของคุณในขณะนี้</h3>')
+        let notFoundConsultMessage = $('<h3>ไม่พบรายการ Consult ใหม่ของคุณในขณะนี้</h3>')
         $(myCaseViewBox).append($(notFoundConsultMessage));
       }
       $('body').loading('stop');
@@ -423,15 +449,69 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doOpenChatbox = function(caseId, caseOpen){
-		let contactToolsLine = $('<div style="width: 99%; min-height: 80px;"></div>');
-		let contactContainer = chatman.doCreateContactContainer(caseId, caseOpen);
-		$(contactToolsLine).append($(contactContainer));
-		$(contactToolsLine).css(common.pageLineStyle);
+	const doOpenChatbox = function(caseId, fakeOpen, consultItem){
+		return new Promise(async function(resolve, reject) {
+			let patientHRLine = $('<div style="width: 99%; min-height: 80px;"></div>');
+			let patientTitleBar = $('<div style="position: relative; width: 100%;"><b>HN: </b>' + consultItem.PatientHN + ' <b>Name: </b> ' + consultItem.PatientName + ' <b>โรงพยาลาล: </b>' + consultItem.hospital.Hos_Name + '</div>');
+			$(patientHRLine).append($(patientTitleBar));
+			let patientHRList = consultItem.PatientHRLink;
+			patientHRList.forEach((hrlink, i) => {
+				let hrIcon = $('<img style="width: 100px; height: auto; cursor: pointer;"/>');
+				$(hrIcon).attr('src', hrlink.link);
+				$(hrIcon).on('click', (evt)=>{
+					window.open(hrlink.link, '_blank');
+				});
+				$(patientHRLine).append($(hrIcon));
+			});
+
+			let contactContainer = $('<div id="ContactContainer" style=" position: relative; width: 100%; padding: 4px; margin-top: 10px; text-align: right;"></div>');
+			$(contactContainer).on('newconversation', async (evt, data) =>{
+				let eventData = {msg: data.message.msg, from: data.message.from, context: data.message.context};
+				setTimeout(()=>{
+					let selector = '#'+data.audienceId + ' .chatbox';
+					let targetChatBox = $(selector);
+					$(targetChatBox).trigger('messagedrive', [eventData]);
+				}, 300);
+			});
+
+			let contactIconBar = $('<div id="ContactBar" style="position: relative; width: 100%"></div>');
+			$(contactIconBar).appendTo($(contactContainer));
+			let chatBoxContainer = $('<div id="ChatBoxContainer" style="position: relative; width: 100%;"></div>');
+			$(chatBoxContainer).css('display', 'block');
+			$(chatBoxContainer).appendTo($(contactContainer));
 
 
-		$(".mainfull").append($(contactToolsLine));
+			let audienceUserId = consultItem.userId;
+			let audienceInfo = await apiconnector.doGetApi('/api/users/select/' + audienceUserId, {});
+			let audienceId = audienceInfo.user[0].username;
+			let audienceName = audienceInfo.user[0].userinfo.User_NameTH + ' ' + audienceInfo.user[0].userinfo.User_LastNameTH;
+			let topicId = consultItem.id;
+			let topicName = consultItem.PatientHN + ' ' + consultItem.PatientName;
+			let topicType = 'consult';
+			let contact = await chatman.doCreateNewAudience(audienceId, audienceName, topicId, topicName);
+			if (contact) {
+				$(contact).appendTo($(contactIconBar));
+				let simpleChat = chatman.doCreateSimpleChatBox(topicId, topicName, topicType, audienceId, audienceName, consultItem.casestatusId);
+				$(chatBoxContainer).css('display', 'block');
+				$(simpleChat.chatBox).css('display', 'block');
+				$(simpleChat.chatBox).appendTo($(chatBoxContainer));
+				simpleChat.handle.restoreLocal();
+				simpleChat.handle.scrollDown();
+				$(".mainfull").empty().append($(patientHRLine)).append($(contactContainer));
+				resolve(simpleChat);
+			} else {
+				resolve();
+			}
+		});
 	}
+
+	const doTestText = function(){
+		$('head').append('<script src="../lib/to-asciidoc.js"></script>');
+	  const html = '<h2 style="text-align: left;"><span style="text-align: left;">ทดสอบแอดดใหม่ 30/Nov/2563</span></h2><p><span style="text-align: left;">Test Confirm.</span></p><p><span style="text-align: left;">OK ผ่าน</span></p><p><span style="text-align: left;">vip</span></p>';
+	  let text = toAsciidoc(html);
+	  console.log(text);
+	}
+
   return {
     doCreateNewCaseTitlePage,
     doCreateHeaderRow,

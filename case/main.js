@@ -227,7 +227,7 @@ function doLoadMainPage(){
       });
 
       $(document).on('myconsult', (evt, data)=>{
-
+        consult.doCreateMyConsultListView();
       });
 
 			doUseFullPage();

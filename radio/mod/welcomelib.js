@@ -37,9 +37,9 @@ module.exports = function ( jq ) {
 
 	/** Case Event Counter **/
   const onCaseChangeStatusTrigger = function(evt) {
-		let trigerData = evt.detail.data;
-		let caseId = trigerData.caseId;
-		let statusId = trigerData.statusId;
+		let triggerData = evt.detail.data;
+		let caseId = triggerData.caseId;
+		let statusId = triggerData.statusId;
 		let thing = triggerData.thing;
 
     let indexAt = undefined;
