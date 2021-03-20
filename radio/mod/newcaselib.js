@@ -411,37 +411,37 @@ module.exports = function ( jq ) {
 			let myCaseViewBox = $('<div style="position: relative; width: 100%;"></div>');
 			let myCaseTitleBar = $('<div style="position: relative; width: 100%;"><h3>เคสใหม่</h3></div>');
 			$(myCaseViewBox).append($(myCaseTitleBar))
-      let myNewCaseView = $('<div style="display: table; width: 100%; border-collapse: collapse; margin-top: -25px;"></div>');
-			$(myNewCaseView).appendTo($(myCaseViewBox));
-      let caseHeader = doCreateHeaderRow();
-      $(myNewCaseView).append($(caseHeader));
       let caseLists = myNewCase.Records;
       if (caseLists.length > 0) {
+				let myNewCaseView = $('<div style="display: table; width: 100%; border-collapse: collapse; margin-top: -25px;"></div>');
+				$(myNewCaseView).appendTo($(myCaseViewBox));
+	      let caseHeader = doCreateHeaderRow();
+	      $(myNewCaseView).append($(caseHeader));
         for (let i=0; i < caseLists.length; i++) {
           let caseItem = caseLists[i];
           let caseRow = await doCreateCaseItemRow(caseItem);
           $(myNewCaseView).append($(caseRow));
         }
       } else {
-        let notFoundCaseMessage = $('<h3>ไม่พบรายการเคสใหม่ของคุณในขณะนี้</h3>')
+        let notFoundCaseMessage = $('<p style="margin-top: -20px;">ไม่พบรายการเคสใหม่ของคุณในขณะนี้</p>')
         $(myCaseViewBox).append($(notFoundCaseMessage));
       }
 
 			let myConsultTitleBar = $('<div style="position: relative; width: 100%;"><h3>Consult ใหม่</h3></div>');
 			$(myCaseViewBox).append($(myConsultTitleBar))
-			let myNewConsultView = $('<div style="display: table; width: 100%; border-collapse: collapse; margin-top: -25px;"></div>');
-			$(myNewConsultView).appendTo($(myCaseViewBox));
-      let consultHeader = doCreateConsultHeaderRow();
-      $(myNewConsultView).append($(consultHeader));
       let consultLists = myNewConsult.Records;
       if (consultLists.length > 0) {
+				let myNewConsultView = $('<div style="display: table; width: 100%; border-collapse: collapse; margin-top: -25px;"></div>');
+				$(myNewConsultView).appendTo($(myCaseViewBox));
+	      let consultHeader = doCreateConsultHeaderRow();
+	      $(myNewConsultView).append($(consultHeader));
         for (let i=0; i < consultLists.length; i++) {
           let consultItem = consultLists[i];
           let consultRow = await doCreateConsultItemRow(consultItem);
           $(myNewConsultView ).append($(consultRow));
         }
       } else {
-        let notFoundConsultMessage = $('<h3>ไม่พบรายการ Consult ใหม่ของคุณในขณะนี้</h3>')
+        let notFoundConsultMessage = $('<p style="margin-top: -20px;">ไม่พบรายการ Consult ใหม่ของคุณในขณะนี้</p>')
         $(myCaseViewBox).append($(notFoundConsultMessage));
       }
       $('body').loading('stop');
@@ -505,12 +505,6 @@ module.exports = function ( jq ) {
 		});
 	}
 
-	const doTestText = function(){
-		$('head').append('<script src="../lib/to-asciidoc.js"></script>');
-	  const html = '<h2 style="text-align: left;"><span style="text-align: left;">ทดสอบแอดดใหม่ 30/Nov/2563</span></h2><p><span style="text-align: left;">Test Confirm.</span></p><p><span style="text-align: left;">OK ผ่าน</span></p><p><span style="text-align: left;">vip</span></p>';
-	  let text = toAsciidoc(html);
-	  console.log(text);
-	}
 
   return {
     doCreateNewCaseTitlePage,

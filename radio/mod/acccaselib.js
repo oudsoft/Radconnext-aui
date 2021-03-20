@@ -123,7 +123,7 @@ module.exports = function ( jq ) {
   		$(caseColumn).appendTo($(caseRow));
 
       caseColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
-      if ((caseTask.Records) && (caseTask.Records.length > 0) && (caseTask.Records[0].triggerAt)){
+      if ((caseTask.Records) && (caseTask.Records.length > 0) && (caseTask.Records[0]) && (caseTask.Records[0].triggerAt)){
         let caseTriggerAt = new Date(caseTask.Records[0].triggerAt);
         let diffTime = Math.abs(caseTriggerAt - new Date());
         let hh = parseInt(diffTime/(1000*60*60));

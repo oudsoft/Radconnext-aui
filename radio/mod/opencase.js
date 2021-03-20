@@ -113,9 +113,10 @@ module.exports = function ( jq ) {
 			let type = 'draft';
 			let caseId = saveNewResponseData.caseId
 			let userId = userdata.id;
-			let responseHTML = $('#SimpleEditor').val();
 			doBackupDraft(caseId, responseHTML);
-			let saveData = {Response_Text: responseHTML, Response_Type: type};
+			let responseText = toAsciidoc(responseHTML);
+			console.log(responseText);
+			let saveData = {Response_HTML: responseHTML, Response_Text: responseText, Response_Type: type};
 			let params = {caseId: caseId, userId: userId, data: saveData, responseId: caseResponseId};
 			let saveResponseRes = await doCallSaveResponse(params);
 			//console.log(saveResponseRes);
@@ -226,6 +227,7 @@ module.exports = function ( jq ) {
 		const reportType = 'normal';
 		const normalSaveResponseCmd = $(evt.currentTarget);
 		const saveResponseData = $(normalSaveResponseCmd).data('saveResponseData');
+		console.log(saveResponseData);
 		await doSaveResponse(responseType, reportType, saveResponseData)
 	}
 
@@ -261,7 +263,8 @@ module.exports = function ( jq ) {
 			let userId = userdata.id;
 			let responseHTML = $('#SimpleEditor').val();
 			doBackupDraft(caseId, responseHTML);
-			let saveData = {Response_Text: responseHTML, Response_Type: responseType};
+			let responseText = toAsciidoc(responseHTML);
+			let saveData = {Response_HTML: responseHTML, Response_Text: responseText, Response_Type: responseType};
 			let params = {caseId: caseId, userId: userId, data: saveData, responseId: caseResponseId, reporttype: reportType, PDF_Filename: saveResponseData.reportLink};
 			let saveResponseRes = await doCallSaveResponse(params);
 			if ((saveResponseRes.status.code == 200) || (saveResponseRes.status.code == 203)){
@@ -288,7 +291,8 @@ module.exports = function ( jq ) {
 			let userdata = JSON.parse(localStorage.getItem('userdata'));
 			let userId = userdata.id;
 			let responseHTML = $('#SimpleEditor').val();
-			let saveData = {Response_Text: responseHTML, Response_Type: type};
+			let responseText = toAsciidoc(responseHTML);
+			let saveData = {Response_HTML: responseHTML, Response_Text: responseText, Response_Type: type};
 			let params = {caseId: caseId, userId: userId, data: saveData, responseId: caseResponseId};
 			let saveResponseRes = await doCallSaveResponse(params);
 			resolve(saveResponseRes);
@@ -594,7 +598,7 @@ module.exports = function ( jq ) {
 					let patientHRBackwardBox = await doCreateHRBackwardBox(patientFullName, backward.Case_PatientHRLink, casedate);
 					let responseBackwardBox = undefined;
 					if ((backward.caseresponses) && (backward.caseresponses.length > 0)) {
-						responseBackwardBox = doCreateResponseBackwardBox(backward.id, backward.caseresponses[0].Response_Text, patientFullName, casedate);
+						responseBackwardBox = doCreateResponseBackwardBox(backward.id, backward.caseresponses[0].Response_HTML, patientFullName, casedate);
 					} else {
 						responseBackwardBox = $('<span>-</span>');
 					}
@@ -815,13 +819,13 @@ module.exports = function ( jq ) {
 								if (yourAnwser) {
 									$(summary).find('#SimpleEditor').jqteVal(draftBackup.content);
 								} else {
-									$(summary).find('#SimpleEditor').jqteVal(draftResponseRes.Record[0].Response_Text);
+									$(summary).find('#SimpleEditor').jqteVal(draftResponseRes.Record[0].Response_HTML);
 								}
 							} else {
-								$(summary).find('#SimpleEditor').jqteVal(draftResponseRes.Record[0].Response_Text);
+								$(summary).find('#SimpleEditor').jqteVal(draftResponseRes.Record[0].Response_HTML);
 							}
 						} else {
-							$(summary).find('#SimpleEditor').jqteVal(draftResponseRes.Record[0].Response_Text);
+							$(summary).find('#SimpleEditor').jqteVal(draftResponseRes.Record[0].Response_HTML);
 						}
 					}
 				}

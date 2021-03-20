@@ -122,6 +122,7 @@ function doLoadMainPage(){
 	let jqueryUiJsUrl = "../lib/jquery-ui.min.js";
 	let jqueryLoadingUrl = '../lib/jquery.loading.min.js';
 	let jqueryNotifyUrl = '../lib/notify.min.js';
+  let html2textlib = '../lib/to-asciidoc.js';
 
 	let countdownclockPluginUrl = "../setting/plugin/jquery-countdown-clock-plugin.js";
 	let controlPagePlugin = "../setting/plugin/jquery-controlpage-plugin.js"
@@ -134,6 +135,8 @@ function doLoadMainPage(){
 	$('head').append('<script src="' + jqueryLoadingUrl + '"></script>');
 	//https://notifyjs.jpillora.com/
 	$('head').append('<script src="' + jqueryNotifyUrl + '"></script>');
+
+  $('head').append('<script src="' + html2textlib + '"></script>');
 
 	$('head').append('<script src="' + countdownclockPluginUrl + '"></script>');
 	$('head').append('<script src="' + controlPagePlugin + '"></script>');

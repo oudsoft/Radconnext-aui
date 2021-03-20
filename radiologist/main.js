@@ -588,7 +588,7 @@ function doCreateAcceptStatusCaseAction(caseItem){
 			$(sendResponseCmd).css({'font-family': 'THSarabunNew', 'font-size': '24px'});
 			$(sendResponseCmd).click(async (e)=>{
 				let responseHTML = $('#SimpleEditor').val();
-				let saveData = {Response_Text: responseHTML, type: 'normal'};
+				let saveData = {Response_HTML: responseHTML, type: 'normal'};
 				let result = await radio.doSaveNewResponse(caseItem.case.id, radioId, saveData);
 				console.log(result);
 				doShowCase(radioId);
@@ -619,7 +619,7 @@ function doCallResponse(caseId) {
 		$(tableRow).append($(rowResponse));
 
 		if ((result.Record) && (result.Record.length > 0)) {
-			$(rowResponse).append($(result.Record[0].Response_Text));
+			$(rowResponse).append($(result.Record[0].Response_HTML));
 		} else {
 			$(rowResponse).append($('<div><h2>This case have exception.</h2></div>'));
 		}
