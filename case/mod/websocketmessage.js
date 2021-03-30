@@ -25,10 +25,18 @@ module.exports = function ( jq ) {
       $.notify('The system will be start store dicom to your local.', "success");
 			*/
 		} else if (data.type == 'refresh') {
-			let eventName = 'triggercounter'
-			let triggerData = {caseId : data.caseId, statusId: data.statusId};
-			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: triggerData}});
-			document.dispatchEvent(event);
+			if (data.thing === 'consult') {
+				let eventName = 'triggerconsultcounter'
+				let triggerData = {caseId : data.caseId, statusId: data.statusId};
+				let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: triggerData}});
+				document.dispatchEvent(event);
+			} else {
+				let eventName = 'triggercounter'
+				let triggerData = {caseId : data.caseId, statusId: data.statusId};
+				let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: triggerData}});
+				document.dispatchEvent(event);
+			}
+		//} else if (data.type == 'refreshconsult') {
 		} else if (data.type == 'newdicom') {
 			let eventName = 'triggernewdicom'
 			let triggerData = {dicom : data.dicom};
@@ -92,7 +100,7 @@ module.exports = function ( jq ) {
 		} else if (data.type == 'logreturn') {
 			let eventName = 'logreturn';
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.log}});
-			document.dispatchEvent(event);	
+			document.dispatchEvent(event);
 		} else if (data.type == 'echoreturn') {
 			let eventName = 'echoreturn';
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.message}});

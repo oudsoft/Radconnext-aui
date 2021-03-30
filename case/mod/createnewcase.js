@@ -963,7 +963,7 @@ module.exports = function ( jq ) {
 		$(tableRow).appendTo($(table));
 
 		tableRow = $('<div style="display: table-row;"></div>');
-    tableCell = $('<div style="display: table-cell;">ประเถทความเร่งด่วน</div>');
+    tableCell = $('<div style="display: table-cell;">ประเภทความเร่งด่วน</div>');
     $(tableCell).appendTo($(tableRow));
 
 		//console.log(defualtValue);

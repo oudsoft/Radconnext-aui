@@ -12,6 +12,7 @@ module.exports = function ( jq ) {
 			return new Promise(async function(resolve, reject) {
 				let rqParams = {};
 				let newRandomUsernameRes = await common.doGetApi('/api/users/randomusername', rqParams);
+				console.log(newRandomUsernameRes);
 				if (newRandomUsernameRes.random) {
 					resolve({username: newRandomUsernameRes.random.username});
 				} else {

@@ -111,6 +111,7 @@ function doLoadMainPage(){
   });
 
   document.addEventListener("triggercounter", casecounter.onCaseChangeStatusTrigger);
+  document.addEventListener("triggerconsultcounter", casecounter.onConsultChangeStatusTrigger);
   document.addEventListener("triggernewdicom", onNewDicomTransferTrigger);
 
   let userdata = JSON.parse(doGetUserData());

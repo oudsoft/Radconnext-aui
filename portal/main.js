@@ -115,6 +115,7 @@ const doLoadMainPage = function(){
     $('.footer').load('../lib/feeder.js', (code)=>{
       let execResult = eval(code);
       $('.footer').empty().append($(execResult.handle));
+      execResult.appendMe.call(null, 'ok');
     });
     /*
     util.doConnectWebsocketLocal(userdata.username).then((localWsl) => {

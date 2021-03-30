@@ -8,6 +8,13 @@ module.exports = function ( jq ) {
 
 	const pageFontStyle = {"font-family": "THSarabunNew", "font-size": "24px"};
 
+	const doGenUniqueID = function () {
+		function s4() {
+			return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+		}
+		return s4() + '-' + s4() + '-' + s4();
+	}
+
   const doCreateNewConsultTitleForm = function(){
     let pageLogoBox = $('<div style="position: relative; display: inline-block;"></div>');
     let logoPage = $('<img src="/images/chat-icon.png" width="40px" height="auto"/>');
@@ -18,19 +25,25 @@ module.exports = function ( jq ) {
     return $(titleBox);
   }
 
-  const doCreatePatientLine = function(){
+  const doCreatePatientBox = function(){
     let patientBox = $('<div id ="PatientBox" style="display: table; width: 100%; border-collapse: collapse;"></div>');
-    let patientLine = $('<div style="display: table-row; width: 100%;"></div>');
+    let patientHNLine = $('<div style="display: table-row; width: 100%;"></div>');
+		let patientNameLine = $('<div style="display: table-row; width: 100%;"></div>');
+
     let hnLabelCell = $('<div style="display: table-cell; padding: 4px;">HN ผู้ป่วย</div>');
     let hnValueCell = $('<div style="display: table-cell; padding: 4px;"></div>');
+    let hnValue = $('<input type="text" id="HNValue"/>');
+
     let nameLabelCell = $('<div style="display: table-cell; padding: 4px;">ชื่อผู้ป่วย</div>');
     let nameValueCell = $('<div style="display: table-cell; padding: 4px;"></div>');
-    let hnValue = $('<input type="text" id="HNValue"/>');
     let nameValue = $('<input type="text" id="NameValue"/>');
+
     $(hnValueCell).append($(hnValue));
     $(nameValueCell).append($(nameValue));
-    $(patientLine).append($(hnLabelCell)).append($(hnValueCell)).append($(nameLabelCell)).append($(nameValueCell));
-    $(patientBox).append($(patientLine));
+    $(patientHNLine).append($(hnLabelCell)).append($(hnValueCell));
+		$(patientNameLine).append($(nameLabelCell)).append($(nameValueCell));
+
+    $(patientBox).append($(patientHNLine)).append($(patientNameLine));
     return $(patientBox);
   }
 
@@ -176,18 +189,23 @@ module.exports = function ( jq ) {
 					let radioSelected = rdHandle.getSelectedIndex();
 		      if ((radioSelected.radioId) && (radioSelected.radioId > 0)) {
 						const userdata = JSON.parse(localStorage.getItem('userdata'));
-						let newConsultData = {PatientHN: hnValue, PatientName: nameValue, PatientHRLink: patientHistory, UGType: ugData.urgentId, RadiologistId: radioSelected.radioId};
 						let hospitalId = userdata.hospitalId;
 						let userId = userdata.id;
+						if ((hnValue === '') && (nameValue === '')){
+							let newUniqID = doGenUniqueID();
+							hnValue = hospitalId + '-' + newUniqID;
+							nameValue = userdata.hospital.Hos_Name + '-' + newUniqID;
+						}
+						let newConsultData = {PatientHN: hnValue, PatientName: nameValue, PatientHRLink: patientHistory, UGType: ugData.urgentId, RadiologistId: radioSelected.radioId};
 						let casestatuseId = 1;
 						let rqParams = {hospitalId: hospitalId, userId: userId, casestatuseId: casestatuseId, data: newConsultData};
 						let newConsultRes = await common.doCallApi('/api/consult/add', rqParams);
 						if (newConsultRes.status.code == 200){
 							let newConsultSetup = newConsultRes.Setup;
-							console.log(newConsultSetup);
+							//console.log(newConsultSetup);
 							doOpenSimpleChatbox(newConsultSetup);
 						} else {
-							$.notify("ระบบฯ ไม่สามารถเปิด Consult ใหม่ ได้ในขณะนี้ โปรดพยายามใหม่ภายหลัง", "error");
+							$.notify("ระบบฯ ไม่สามารถเปิด Consult ใหม่ ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
 						}
 					} else {
 						$('.mainfull').find('#Radiologist').notify("โปรดเลือกรังสีแพทย์", "error");
@@ -202,14 +220,16 @@ module.exports = function ( jq ) {
     let cancelCmd = $('<input type="button" value=" ยกเลิก " style="margin-left: 10px;"/>');
     $(cancelCmd).on('click', (evt)=>{
       //$('.MenuCmd').click();
+			doCreateMyConsultListView();
     });
     return $(footerLine).append($(okCmd)).append($(cancelCmd));
   }
 
   const doCreateNewConsultForm = function(){
+		$('body').loading('start');
     let titleForm = doCreateNewConsultTitleForm();
-    let patientBar = doCreatePatientLine();
-    $(".mainfull").empty().append($(titleForm)).append($(patientBar));
+
+    let patientBox = doCreatePatientBox();
 
     let consultForm = $('<div id ="ConsultForm" style="display: table; width: 100%; border-collapse: collapse;"></div>');
 
@@ -219,12 +239,33 @@ module.exports = function ( jq ) {
 
     let footerBar = doCreateFormFooter(patientHistoryHandle, consultUrgentHandle, radioSelectHandle);
 
-    $(".mainfull").append($(consultForm)).append($(footerBar));
+		let newConsultFormBox = $('<div style="position: relative; width: 100%; border: 2px solid black; background-color: #fefefe; margin-top: 10px;"></div>');
+		$(newConsultFormBox).append($(patientBox)).append($(consultForm)).append($(footerBar));
+		$(".mainfull").empty().append($(titleForm)).append($(newConsultFormBox));
+		$('body').loading('stop');
   }
+
+	const doCreateSimpleChatTitlePage = function(){
+		let pageLogoBox = $('<div style="position: relative; display: inline-block;"></div>');
+    let logoPage = $('<img src="/images/simple-chat-icon.png" width="40px" height="auto"/>');
+    $(logoPage).appendTo($(pageLogoBox));
+    let titleBox = $('<div class="title-content"></div>');
+    let titleText = $('<h3 style="position: relative; display: inline-block; margin-left: 10px; top: -10px;">Consult</h3>')
+    $(titleBox).append($(pageLogoBox)).append($(titleText));
+    return $(titleBox);
+	}
 
 	const doOpenSimpleChatbox = function(setup){
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
-		let chatTitle = $('<div style="position: relative; width: 100%;"><b>HN: </b>' + setup.patientHN + ' <b>Name: </b> ' + setup.patientName + '</div>');
+		let chatTitle = $('<div style="position: relative; width: 100%;"></div>');
+		$(chatTitle).html('<b>HN: </b>' + setup.patientHN + ' <b>Name: </b> ' + setup.patientName );
+		$(chatTitle).css({'margin-top': '10px', 'background-color': '#e0dcdc', 'border': '2px solid black', 'min-height': '40px'});
+		let backCmd = $('<input type="button" value=" กลับ " style="float: right;"/>');
+		$(backCmd).on('click', async (evt)=>{
+			$('#MyConsultSubCmd').click();
+		});
+		$(chatTitle).append($(backCmd));
+
 		let simpleChatBoxOption = {
 			topicId: setup.topicId,
 			topicName: setup.patientHN + ' ' + setup.patentName,
@@ -242,7 +283,10 @@ module.exports = function ( jq ) {
 		};
 		let simpleChatBox = $('<div id="SimpleChatBox"></div>');
 		let simpleChatBoxHandle = $(simpleChatBox).chatbox(simpleChatBoxOption);
-		$(".mainfull").empty().append($(chatTitle)).append($(simpleChatBox));
+		simpleChatBoxHandle.restoreLocal();
+		simpleChatBoxHandle.scrollDown();
+		let pageTitle = doCreateSimpleChatTitlePage();
+		$(".mainfull").empty().append($(pageTitle)).append($(chatTitle)).append($(simpleChatBox));
 	}
 
 	const doSendMessageCallback = function(msg, sendto, from, context){
@@ -299,7 +343,7 @@ module.exports = function ( jq ) {
 	const doCreateConsultHeaderRow = function() {
     let headerRow = $('<div style="display: table-row; width: 100%;"></div>');
 		let headColumn = $('<div style="display: table-cell; text-align: center;" class="header-cell"></div>');
-		$(headColumn).append('<span>Time Receive</span>');
+		$(headColumn).append('<span>Time Create</span>');
 		$(headColumn).appendTo($(headerRow));
 
     headColumn = $('<div style="display: table-cell; text-align: center;" class="header-cell"></div>');
@@ -317,11 +361,11 @@ module.exports = function ( jq ) {
     headColumn = $('<div style="display: table-cell; text-align: center;" class="header-cell"></div>');
 		$(headColumn).append('<span>Name</span>');
 		$(headColumn).appendTo($(headerRow));
-		/*
+
     headColumn = $('<div style="display: table-cell; text-align: center;" class="header-cell"></div>');
-		$(headColumn).append('<span>Hospital</span>');
+		$(headColumn).append('<span>รังสีแพทย์</span>');
 		$(headColumn).appendTo($(headerRow));
-		*/
+
     headColumn = $('<div style="display: table-cell; text-align: center;" class="header-cell"></div>');
 		$(headColumn).append('<span>Command</span>');
 		$(headColumn).appendTo($(headerRow));
@@ -331,18 +375,18 @@ module.exports = function ( jq ) {
 
 	const doCreateConsultItemRow = function(consultItem) {
 		return new Promise(async function(resolve, reject) {
-			let consultTask = await common.doCallApi('/api/consult/tasks/select/'+ consultItem.id, {});
-			let consultDate = util.formatDateTimeStr(consultItem.createdAt);
+			let consultTask = await common.doCallApi('/api/consult/tasks/select/'+ consultItem.consult.id, {});
+			let consultDate = util.formatDateTimeStr(consultItem.consult.createdAt);
 			let consultdatetime = consultDate.split('T');
 			let consultdateSegment = consultdatetime[0].split('-');
 			consultdateSegment = consultdateSegment.join('');
 			let consultdate = util.formatStudyDate(consultdateSegment);
 			let consulttime = util.formatStudyTime(consultdatetime[1].split(':').join(''));
 
-			let patientName = consultItem.PatientName;
-			let patientHN = consultItem.PatientHN;
-			let consultUG = consultItem.UGType;
-      let consultHosName = consultItem.hospital.Hos_Name;
+			let patientName = consultItem.consult.PatientName;
+			let patientHN = consultItem.consult.PatientHN;
+			let consultUG = consultItem.consult.UGType;
+      let consultRadioName = consultItem.radio.User_NameTH + ' ' + consultItem.radio.User_LastNameTH;;
 
 			let consultCMD = await doCreateConsultItemCommand(consultItem);
 
@@ -384,11 +428,9 @@ module.exports = function ( jq ) {
   		$(consultColumn).append($('<span>' + patientName + '</span>'));
   		$(consultColumn).appendTo($(consultRow));
 
-			/*
       consultColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
-  		$(consultColumn).append($('<span>' + consultHosName + '</span>'));
+  		$(consultColumn).append($('<span>' + consultRadioName + '</span>'));
   		$(consultColumn).appendTo($(consultRow));
-			*/
 
       consultColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
   		$(consultColumn).append($(consultCMD));
@@ -407,9 +449,8 @@ module.exports = function ( jq ) {
 			$(openCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'orange', 'color': 'white'});
 			$(consultCmdBox).append($(openCmd));
 			$(openCmd).on('click', async (evt)=>{
-				console.log(consultItem);
-				let topicId = consultItem.id;
-				let audienceUserId = consultItem.RadiologistId;
+				let topicId = consultItem.consult.id;
+				let audienceUserId = consultItem.consult.RadiologistId;
 				let audienceInfo = await apiconnector.doGetApi('/api/users/select/' + audienceUserId, {});
 				let audienceId = audienceInfo.user[0].username;
 				let audienceName = audienceInfo.user[0].userinfo.User_NameTH + ' ' + audienceInfo.user[0].userinfo.User_LastNameTH;
@@ -417,9 +458,9 @@ module.exports = function ( jq ) {
 					audienceId: audienceId,
 					audienceName: audienceName,
 					topicId: topicId,
-					topicStatusId: consultItem.casestatusId,
-					patientHN: consultItem.PatientHN,
-					patientName: consultItem.PatientName,
+					topicStatusId: consultItem.consult.casestatusId,
+					patientHN: consultItem.consult.PatientHN,
+					patientName: consultItem.consult.PatientName,
 				}
 				doOpenSimpleChatbox(setup);
 			});
@@ -427,10 +468,12 @@ module.exports = function ( jq ) {
 			$(closeCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'grey', 'color': 'white'});
 			$(consultCmdBox).append($(closeCmd));
 			$(closeCmd).on('click', async (evt)=>{
-				let response = await common.doUpdateConsultStatus(consultItem.id, 6);
+				let topicId = consultItem.consult.id;
+				let response = await common.doUpdateConsultStatus(topicId, 6);
+				console.log(response);
 				if (response.status.code == 200) {
 					$.notify('Close Consult Success', 'success');
-					$('#NewCaseCmd').click();
+					$('#MyConsultSubCmd').click();
 				} else {
 					alert('เกิดข้อผิดพลาด ไม่สามารถตอบรับ Consult ได้ในขณะนี้');
 				}
@@ -441,10 +484,11 @@ module.exports = function ( jq ) {
 
 	const doCreateMyConsultListView = function(){
 		return new Promise(async function(resolve, reject) {
+			$('body').loading('start');
 			let myConsult = await doCallMyConsult();
 			let pageTitle = doCreateMyConsultTitleListView();
 
-			let myConsultViewBox = $('<div style="position: relative; width: 100%;"></div>');
+			let myConsultViewBox = $('<div style="position: relative; width: 100%; margin-top: 30px;"></div>');
 			let myConsultView = $('<div style="display: table; width: 100%; border-collapse: collapse; margin-top: -25px;"></div>');
 			$(myConsultViewBox).append($(myConsultView));
 
@@ -462,12 +506,14 @@ module.exports = function ( jq ) {
         $(myConsultViewBox).append($(notFoundConsultMessage));
       }
 
-			$(".mainfull").empty().append($(pageTitle)).append($(myConsultViewBox));;
+			$(".mainfull").empty().append($(pageTitle)).append($(myConsultViewBox));
+			$('body').loading('stop');
 			resolve();
 		});
 	}
 
   return {
+		doGenUniqueID,
     doCreateNewConsultForm,
 		doOpenSimpleChatbox,
 		doCreateMyConsultListView

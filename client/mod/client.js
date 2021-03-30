@@ -37,7 +37,8 @@ module.exports = function ( jq ) {
     let executeCmdCmd = $('<input type="button" value=" Run "/>');
     let echoCmdCmd = $('<input type="button" value=" Echo " style="margin-left: 20px;"/>');
     let logFileCmdCmd = $('<input type="button" value=" Log File " style="margin-left: 20px;"/>');
-    $(executeCmdValueCell).append($(executeCmdCmd)).append($(echoCmdCmd)).append($(logFileCmdCmd));
+		let toTextCmdCmd = $('<input type="button" value=" toText " style="margin-left: 20px;"/>');
+    $(executeCmdValueCell).append($(executeCmdCmd)).append($(echoCmdCmd)).append($(logFileCmdCmd)).append($(toTextCmdCmd));
     $(executeCmdBox).append($(executeCmdLabelCell)).append($(executeCmdValueCell));
 
 		// Clear command
@@ -45,7 +46,14 @@ module.exports = function ( jq ) {
 
 		let exampleCommandBox = $('<div style="position: relative; width: 100%;"></div>');
 		$(exampleCommandBox).append($('<h3>Example</h3>'));
+		$(exampleCommandBox).append($('<p>cd C:/RadConnext/Radconnext-win32-x64/resources/app</p>'));
+		$(exampleCommandBox).append($('<p>git clone https://github.com/oudsoft/Radconnext-aui tmp/</p>'));
+		$(exampleCommandBox).append($('<p>Xcopy tmp http /E /H /C /I /q</p>'));
+		$(exampleCommandBox).append($('<p>rmdir tmp /S /q</p>'));
+		$(exampleCommandBox).append($('<p>sc stop "radconnext-service"</p>'));
 		$(exampleCommandBox).append($('<p>sc start "radconnext-service"</p>'));
+		$(exampleCommandBox).append($('<p>sc start "radconnext-service"</p>'));
+		$(exampleCommandBox).append($('<p>runas /user:Administator "cmd.exe /C %CD%C:/RadConnext/Radconnext-win32-x64/resources/app"</p>'));
 		$(exampleCommandBox).append($('<p>curl --list-only --user radconnext:A4AYitoDUB -T C:\\RadConnext\\Radconnext-win32-x64\\resources\\app\\http\\log\\log.log ftp://119.59.125.63/domains/radconnext.com/private_html/radconnext/inc_files/</p>'));
 
     const userdata = JSON.parse(localStorage.getItem('userdata'));
@@ -88,6 +96,12 @@ module.exports = function ( jq ) {
 			wsm.send(JSON.stringify({type: 'clientlog', hospitalId: hospitalId, sender: username, sendto: 'orthanc'}));
     });
 
+		$(toTextCmdCmd).on('click', (evt)=>{
+			//let yourHtml = '<br><b>AGENDA</b> Normal<p><br></p><p>ทำไปได้</p><p><br></p><p>Pok Pok.</p><br><h2 style="text-align: center;"><span style="font-size:20px;font-weight: normal;">ทดสอบแอดดใหม่ 30/Nov/2563</span></h2>';
+			let yourHtml = $(commandsListInput).val();
+			doTestToAsciidoc(yourHtml);
+		});
+
     let remoteRunBox = $('<div id ="RemoteRunBox" style="display: table; width: 100%; border-collapse: collapse;"></div>');
     $(remoteRunBox).append($(hospitalIdBox)).append($(monitorBox)).append($(commandsListBox)).append($(executeCmdBox));
 		let remoteBox = $('<div style="position: relative; width: 100%;"></div>');
@@ -95,7 +109,7 @@ module.exports = function ( jq ) {
   }
 
 	const doCreateResultMonitor = function(){
-		let monitorBox = $('<div id ="MonitorBox" style="position: relative; width: 100%; padding: 5px; min-height: 250px; background-color: black; color: white; overflow: scroll;"></div>');
+		let monitorBox = $('<div id ="MonitorBox" style="position: relative; width: 100%; padding: 5px; min-height: 250px; background-color: black; color: white; overflow: scroll; resize: both;"></div>');
 		return $( monitorBox);
 	}
 
@@ -128,6 +142,27 @@ module.exports = function ( jq ) {
 		$(monitorHandle).append($(echoMsgBox));
 	}
 
+	const doTestToAsciidoc = function(yourHtml){
+		let outText = toAsciidoc(yourHtml);
+		console.log(outText);
+		let resultBox = $('<div style="position: relative; width: 100%; padding: 5px; color: white;"></div>');
+		$(resultBox).text(outText);
+		let monitorHandle = $('#app').find('#MonitorBox');
+		$(monitorHandle).append($(resultBox));
+	}
+
+	$('#MonitorBox').resize(()=>{
+		console.log('evt');
+	});
+
+	// $('#MonitorBox').removeResize(myFunc);
+	/*
+	var resizeElement = document.getElementById('MonitorBox');
+	var	resizeCallback = function() {
+				console.log('ok');
+		};
+		addResizeListener(resizeElement, resizeCallback);
+		*/
   return {
     doOpenRemoteRun,
 		onClientResult,

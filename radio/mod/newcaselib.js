@@ -330,8 +330,7 @@ module.exports = function ( jq ) {
 					console.log(response);
 					if (response.status.code == 200) {
 						console.log(consultItem);
-						await doOpenChatbox(consultId, fakeCase, consultItem);
-
+						let openResult = await doOpenChatbox(consultId, fakeCase, consultItem);
 					} else {
 						alert('เกิดข้อผิดพลาด ไม่สามารถตอบรับ Consult ได้ในขณะนี้');
 					}
@@ -354,7 +353,7 @@ module.exports = function ( jq ) {
 				$(openCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'orange', 'color': 'white'});
 				$(consultCmdBox).append($(openCmd));
 				$(openCmd).on('click', async (evt)=>{
-					await doOpenChatbox(consultId, fakeCase, consultItem);
+					let openResult = await doOpenChatbox(consultId, fakeCase, consultItem);
 				});
 				let closeCmd = $('<div>Close</div>');
 				$(closeCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'grey', 'color': 'white'});

@@ -115,7 +115,6 @@ module.exports = function ( jq ) {
 			let userId = userdata.id;
 			doBackupDraft(caseId, responseHTML);
 			let responseText = toAsciidoc(responseHTML);
-			console.log(responseText);
 			let saveData = {Response_HTML: responseHTML, Response_Text: responseText, Response_Type: type};
 			let params = {caseId: caseId, userId: userId, data: saveData, responseId: caseResponseId};
 			let saveResponseRes = await doCallSaveResponse(params);

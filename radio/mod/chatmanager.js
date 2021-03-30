@@ -115,7 +115,8 @@ module.exports = function ( jq ) {
         let contactIcon = doCreateContactIcon(Id, Name, onContactIconClickCallback, onCloseContactClickCallback);
         resolve($(contactIcon));
       } else {
-        resolve(chatBoxTarget);
+				let contactIcon = doCreateContactIcon(Id, Name, onContactIconClickCallback, onCloseContactClickCallback);
+        resolve($(contactIcon));
       }
     });
   }

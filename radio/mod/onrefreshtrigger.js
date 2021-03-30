@@ -3,8 +3,9 @@ module.exports = function ( jq ) {
 	const $ = jq;
 
   const doShowCaseCounter = function(newstatusCases, accstatusCases, newConsult){
-    $('#NewCaseCmd').find('.NavRowTextCell').find('.case-counter').text('(' + (newstatusCases.length + newConsult.length) + ')');
-    if (newstatusCases.length > 0) {
+		let allNewIntend = newstatusCases.length + newConsult.length;
+    $('#NewCaseCmd').find('.NavRowTextCell').find('.case-counter').text('(' + allNewIntend + ')');
+    if (allNewIntend > 0) {
       $('#NewCaseCmd').find('.NavRowTextCell').find('.case-counter').css({'color': 'red'});
     } else {
       $('#NewCaseCmd').find('.NavRowTextCell').find('.case-counter').css({'color': 'white'});

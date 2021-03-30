@@ -334,7 +334,7 @@ module.exports = function ( jq ) {
 			//console.log('Master Websocket is connected to the signaling server')
 		};
 
-		console.log(usertype);
+		//console.log(usertype);
 
 		if (usertype == 2) {
 			const wsmMessageHospital = require('./websocketmessage.js')($);

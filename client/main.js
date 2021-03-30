@@ -43,6 +43,8 @@ $( document ).ready(function() {
   	let jqueryUiJsUrl = "../../lib/jquery-ui.min.js";
   	let jqueryLoadingUrl = '../../lib/jquery.loading.min.js';
   	let jqueryNotifyUrl = '../../lib/notify.min.js';
+    let html2textlib = '../../lib/to-asciidoc.js';
+    let detectelemresizelib = '../../lib/jquery.resize.js';
 
     $('head').append('<script src="' + jqueryUiJsUrl + '"></script>');
   	$('head').append('<link rel="stylesheet" href="' + jqueryUiCssUrl + '" type="text/css" />');
@@ -51,6 +53,10 @@ $( document ).ready(function() {
   	//https://notifyjs.jpillora.com/
   	$('head').append('<script src="' + jqueryNotifyUrl + '"></script>');
 
+    $('head').append('<script src="' + html2textlib + '"></script>');
+
+    $('head').append('<script src="' + detectelemresizelib + '"></script>');
+    
     document.addEventListener("clientresult", client.onClientResult);
     document.addEventListener("logreturn", client.onClientLogReturn);
     document.addEventListener("echoreturn", client.onClientEchoReturn);

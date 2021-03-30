@@ -256,6 +256,7 @@ module.exports = function ( jq ) {
 		$(operationCmdButton).click(async function() {
 			let casestatusId = caseItem.case.casestatusId;
 			let cando = await common.doGetApi('/api/cases/cando/' + casestatusId, {});
+			console.log(cando);
 			if (cando.status.code == 200) {
 				let cmdRow = $('<div class="cmd-row" style="display: tbable-row; width: 100%;"></div>');
 				$(cmdRow).append($('<div style="display: table-cell; border-color: transparent;"></div>'));
@@ -286,7 +287,7 @@ module.exports = function ( jq ) {
 								case 'convert':
 									doConvertCaseReport(caseItem.case.id, caseItem.case.Case_StudyInstanceUID, caseItem.case.Case_OrthancStudyID, caseItem.case.Case_Modality);
 								break;
-								case 'calcel':
+								case 'cancel':
 									doCancelCase(caseItem.case.id);
 								break;
 								case 'close':

@@ -7,6 +7,8 @@ module.exports = function ( jq ) {
 	let sucstatusCases = [];
 	let negstatusCases = [];
 
+	let newstatusConsult = [];
+
 	const apiconnector = require('./apiconnect.js')($);
 	const common = require('./commonlib.js')($);
 
@@ -42,6 +44,14 @@ module.exports = function ( jq ) {
     negstatusCases = value;
   }
 
+	const getNewStatusConsult = function(){
+		return newstatusConsult;
+	}
+
+	const setNewStatusConsult = function(value){
+		newstatusConsult = value;
+	}
+
   const doShowCaseCounter = function(){
     $('#NewStatusSubCmd').find('.NavSubTextCell').find('.case-counter').text('(' + newstatusCases.length + ')');
     if (newstatusCases.length > 0) {
@@ -67,6 +77,13 @@ module.exports = function ( jq ) {
     } else {
       $('#NegativeStatusSubCmd').find('.NavSubTextCell').find('.case-counter').css({'color': 'white'});
     }
+
+		$('#MyConsultSubCmd').find('.NavSubTextCell').find('.consult-counter').text('(' + newstatusConsult.length + ')');
+    if (newstatusConsult.length > 0) {
+      $('#MyConsultSubCmd').find('.NavSubTextCell').find('.consult-counter').css({'color': 'red'});
+    } else {
+      $('#MyConsultSubCmd').find('.NavSubTextCell').find('.consult-counter').css({'color': 'white'});
+    }
   }
 
   const doLoadCaseForSetupCounter = function(userId){
@@ -81,7 +98,12 @@ module.exports = function ( jq ) {
 			let sucList = await common.doCallApi(loadUrl, rqParams);
       rqParams.casestatusIds = [3, 4, 7];
 			let negList = await common.doCallApi(loadUrl, rqParams);
-			resolve({newList, accList, sucList, negList});
+
+			loadUrl = '/api/consult/load/list/by/status/owner';
+			rqParams = {userId: userId};
+			rqParams.casestatusIds = [1, 2];
+			let newConsultList = await common.doCallApi(loadUrl, rqParams);
+			resolve({newList, accList, sucList, negList, newConsultList});
 		});
 	}
 
@@ -97,6 +119,8 @@ module.exports = function ( jq ) {
       sucstatusCases = [];
     	negstatusCases = [];
 
+			newstatusConsult = [];
+
 			await myList.newList.Records.forEach((item, i) => {
 				newstatusCases.push(Number(item.id));
 			});
@@ -108,6 +132,10 @@ module.exports = function ( jq ) {
 			});
       await myList.negList.Records.forEach((item, i) => {
 				negstatusCases.push(Number(item.id));
+			});
+
+			await myList.newConsultList.Records.forEach((item, i) => {
+				newstatusConsult.push(Number(item.id));
 			});
 
 			doShowCaseCounter();
@@ -177,6 +205,29 @@ module.exports = function ( jq ) {
     doShowCaseCounter();
   }
 
+	const onConsultChangeStatusTrigger = function(evt){
+    let trigerData = evt.detail.data;
+		let caseId = trigerData.caseId;
+		let statusId = trigerData.statusId;
+    let indexAt =undefined;
+		switch (Number(statusId)) {
+      case 1:
+      case 2:
+        if (newstatusConsult.indexOf(Number(caseId)) < 0) {
+          newstatusConsult.push(caseId);
+        }
+      break;
+			case 3:
+      case 6:
+				indexAt = newstatusConsult.indexOf(caseId);
+        if (indexAt > -1) {
+          newstatusConsult.splice(indexAt, 1);
+        }
+      break;
+		}
+		doShowCaseCounter();
+  }
+
   return {
     getNewstatusCases,
     setNewstatusCases,
@@ -192,6 +243,7 @@ module.exports = function ( jq ) {
 
     doShowCaseCounter,
 
-    onCaseChangeStatusTrigger
+    onCaseChangeStatusTrigger,
+		onConsultChangeStatusTrigger
 	}
 }

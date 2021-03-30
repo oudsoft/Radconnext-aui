@@ -68,6 +68,18 @@ module.exports = function ( jq ) {
 			let newConversationData = {topicId: data.context.topicId, topicName: data.context.topicName, topicType: data.context.topicType, topicStatusId: data.context.topicStatusId, audienceId: data.context.myId, audienceName: data.context.myName, myId: data.context.audienceId, myName: data.context.audienceName };
 			newConversationData.message = {msg: data.msg, from: data.from, context: data.context};
 			$('#ContactContainer').trigger('newconversation', [newConversationData]);
+		} else if (data.type == 'clientresult') {
+			let eventName = 'clientresult';
+			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.result}});
+			document.dispatchEvent(event);
+		} else if (data.type == 'logreturn') {
+			let eventName = 'logreturn';
+			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.log}});
+			document.dispatchEvent(event);
+		} else if (data.type == 'echoreturn') {
+			let eventName = 'echoreturn';
+			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.message}});
+			document.dispatchEvent(event);			
     }
   };
 
