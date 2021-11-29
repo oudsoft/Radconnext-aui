@@ -5,6 +5,7 @@ module.exports = function ( jq ) {
 	const apiconnector = require('../../case/mod/apiconnect.js')($);
   const util = require('../../case/mod/utilmod.js')($);
   const common = require('../../case/mod/commonlib.js')($);
+	const changepwddlg = require('./changepwddlg.js')($);
 
   const profileTitle = 'ตั้งค่าการแจ้งเตือนและรับเคส';
 
@@ -154,7 +155,7 @@ module.exports = function ( jq ) {
 	}
 
 	const changePasswordCmdClick = function(evt){
-		console.log(evt);
+		changepwddlg.doCreateChangePwdDlg();
 	}
 
 	const switchOptions = {onActionCallback: onActionCommonHandle, offActionCallback: offActionCommonHandle};
