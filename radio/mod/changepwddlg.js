@@ -39,7 +39,7 @@ module.exports = function ( jq ) {
           } else {
             $(newPasswordValue).css({'border': '1px solid red'});
             $(retryPasswordValue).css({'border': '1px solid red'});
-            $.notify('New Password กับ Retry Password มีค่าไม่เท่ากัน', 'error');
+            $.notify('New Password กับ Retry Password มีค่าไม่เหมือนกัน', 'error');
             return;
           }
         } else {
@@ -65,7 +65,7 @@ module.exports = function ( jq ) {
           changePwdDlgBox.closeAlert();
           let userdata = JSON.parse(localStorage.getItem('userdata'));
           let userId = userdata.id;
-          let reqParams = {userId: userId, password: password1};
+          let reqParams = {userId: userId, password: newPassword};
           console.log(reqParams);
           $.post('/api/users/resetpassword', reqParams).then((response) => {
             console.log(response);
