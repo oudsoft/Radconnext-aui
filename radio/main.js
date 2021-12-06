@@ -39,6 +39,8 @@ $( document ).ready(function() {
           if (userdata.usertypeId == 4){
     			  doLoadMainPage();
             wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
+            doSetupAutoReadyAfterLogin();
+            doAutoAcceptCase();
           } else {
             //$.notify('บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้ โปรด Login ใหม่เพื่อเปลี่ยนบัญชีใช้งาน', 'error');
             alert('บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้ โปรด Login ใหม่เพื่อเปลี่ยนบัญชีใช้งาน');
@@ -142,6 +144,7 @@ function doLoadMainPage(){
   document.addEventListener("callzoominterrupt", welcome.doInterruptZoomCallEvt);
   document.addEventListener("lockscreen", onLockScreenTrigger);
   document.addEventListener("unlockscreen", onUnLockScreenTrigger);
+  document.addEventListener("autologout", onAutoLogoutTrigger);
   document.addEventListener("updateuserprofile", onUpdateUserProfileTrigger);
 
   let userdata = JSON.parse(doGetUserData());
@@ -496,6 +499,7 @@ function unlockAction(modalBox) {
         let welcomeMsg = 'Welcome back ' + userdata.username;
         $.notify(welcomeMsg, "success");
         resetScreen();
+        doAutoAcceptCase();
       } else {
         $.notify("รหัสผ่านของคุณไม่ถูกต้อง", "error");
       }
@@ -510,6 +514,7 @@ function unlockAction(modalBox) {
     $(passwordBox).find('#YourPassword').focus();
   } else {
     resetScreen();
+    doAutoAcceptCase();
   }
 }
 
@@ -545,6 +550,10 @@ function onUnLockScreenTrigger(evt){
   util.doSetScreenState(0);
 }
 
+function onAutoLogoutTrigger(evt){
+  doLoadLogin();
+}
+
 function onUpdateUserProfileTrigger(evt){
   let newProfile = evt.detail.data.Profile;
   let newReadyState = newProfile.readyState;
@@ -561,6 +570,37 @@ function onUpdateUserProfileTrigger(evt){
     readyLogic = false;
   }
   $('#app').find('#ReadyState').find('input[type="checkbox"]').prop('checked', readyLogic);
+}
+
+function doSetupAutoReadyAfterLogin(){
+  const userdata = JSON.parse(localStorage.getItem('userdata'));
+  const autoReady = userdata.userprofiles[0].Profile.activeState.autoReady;
+  if (autoReady == 1){
+    let readyState = userdata.userprofiles[0].Profile.readyState;
+    if (readyState == 0){
+      userdata.userprofiles[0].Profile.readyState = 1;
+      userdata.userprofiles[0].Profile.readyBy = 'auto';
+  		localStorage.setItem('userdata', JSON.stringify(userdata));
+  		let rqParams = {data: userdata.userprofiles[0].Profile, userId: userdata.id};
+  		let profileRes = common.doCallApi('/api/userprofile/update', rqParams);
+    }
+  }
+}
+
+function doAutoAcceptCase(){
+  const userdata = JSON.parse(localStorage.getItem('userdata'));
+  const autoAcc = userdata.userprofiles[0].Profile.activeState.autoAcc;
+  if (autoAcc == 1){
+    newcase.doCallMyNewCase().then(async (myNewCase)=>{
+      if (myNewCase.status.code == 200){
+        let caseLists = myNewCase.Records;
+        for (let i=0; i < caseLists.length; i++) {
+          let caseItem = caseLists[i];
+          await common.doUpdateCaseStatus(caseItem.id, 2, 'Radiologist Accept case by Auto Acc.');
+        }
+      }
+    });
+  }
 }
 
 function doGetToken(){

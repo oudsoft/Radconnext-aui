@@ -42,7 +42,9 @@ module.exports = function ( jq, wsm) {
       let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
       document.dispatchEvent(event);
 		} else if (data.type == 'ping') {
-			let minuteLockScreen = userdata.userprofiles[0].Profile.screen.lock;
+			//let minuteLockScreen = userdata.userprofiles[0].Profile.screen.lock;
+			let minuteLockScreen = userdata.userprofiles[0].Profile.lockState.autoLockScreen;
+			let minuteLogout = userdata.userprofiles[0].Profile.offlineState.autoLogout;
 			let tryLockModTime = (Number(data.counterping) % Number(minuteLockScreen));
 			if (data.counterping == minuteLockScreen) {
 				let eventName = 'lockscreen';
@@ -54,6 +56,14 @@ module.exports = function ( jq, wsm) {
 	      let evtData = {};
 	      let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
 	      document.dispatchEvent(event);
+			}
+			if (minuteLogout > 0){
+				if (data.counterping == minuteLogout) {
+					let eventName = 'autologout';
+		      let evtData = {};
+		      let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
+		      document.dispatchEvent(event);
+				}
 			}
 		} else if (data.type == 'unlockscreen') {
 			let eventName = 'unlockscreen';

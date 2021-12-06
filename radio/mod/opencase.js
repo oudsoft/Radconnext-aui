@@ -328,7 +328,7 @@ module.exports = function ( jq ) {
 
 				doCreateResultManagementDialog(saveNewResponseData);
 				//let saveResponseRes = doCallSaveResult(params);
-
+				//->ตรงนี้คืออะไร
 				var saveResultApiRRL = '/api/uicommon/radio/saveresult';
 				$.post(saveResultApiRRL, params, function(saveResponseRes){
 					console.log(saveResponseRes);
