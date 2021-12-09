@@ -329,6 +329,7 @@ module.exports = function ( jq ) {
 				doCreateResultManagementDialog(saveNewResponseData);
 				//let saveResponseRes = doCallSaveResult(params);
 				//->ตรงนี้คืออะไร
+				//-> ตรงนี้คือการสั่งให้เซิร์ฟเวอร์สร้างผลอ่าน pdf
 				var saveResultApiRRL = '/api/uicommon/radio/saveresult';
 				$.post(saveResultApiRRL, params, function(saveResponseRes){
 					console.log(saveResponseRes);
