@@ -475,6 +475,7 @@ const onClientReconnectTrigger = function(evt){
   wsl = util.doConnectWebsocketLocal(userdata.username);
   setTimeout(()=>{
     wsl.send(JSON.stringify({type: 'client-reconnect'}));
+    localStorage.removeItem('masternotify');
   },2100);
 }
 

@@ -22,8 +22,8 @@ const acccase = require('./mod/acccaselib.js')($);
 const searchcase = require('./mod/searchcaselib.js')($);
 const opencase = require('./mod/opencase.js')($);
 const template = require('./mod/templatelib.js')($);
-const profile = require('./mod/profilelib.js')($);
-//const profile = require('./mod/profilelibV2.js')($);
+//const profile = require('./mod/profilelib.js')($);
+const profile = require('./mod/profilelibV2.js')($);
 
 const modalLockScreenStyle = { 'position': 'fixed', 'z-index': '41', 'left': '0', 'top': '0', 'width': '100%', 'height': '100%', 'overflow': 'auto', 'background-color': '#ccc'};
 
@@ -102,8 +102,8 @@ function doLoadMainPage(){
   let htmlformatlib = '../lib/htmlformatlib.js';
 
 	let countdownclockPluginUrl = "../setting/plugin/jquery-countdown-clock-plugin.js";
-	let controlPagePlugin = "../setting/plugin/jquery-controlpage-plugin.js"
-  let readystatePlugin = "../setting/plugin/jqury-readystate-plugin.js"
+	let controlPagePlugin = "../setting/plugin/jquery-controlpage-plugin.js";
+  let readystatePlugin = "../setting/plugin/jqury-readystate-plugin.js";
   let chatBoxPlugin = "../setting/plugin/jquery-chatbox-plugin.js";
   let utilityPlugin = "../setting/plugin/jquery-radutil-plugin.js";
 
