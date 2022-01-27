@@ -261,9 +261,12 @@ module.exports = function ( jq ) {
 	          	$(myAccCaseView).append($(caseRow));
 						}
 	        }
+					$('#AcceptedCaseCmd').find('.NavRowTextCell').find('.case-counter').text(caseLists.length);
+					$('#AcceptedCaseCmd').find('.NavRowTextCell').find('.case-counter').show();
 	      } else {
 	        let notFoundMessage = $('<h3>ไม่พบรายการเคสใหม่ของคุณในขณะนี้</h3>')
 	        $(myAccCaseView).append($(notFoundMessage));
+					$('#AcceptedCaseCmd').find('.NavRowTextCell').find('.case-counter').hide();
 	      }
 	      resolve($(myAccCaseView));
 	      $('body').loading('stop');

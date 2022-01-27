@@ -504,6 +504,14 @@ module.exports = function ( jq ) {
 				let searchConsultCmd = doCreateSearchConsultCmd();
 				$(myCaseViewBox).append($(searchConsultCmd));
 
+				let allNewIntend = caseLists.length + consultLists.length;
+				if (allNewIntend > 0) {
+					$('#NewCaseCmd').find('.NavRowTextCell').find('.case-counter').text(allNewIntend);
+					$('#NewCaseCmd').find('.NavRowTextCell').find('.case-counter').show();
+				} else {
+					$('#NewCaseCmd').find('.NavRowTextCell').find('.case-counter').hide();
+				}
+
 	      $('body').loading('stop');
 	      resolve($(myCaseViewBox));
 			} else if (myNewCase.status.code == 210){

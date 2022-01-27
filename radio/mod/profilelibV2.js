@@ -188,19 +188,25 @@ module.exports = function ( jq ) {
 		let wrapperBox = $('<div id="PhoneCallOptionBox" style="position: relative; display: none; top: 10px; padding: 10px; border: 2px solid black;"></div>');
 		let option1HRElem = $('<div style="line-height: 40px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ ไม่เกิน 1 ชม. หากไม่ได้ตอบรับ โทรเมื่อเวลาตอบรับเหลือน้อยกว่า</span>'));
 		let option4HRElem = $('<div style="line-height: 40px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ 1 - 4 ชม. หากไม่ได้ตอบรับ โทรเมื่อเวลาตอบรับเหลือน้อยกว่า</span>'));
-		let option24HRElem = $('<div style="line-height: 20px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ ไม่เกิน 24 ชม.</span>'));
-		let option1DElem = $('<div style="line-height: 20px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ เกิน 24 ชม.</span>'));
+		let option24HRLElem = $('<div style="line-height: 20px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ ไม่เกิน 24 ชม. หากไม่ได้ตอบรับ โทรเมื่อเวลาตอบรับเหลือน้อยกว่า</span>'));
+		let option24HRUElem = $('<div style="line-height: 20px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ เกิน 24 ชม. หากไม่ได้ตอบรับ โทรเมื่อเวลาตอบรับเหลือน้อยกว่า</span>'));
 		let option1HRInput = $('<input type="number" id="Option1HRInput" style="width: 60px;">');
 		$(option1HRInput).val(options.optionCaseControl.case1H);
 		let option4HRInput = $('<input type="number" id="Option4HRInput" style="width: 60px;">');
 		$(option4HRInput).val(options.optionCaseControl.case4H);
-		let option24HRInput = $('<input type="number" id="Option24HRInput" style="width: 60px;">');
-		let option1DInput = $('<input type="number" id="Option1DInput" style="width: 60px;">');
+		let option24HRLInput = $('<input type="number" id="Option24HRLInput" style="width: 60px;">');
+		$(option24HRLInput).val(options.optionCaseControl.case24HL? options.optionCaseControl.case24HL:0);
+		let option24HRUInput = $('<input type="number" id="Option24HRUInput" style="width: 60px;">');
+		$(option24HRUInput).val(options.optionCaseControl.case24HU? options.optionCaseControl.case24HU:0);
 		$(option1HRElem).append($(option1HRInput).css({'margin-left': '10px'}));
 		$(option1HRElem).append($('<span>นาที</span>').css({'margin-left': '10px'}));
 		$(option4HRElem).append($(option4HRInput).css({'margin-left': '10px'}));
 		$(option4HRElem).append($('<span>นาที</span>').css({'margin-left': '10px'}));
-		return $(wrapperBox).append($(option1HRElem)).append($(option4HRElem)).append($(option24HRElem)).append($(option1DElem));
+		$(option24HRLElem).append($(option24HRLInput).css({'margin-left': '10px'}));
+		$(option24HRLElem).append($('<span>นาที</span>').css({'margin-left': '10px'}));
+		$(option24HRUElem).append($(option24HRUInput).css({'margin-left': '10px'}));
+		$(option24HRUElem).append($('<span>นาที</span>').css({'margin-left': '10px'}));
+		return $(wrapperBox).append($(option1HRElem)).append($(option4HRElem)).append($(option24HRLElem)).append($(option24HRUElem));
 	}
 
 	const doCreateSwitchBox = function(box, switchOptions, defaultValue){
@@ -386,6 +392,13 @@ module.exports = function ( jq ) {
 				profileTable.find('#ActiveControl').append($(linebotNotifyActiveBox));
 
 				let phoneCallActiveBox = doCreatePhoneCallActiveContolSwitch(myProfile.Profile.activeState.phoneCall, myProfile.Profile.activeState.phoneCallOptions);
+				let manAutoOptionAciveBox = $(phoneCallActiveBox).find('#ManAutoOptionBox');
+				console.log(myProfile.Profile.activeState.phoneCall);
+				if (myProfile.Profile.activeState.phoneCall == 0){
+					$(manAutoOptionAciveBox).hide();
+				} else if (myProfile.Profile.activeState.phoneCall == 1){
+					$(manAutoOptionAciveBox).show();
+				}
 				profileTable.find('#ActiveControl').append($(phoneCallActiveBox));
 
 				let autoAcceptOptionBox = doCreateAutoAcceptSwitch(myProfile.Profile.activeState.autoAcc);
@@ -398,6 +411,12 @@ module.exports = function ( jq ) {
 				profileTable.find('#LockControl').append($(linebotNotifyLockBox));
 
 				let phoneCallLockBox = doCreatePhoneCallLockContolSwitch(myProfile.Profile.lockState.phoneCall, myProfile.Profile.lockState.phoneCallOptions);
+				let manAutoOptionLockBox = $(phoneCallLockBox).find('#ManAutoOptionBox');
+				if (myProfile.Profile.lockState.phoneCall == 0){
+					$(manAutoOptionLockBox).hide();
+				} else if (myProfile.Profile.lockState.phoneCall == 1){
+					$(manAutoOptionLockBox).show();
+				}
 				profileTable.find('#LockControl').append($(phoneCallLockBox));
 
 				let autoLockSreenBox = doCreateAutoLockScreenControlBox(myProfile.Profile.lockState.autoLockScreen);
@@ -410,6 +429,12 @@ module.exports = function ( jq ) {
 				profileTable.find('#OfflineControl').append($(linebotNotifyOfflineBox));
 
 				let phoneCallOfflineBox = doCreatePhoneCallOfflineContolSwitch(myProfile.Profile.offlineState.phoneCall, myProfile.Profile.offlineState.phoneCallOptions);
+				let manAutoOptionOfflineBox = $(phoneCallOfflineBox).find('#ManAutoOptionBox');
+				if (myProfile.Profile.offlineState.phoneCall == 0){
+					$(manAutoOptionOfflineBox).hide();
+				} else if (myProfile.Profile.offlineState.phoneCall == 1){
+					$(manAutoOptionOfflineBox).show();
+				}
 				profileTable.find('#OfflineControl').append($(phoneCallOfflineBox));
 
 				let autoLogoutControlBox = doCreateAutoLogoutControlBox(myProfile.Profile.offlineState.autoLogout);
@@ -447,6 +472,8 @@ module.exports = function ( jq ) {
 			let activeManAutoOption = pageHandle.find('#ActiveControl').find('input[name="ManAutoActiveGroup"]:checked').val();
 			let activePhoneCall1H = pageHandle.find('#ActiveControl').find('#PhoneCallOptionBox').find('#Option1HRInput').val();
 			let activePhoneCall4H = pageHandle.find('#ActiveControl').find('#PhoneCallOptionBox').find('#Option4HRInput').val();
+			let activePhoneCall24HL = pageHandle.find('#ActiveControl').find('#PhoneCallOptionBox').find('#Option24HRLInput').val();
+			let activePhoneCall24HU = pageHandle.find('#ActiveControl').find('#PhoneCallOptionBox').find('#Option24HRUInput').val();
 			let activeAutoAcc = pageHandle.find('#ActiveControl').find('#AutoAcceptSwitchBox').find('input[type=checkbox]').prop('checked');
 			let activeAutoReady = pageHandle.find('#ActiveControl').find('#AutoOnReadySwitchBox').find('input[type=checkbox]').prop('checked');
 
@@ -455,6 +482,8 @@ module.exports = function ( jq ) {
 			let lockManAutoOption = pageHandle.find('#LockControl').find('input[name="ManAutoLockGroup"]:checked').val();
 			let lockPhoneCall1H = pageHandle.find('#LockControl').find('#PhoneCallOptionBox').find('#Option1HRInput').val();
 			let lockPhoneCall4H = pageHandle.find('#LockControl').find('#PhoneCallOptionBox').find('#Option4HRInput').val();
+			let lockPhoneCall24HL = pageHandle.find('#LockControl').find('#PhoneCallOptionBox').find('#Option24HRLInput').val();
+			let lockPhoneCall24HU = pageHandle.find('#LockControl').find('#PhoneCallOptionBox').find('#Option24HRUInput').val();
 			let lockAutoLockScreenMinut = pageHandle.find('#LockControl').find('#AutoLockScreenControlBox').find('#AutoLockScreenMinuteInput').val();
 			let lockPasswordUnlock = pageHandle.find('#LockControl').find('#UnlockOptionSwitchBox').find('input[type=checkbox]').prop('checked');
 
@@ -463,6 +492,8 @@ module.exports = function ( jq ) {
 			let offlineManAutoOption = pageHandle.find('#OfflineControl').find('input[name="ManAutoOfflineGroup"]:checked').val();
 			let offlinePhoneCall1H = pageHandle.find('#OfflineControl').find('#PhoneCallOptionBox').find('#Option1HRInput').val();
 			let offlinePhoneCall4H = pageHandle.find('#OfflineControl').find('#PhoneCallOptionBox').find('#Option4HRInput').val();
+			let offlinePhoneCall24HL = pageHandle.find('#OfflineControl').find('#PhoneCallOptionBox').find('#Option24HRLInput').val();
+			let offlinePhoneCall24HU = pageHandle.find('#OfflineControl').find('#PhoneCallOptionBox').find('#Option24HRUInput').val();
 			let offlineAutoLogoutMinut = pageHandle.find('#OfflineControl').find('#AutoLogoutControlBox').find('#AutoLogoutMinuteInput').val();
 
 			let verifyProfile1 = ((lockAutoLockScreenMinut > -1) && (lockAutoLockScreenMinut < 61));
@@ -482,7 +513,9 @@ module.exports = function ( jq ) {
 								manAutoOption: activeManAutoOption,
 								optionCaseControl: {
 									case1H: activePhoneCall1H? activePhoneCall1H:0,
-									case4H: activePhoneCall4H? activePhoneCall4H:0
+									case4H: activePhoneCall4H? activePhoneCall4H:0,
+									case24HL: activePhoneCall24HL? activePhoneCall24HL:0,
+									case24HU: activePhoneCall24HU? activePhoneCall24HU:0,
 								}
 							},
 							autoAcc: activeAutoAcc? 1:0,
@@ -495,7 +528,9 @@ module.exports = function ( jq ) {
 								manAutoOption: lockManAutoOption,
 								optionCaseControl: {
 									case1H: lockPhoneCall1H? lockPhoneCall1H:0,
-									case4H: lockPhoneCall4H? lockPhoneCall4H:0
+									case4H: lockPhoneCall4H? lockPhoneCall4H:0,
+									case24HL: lockPhoneCall24HL? lockPhoneCall24HL:0,
+									case24HU: lockPhoneCall24HU? lockPhoneCall24HU:0,
 								}
 							},
 							autoLockScreen: lockAutoLockScreenMinut,
@@ -508,7 +543,9 @@ module.exports = function ( jq ) {
 								manAutoOption: offlineManAutoOption,
 								optionCaseControl: {
 									case1H: offlinePhoneCall1H? offlinePhoneCall1H:0,
-									case4H: offlinePhoneCall4H? offlinePhoneCall4H:0
+									case4H: offlinePhoneCall4H? offlinePhoneCall4H:0,
+									case24HL: offlinePhoneCall24HL? offlinePhoneCall24HL:0,
+									case24HU: offlinePhoneCall24HU? offlinePhoneCall24HU:0,
 								}
 							},
 							autoLogout: offlineAutoLogoutMinut
