@@ -188,12 +188,12 @@ module.exports = function ( jq ) {
 		let wrapperBox = $('<div id="PhoneCallOptionBox" style="position: relative; display: none; top: 10px; padding: 10px; border: 2px solid black;"></div>');
 		let option1HRElem = $('<div style="line-height: 40px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ ไม่เกิน 1 ชม. หากไม่ได้ตอบรับ โทรเมื่อเวลาตอบรับเหลือน้อยกว่า</span>'));
 		let option4HRElem = $('<div style="line-height: 40px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ 1 - 4 ชม. หากไม่ได้ตอบรับ โทรเมื่อเวลาตอบรับเหลือน้อยกว่า</span>'));
-		let option24HRLElem = $('<div style="line-height: 20px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ ไม่เกิน 24 ชม. หากไม่ได้ตอบรับ โทรเมื่อเวลาตอบรับเหลือน้อยกว่า</span>'));
-		let option24HRUElem = $('<div style="line-height: 20px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ เกิน 24 ชม. หากไม่ได้ตอบรับ โทรเมื่อเวลาตอบรับเหลือน้อยกว่า</span>'));
+		let option24HRLElem = $('<div style="line-height: 40px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ ไม่เกิน 24 ชม. หากไม่ได้ตอบรับ โทรเมื่อเวลาตอบรับเหลือน้อยกว่า</span>'));
+		let option24HRUElem = $('<div style="line-height: 40px;"></div>').append($('<span>สำหรับเคส เวลาตอบรับ เกิน 24 ชม. หากไม่ได้ตอบรับ โทรเมื่อเวลาตอบรับเหลือน้อยกว่า</span>'));
 		let option1HRInput = $('<input type="number" id="Option1HRInput" style="width: 60px;">');
-		$(option1HRInput).val(options.optionCaseControl.case1H);
+		$(option1HRInput).val(options.optionCaseControl.case1H? options.optionCaseControl.case1H:0);
 		let option4HRInput = $('<input type="number" id="Option4HRInput" style="width: 60px;">');
-		$(option4HRInput).val(options.optionCaseControl.case4H);
+		$(option4HRInput).val(options.optionCaseControl.case4H? options.optionCaseControl.case4H:0);
 		let option24HRLInput = $('<input type="number" id="Option24HRLInput" style="width: 60px;">');
 		$(option24HRLInput).val(options.optionCaseControl.case24HL? options.optionCaseControl.case24HL:0);
 		let option24HRUInput = $('<input type="number" id="Option24HRUInput" style="width: 60px;">');

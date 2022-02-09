@@ -440,7 +440,7 @@ module.exports = function ( jq ) {
 	}
 
 	const doCreateSoftPhoneCallCmd = function(caseItem){
-		const softPhoneIconUrl = '/images/phone-call-icon.png';
+		const softPhoneIconUrl = '/images/phone-call-icon-2.png';
 		let softPhoneBox = $('<div style="position: relative; display: inline-block; text-align: center; margin-right: 20px;"></div>');
     let softPhoneIcon = $('<img style="postion: absolute; width: 30px; height: auto; cursor: pointer;"/>');
     $(softPhoneIcon).attr('src', softPhoneIconUrl);
@@ -460,7 +460,7 @@ module.exports = function ( jq ) {
 	}
 
 	const doCreateZoomCallCmd = function(caseItem, chatHandle){
-		const zoomIconUrl = '/images/zoom-black-icon.png';
+		const zoomIconUrl = '/images/zoom-white-icon.png';
 		let zoomBox = $('<div style="position: relative; display: inline-block; text-align: center; margin-right: 20px;"></div>');
     let zoomIcon = $('<img style="postion: absolute; width: 30px; height: auto; cursor: pointer;"/>');
     $(zoomIcon).attr('src', zoomIconUrl);
@@ -507,13 +507,27 @@ module.exports = function ( jq ) {
 			chatHandle.sendMessage(pwdMsg);
 			chatHandle.sendMessage(topicMsg);
 
-
 			window.open(zoomMeeting.start_url, '_blank');
 			$('body').loading('stop');
 		} else {
 			//radio offline
-			alert('ระบบฯ ไม่สามารถติดต่อรังสีแพทย์ได้\nอย่างไรก็ตามคุณสามารถส่งข้อมูลห้องสนนาที่ปรากฎในกล่องข้อความ่ไปให้รังสีแพทย์ทางช่องทางอื่นได้เช่น ไลน์ อีเมล์ เป็นต้น');
 			$('body').loading('stop');
+			let radAlertMsg = $('<div></div>');
+			$(radAlertMsg).append($('<p>ระบบฯ ไม่สามารถติดต่อรังสีแพทย์ได้ในขณะนี้</p>'));
+			$(radAlertMsg).append($('<p>อย่างไรก็ตามคุณสามารถส่งข้อมูลห้องสนนาที่สร้างขึ้นใหม่</p>'));
+			$(radAlertMsg).append($('<p>่ไปให้รังสีแพทย์ทางช่องทางอื่นได้เช่น ไลน์ อีเมล์ เป็นต้น</p>'));
+			$(radAlertMsg).append($('<p>ลิงค์สำหรับเข้าร่วมสนทนา <b>' + zoomMeeting.join_url + '</b></p>'));
+			$(radAlertMsg).append($('<p>Password เข้าร่วมสนทนา <b>' + zoomMeeting.password + '</b></p>'));
+			$(radAlertMsg).append($('<p>ชื่อหัวข้อสนทนา <b>' + zoomMeeting.topic + '</b></p>'));
+			const radconfirmoption = {
+				title: 'ไม่สามารถติดต่อรังสีแพทย์ได้',
+				msg: $(radAlertMsg),
+				width: '420px',
+				onOk: function(evt) {
+					radConfirmBox.closeAlert();
+				}
+			}
+			let radConfirmBox = $('body').radalert(radconfirmoption);
 		}
 	}
 
