@@ -69,6 +69,9 @@ module.exports = function ( jq ) {
 					if (lastHis) {
 						let audienceId = lastHis.from;
 						let audienceInfo = await apiconnector.doGetApi('/api/users/searchusername/' + audienceId, {});
+						console.log(audienceInfo);
+						audienceInfo = await apiconnector.doGetApi('/api/users/select/' + audienceInfo.id, {});
+						console.log(audienceInfo);
 						let audienceName = audienceInfo.result[0].userinfo.User_NameTH + ' ' + audienceInfo.result[0].userinfo.User_LastNameTH;
 						let topicName = openCase.case.patient.Patient_HN + ' ' + openCase.case.patient.Patient_NameEN + ' ' + openCase.case.patient.Patient_LastNameEN + ' ' + openCase.case.patient.Patient_Sex + '/' + openCase.case.patient.Patient_Age + ' ' + openCase.case.Case_BodyPart;
 						let topicType = 'case';

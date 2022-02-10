@@ -81,7 +81,6 @@ module.exports = function ( jq ) {
 				eventData.StudyDescription = eventData.ProtocolName;
 			}
 			let currentCaseRes = await common.doGetApi('/api/cases/status/' + caseItem.id, {});
-			console.log(currentCaseRes);
 			if (currentCaseRes.current == 2){
 			//if (caseItem.casestatusId == 2) {
 				let newCaseStatus = 8;
@@ -92,7 +91,7 @@ module.exports = function ( jq ) {
 				} else {
 					alert('เกิดข้อผิดพลาด ไม่สามารถอัพเดทสถานะเคสได้ในขณะนี้');
 				}
-			} else if ((currentCaseRes.current == 8) || (currentCaseRes.current == 9)){
+			} else if ((currentCaseRes.current == 8) || (currentCaseRes.current == 9) || (currentCaseRes.current == 14)){
 				eventData.statusId = caseItem.casestatusId;
 	      $(openCmd).trigger('opencase', [eventData]);
 			} else {

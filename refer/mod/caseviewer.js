@@ -414,6 +414,7 @@ module.exports = function ( jq ) {
 				let newStatus = 14;
 				let newDescription = 'Case have Issue Message to Radio.';
 				let updateStatusRes = await common.doUpdateCaseStatus(context.topicId, newStatus, newDescription);
+				console.log(updateStatusRes);
 				if (updateStatusRes.status.code == 200){
 					let selector = '#'+sendto + ' .chatbox';
 					let targetChatBox = $(selector);
@@ -528,6 +529,7 @@ module.exports = function ( jq ) {
 				}
 			}
 			let radConfirmBox = $('body').radalert(radconfirmoption);
+			$(radConfirmBox.cancelCmd).hide();
 		}
 	}
 
