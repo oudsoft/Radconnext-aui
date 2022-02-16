@@ -9,7 +9,7 @@ window.$.ajaxSetup({
   }
 });
 
-var noti, wsm;
+var noti, wsm, sipUA;
 
 const util = require('../case/mod/utilmod.js')($);
 const common = require('../case/mod/commonlib.js')($);
@@ -24,6 +24,7 @@ const opencase = require('./mod/opencase.js')($);
 const template = require('./mod/templatelib.js')($);
 //const profile = require('./mod/profilelib.js')($);
 const profile = require('./mod/profilelibV2.js')($);
+const softphone = require('../case/mod/softphonelib.js')($);
 
 const modalLockScreenStyle = { 'position': 'fixed', 'z-index': '41', 'left': '0', 'top': '0', 'width': '100%', 'height': '100%', 'overflow': 'auto', 'background-color': '#ccc'};
 
@@ -41,6 +42,15 @@ $( document ).ready(function() {
             wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
             doSetupAutoReadyAfterLogin();
             doAutoAcceptCase();
+            if (userdata.userinfo.User_SipPhone){
+               sipUA = softphone.doRegisterSoftphone(userdata.userinfo.User_SipPhone);
+               sipUA.start();
+               let sipPhoneOptions = {onRejectCallCallback: softphone.doRejectCall, onAcceptCallCallback: softphone.doAcceptCall, onEndCallCallback: softphone.doEndCall};
+               let mySipPhoneIncomeBox = $('<div id="SipPhoneIncomeBox" tabindex="1"></div>');
+               $(mySipPhoneIncomeBox).css({'position': 'absolute', 'width': '98%', 'min-height': '50px;', 'max-height': '50px', 'background-color': '#fefefe', 'padding': '5px', 'border': '1px solid #888',  'z-index': '192', 'top': '-65px'});
+               let mySipPhone = $(mySipPhoneIncomeBox).sipphoneincome(sipPhoneOptions);
+               $('body').append($(mySipPhoneIncomeBox));
+            }
           } else {
             //$.notify('บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้ โปรด Login ใหม่เพื่อเปลี่ยนบัญชีใช้งาน', 'error');
             alert('บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้ โปรด Login ใหม่เพื่อเปลี่ยนบัญชีใช้งาน');
@@ -100,12 +110,14 @@ function doLoadMainPage(){
 	let jqueryNotifyUrl = '../lib/notify.min.js';
   let html2textlib = '../lib/to-asciidoc.js';
   let htmlformatlib = '../lib/htmlformatlib.js';
+  let jssip = "../lib/jssip-3.9.0.min.js";
 
 	let countdownclockPluginUrl = "../setting/plugin/jquery-countdown-clock-plugin.js";
 	let controlPagePlugin = "../setting/plugin/jquery-controlpage-plugin.js";
   let readystatePlugin = "../setting/plugin/jqury-readystate-plugin.js";
   let chatBoxPlugin = "../setting/plugin/jquery-chatbox-plugin.js";
   let utilityPlugin = "../setting/plugin/jquery-radutil-plugin.js";
+  let sipPhonePlugin = "../setting/plugin/jquery-sipphone-income-plugin.js";
 
   $('head').append('<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />');
   $('head').append('<meta http-equiv="Pragma" content="no-cache" />');
@@ -120,12 +132,14 @@ function doLoadMainPage(){
 
   $('head').append('<script src="' + html2textlib + '"></script>');
   $('head').append('<script src="' + htmlformatlib + '"></script>');
+  $('head').append('<script src="' + jssip + '"></script>');
 
 	$('head').append('<script src="' + countdownclockPluginUrl + '"></script>');
 	$('head').append('<script src="' + controlPagePlugin + '"></script>');
   $('head').append('<script src="' + readystatePlugin + '"></script>');
   $('head').append('<script src="' + chatBoxPlugin + '"></script>');
   $('head').append('<script src="' + utilityPlugin + '"></script>');
+  $('head').append('<script src="' + sipPhonePlugin + '"></script>');
 
   $('head').append('<link rel="stylesheet" href="../case/css/scanpart.css" type="text/css" />');
   $('body').append($('<div id="overlay"><div class="loader"></div></div>'));
@@ -353,7 +367,7 @@ function doLoadMainPage(){
 			});
 
 			doUseFullPage();
-			doLoadDefualtPage();
+			//doLoadDefualtPage();
 
 
       $('.mainfull').bind('paste', (evt)=>{
@@ -597,6 +611,11 @@ function doAutoAcceptCase(){
         for (let i=0; i < caseLists.length; i++) {
           let caseItem = caseLists[i];
           await common.doUpdateCaseStatus(caseItem.id, 2, 'Radiologist Accept case by Auto Acc.');
+        }
+        if (caseLists.length > 0){
+          $('#AcceptedCaseCmd').click();
+        } else {
+          doLoadDefualtPage();
         }
       }
     });

@@ -7,7 +7,23 @@ module.exports = function ( jq ) {
   const realm = '202.28.68.6';
   const wsUrl = 'wss://' + realm + ':8089/ws';
 
+	const eventHandlers = {
+	  'progress': function(e) {
+	    console.log('call is in progress ...');
+	  },
+	  'failed': function(e) {
+	    console.log('call failed with cause: ', e/*.data.cause*/);
+	  },
+	  'ended': function(e) {
+	    console.log('call ended with cause: ', e/*.data.cause*/);
+	  },
+	  'confirmed': function(e) {
+	    console.log('call confirmed ...', e);
+	  }
+	};
+
   const callOptions = {
+		eventHandlers: eventHandlers,
     mediaConstraints : { 'audio': true, 'video': false },
     rtcOfferConstraints: {'offerToReceiveAudio': true, 'offerToReceiveVideo': false},
     sessionTimersExpires: 7200
@@ -31,7 +47,8 @@ module.exports = function ( jq ) {
       display_name: softNumber,
       contact_uri: sipUri
     };
-    var ua = new JsSIP.UA(sipConfiguration);
+
+		let ua = new JsSIP.UA(sipConfiguration);
 
     ua.on('connected', function(e){
       console.log('Your are ready connected to your socket.', e);
@@ -149,6 +166,7 @@ module.exports = function ( jq ) {
 	}
 
   return {
+		callOptions,
     doRegisterSoftphone,
 		doRejectCall,
 		doAcceptCall,

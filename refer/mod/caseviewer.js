@@ -277,9 +277,9 @@ module.exports = function ( jq ) {
 			let commandBox = $('<div style="display: table-row; width: 100%;"></div>');
 			$(commandBox).appendTo($(commandView));
 			let aiCmdBox = $('<div style="display: table-cell; text-align: center; width: 30%;"></div>');
-			$(aiCmdBox).appendTo($(commandBox));
+			//$(aiCmdBox).appendTo($(commandBox));
 			let aiCmd = $('<input type="button" value=" AI "/>');
-			$(aiCmd).appendTo($(aiCmdBox));
+			//$(aiCmd).appendTo($(aiCmdBox));
 			$(aiCmd).on('click', async(evt)=>{
 				let aiResultLogRes = await common.doCallAIResultLog(dicomData.dicomID);
 				if (aiResultLogRes.Log) {
@@ -456,8 +456,46 @@ module.exports = function ( jq ) {
 		let softPhoneCmd = $(evt.currentTarget);
 		let softPhoneData = $(softPhoneCmd).data('softPhoneData');
 		console.log(softPhoneData);
-		$.notify('ฟังก์นนี้อยู่ระหว่างดำเนินการเชื่อมต่อระบบฯ', "warn");
-		$('body').loading('stop');
+		let radioId = softPhoneData.caseData.case.Case_RadiologistId;
+		let callSocketUrl = '/api/cases/radio/socket/' + radioId;
+		let rqParams = {};
+		common.doCallApi(callSocketUrl, rqParams).then((radioSockets)=>{
+			const phoneNoTHRegEx = /^[0]?[689]\d{8}$/;
+			/*
+			let callNumber = undefined;
+			if (radioSockets.length > 0) {
+				callNumber = softPhoneData.caseData.Radiologist.sipphone;
+			} else {
+				callNumber = softPhoneData.caseData.Radiologist.phone;
+			}
+			*/
+			let callNumber = softPhoneData.caseData.Radiologist.phone;
+			if (callNumber){
+				let isCorrectFormat = phoneNoTHRegEx.test(callNumber);
+				if (isCorrectFormat){
+					const main = require('../main.js');
+					const mySipUA = main.doGetSipUA();
+					let callSession = mySipUA.call(callNumber, main.softphone.callOptions);
+					console.log(callSession);
+					callSession.connection.addEventListener('addstream', function (e) {
+						var remoteAudio = document.getElementById('RemoteAudio');
+						remoteAudio.srcObject = e.stream;
+						setTimeout(() => {
+				      remoteAudio.play();
+							$('#SipPhoneIncomeBox').css({'top': '10px'});
+				      $('#SipPhoneIncomeBox').find('#IncomeBox').css({'display': 'none'});
+				      $('#SipPhoneIncomeBox').find('#AnswerBox').css({'display': 'block'});
+				    }, 500);
+					});
+				} else {
+					console.log('Your Phone Number is wrong format.');
+				}
+			} else {
+				console.log('Your Phone Number is Null.');
+			}
+			//$.notify('ฟังก์นนี้อยู่ระหว่างดำเนินการเชื่อมต่อระบบฯ', "warn");
+			$('body').loading('stop');
+		});
 	}
 
 	const doCreateZoomCallCmd = function(caseItem, chatHandle){

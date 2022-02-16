@@ -18,9 +18,9 @@ const util = require('../case/mod/utilmod.js')($);
 const common = require('../case/mod/commonlib.js')($);
 const userinfo = require('../case/mod/userinfolib.js')($);
 const orthanc = require('./mod/orthanc.js')($);
+const softphone = require('../case/mod/softphonelib.js')($);
 
-
-var noti, wsm, wsl;
+var noti, wsm, wsl, sipUA;
 
 $( document ).ready(function() {
   const initPage = function() {
@@ -35,6 +35,15 @@ $( document ).ready(function() {
           if (userdata.usertypeId == 5){
 			       doLoadMainPage();
              wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
+             if (userdata.userinfo.User_SipPhone){
+                sipUA = softphone.doRegisterSoftphone(userdata.userinfo.User_SipPhone);
+                sipUA.start();
+                let sipPhoneOptions = {onRejectCallCallback: softphone.doRejectCall, onAcceptCallCallback: softphone.doAcceptCall, onEndCallCallback: softphone.doEndCall};
+                let mySipPhoneIncomeBox = $('<div id="SipPhoneIncomeBox" tabindex="1"></div>');
+                $(mySipPhoneIncomeBox).css({'position': 'absolute', 'width': '98%', 'min-height': '50px;', 'max-height': '50px', 'background-color': '#fefefe', 'padding': '5px', 'border': '1px solid #888',  'z-index': '192', 'top': '-65px'});
+                let mySipPhone = $(mySipPhoneIncomeBox).sipphoneincome(sipPhoneOptions);
+                $('body').append($(mySipPhoneIncomeBox));
+             }
            } else {
              $.notify('บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้ โปรด Login ใหม่เพื่อเปลี่ยนบัญชีใช้งาน', 'error');
              doLoadLogin();
@@ -63,6 +72,7 @@ function doLoadMainPage(){
 	let jqueryUiJsUrl = "../lib/jquery-ui.min.js";
 	let jqueryLoadingUrl = '../lib/jquery.loading.min.js';
 	let jqueryNotifyUrl = '../lib/notify.min.js';
+  let jssip = "../lib/jssip-3.9.0.min.js";
 	let controlPagePlugin = "../setting/plugin/jquery-controlpage-plugin.js"
   let patientHistoryPluginUrl = "../setting/plugin/jquery-patient-history-image-plugin.js";
 	let scanpartPluginUrl = "../setting/plugin/jquery-scanpart-plugin.js";
@@ -70,6 +80,7 @@ function doLoadMainPage(){
   let customSelectPlugin = "../setting/plugin/jquery-custom-select-plugin.js";
   let chatBoxPlugin = "../setting/plugin/jquery-chatbox-plugin.js";
   let utilityPlugin = "../setting/plugin/jquery-radutil-plugin.js";
+  let sipPhonePlugin = "../setting/plugin/jquery-sipphone-income-plugin.js";
 
 	$('head').append('<script src="' + jqueryUiJsUrl + '"></script>');
 	$('head').append('<link rel="stylesheet" href="' + jqueryUiCssUrl + '" type="text/css" />');
@@ -77,6 +88,7 @@ function doLoadMainPage(){
 	$('head').append('<script src="' + jqueryLoadingUrl + '"></script>');
 	//https://notifyjs.jpillora.com/
 	$('head').append('<script src="' + jqueryNotifyUrl + '"></script>');
+  $('head').append('<script src="' + jssip + '"></script>');
 
 	$('head').append('<script src="' + controlPagePlugin + '"></script>');
   $('head').append('<script src="' + patientHistoryPluginUrl + '"></script>');
@@ -85,13 +97,14 @@ function doLoadMainPage(){
   $('head').append('<script src="' + customSelectPlugin + '"></script>');
   $('head').append('<script src="' + chatBoxPlugin + '"></script>');
   $('head').append('<script src="' + utilityPlugin + '"></script>');
+  $('head').append('<script src="' + sipPhonePlugin + '"></script>');
 
   $('head').append('<link rel="stylesheet" href="../lib/tui-image-editor.min.css" type="text/css" />');
 	$('head').append('<link rel="stylesheet" href="../lib/tui-color-picker.css" type="text/css" />');
   $('head').append('<link rel="stylesheet" href="../lib/print/print.min.css" type="text/css" />');
   $('head').append('<link rel="stylesheet" href="../case/css/scanpart.css" type="text/css" />');
   $('head').append('<link rel="stylesheet" href="../case/css/custom-select.css" type="text/css" />');
-  
+
   $('body').append($('<div id="overlay"><div class="loader"></div></div>'));
 
   $('body').loading({overlay: $("#overlay"), stoppable: true});
@@ -208,9 +221,15 @@ function doGetWsm(){
 	return wsm;
 }
 
+function doGetSipUA(){
+  return sipUA;
+}
+
 module.exports = {
   doGetToken,
   doGetUserData,
 	doGetUserItemPerPage,
-	doGetWsm
+	doGetWsm,
+  softphone,
+  doGetSipUA
 }
