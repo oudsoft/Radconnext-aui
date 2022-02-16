@@ -69,10 +69,8 @@ module.exports = function ( jq ) {
 					if (lastHis) {
 						let audienceId = lastHis.from;
 						let audienceInfo = await apiconnector.doGetApi('/api/users/searchusername/' + audienceId, {});
-						console.log(audienceInfo);
 						audienceInfo = await apiconnector.doGetApi('/api/users/select/' + audienceInfo.id, {});
-						console.log(audienceInfo);
-						let audienceName = audienceInfo.result[0].userinfo.User_NameTH + ' ' + audienceInfo.result[0].userinfo.User_LastNameTH;
+						let audienceName = audienceInfo.user[0].userinfo.User_NameTH + ' ' + audienceInfo.user[0].userinfo.User_LastNameTH;
 						let topicName = openCase.case.patient.Patient_HN + ' ' + openCase.case.patient.Patient_NameEN + ' ' + openCase.case.patient.Patient_LastNameEN + ' ' + openCase.case.patient.Patient_Sex + '/' + openCase.case.patient.Patient_Age + ' ' + openCase.case.Case_BodyPart;
 						let topicType = 'case';
 						let contact = await doCreateNewAudience(audienceId, audienceName, caseId, topicName);
@@ -118,8 +116,10 @@ module.exports = function ( jq ) {
         let contactIcon = doCreateContactIcon(Id, Name, onContactIconClickCallback, onCloseContactClickCallback);
         resolve($(contactIcon));
       } else {
-				let contactIcon = doCreateContactIcon(Id, Name, onContactIconClickCallback, onCloseContactClickCallback);
-        resolve($(contactIcon));
+				//let contactIcon = chatBoxTarget.contact[0];
+				//let contactIcon = doCreateContactIcon(Id, Name, onContactIconClickCallback, onCloseContactClickCallback);
+        //resolve($(contactIcon));
+				resolve();
       }
     });
   }

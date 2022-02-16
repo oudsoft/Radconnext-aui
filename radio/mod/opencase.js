@@ -528,7 +528,7 @@ module.exports = function ( jq ) {
 				const saveDraftResponseCmd = $(evt.currentTarget);
 		    const saveDraftResponseData = $(saveDraftResponseCmd).data('saveDraftResponseData');
 				let draftResponseRes = await doSaveDraft(saveDraftResponseData);
-				console.log(draftResponseRes);
+				//console.log(draftResponseRes);
 				//if ((draftResponseRes.status.code == 200) || (draftResponseRes.status.code == 203)){
 				if (draftResponseRes.status.code == 200) {
 					caseResponseId = draftResponseRes.result.responseId;
@@ -1131,7 +1131,7 @@ module.exports = function ( jq ) {
 				let canEditResponse = util.contains.call(youCan, selectedCase.case.casestatusId);
 				if (canEditResponse) {
 					let draftResponseRes = caseOpen.caseResponse;
-					console.log(draftResponseRes);
+					//console.log(draftResponseRes);
 					if (draftResponseRes.Record.length > 0) {
 						caseResponseId = draftResponseRes.Record[0].id;
 						$(summary).find('#SimpleEditor').jqteVal(draftResponseRes.Record[0].Response_HTML);

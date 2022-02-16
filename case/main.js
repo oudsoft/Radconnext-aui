@@ -14,11 +14,12 @@ const casecounter = require('./mod/casecounter.js')($);
 const consult = require('./mod/consult.js')($);
 const urgentstd = require('./mod/urgentstd.js')($);
 const masternotify = require('./mod/master-notify.js')($);
+const softphone = require('./mod/softphonelib.js')($);
 
 //const isMobile = util.isMobileDeviceCheck();
 //const isMobile = true;
 
-var noti, wsm, wsl;
+var noti, wsm, wsl, sipUA;
 
 $( document ).ready(function() {
   const initPage = function() {
@@ -30,9 +31,18 @@ $( document ).ready(function() {
         if (userdata !== 'undefined') {
           userdata = JSON.parse(userdata);
           console.log(userdata);
-          if (userdata.usertypeId == 2){
+          if (userdata.usertypeId == 2) {
 			       doLoadMainPage();
              wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
+             if (userdata.userinfo.User_SipPhone){
+                sipUA = softphone.doRegisterSoftphone(userdata.userinfo.User_SipPhone);
+                sipUA.start();
+                let sipPhoneOptions = {onRejectCallCallback: softphone.doRejectCall, onAcceptCallCallback: softphone.doAcceptCall, onEndCallCallback: softphone.doEndCall};
+                let mySipPhoneIncomeBox = $('<div id="SipPhoneIncomeBox" tabindex="1"></div>');
+                $(mySipPhoneIncomeBox).css({'position': 'absolute', 'width': '98%', 'min-height': '50px;', 'max-height': '50px', 'background-color': '#fefefe', 'padding': '5px', 'border': '1px solid #888',  'z-index': '192', 'top': '-65px'});
+                let mySipPhone = $(mySipPhoneIncomeBox).sipphoneincome(sipPhoneOptions);
+                $('body').append($(mySipPhoneIncomeBox));
+             }
            } else {
              alert('บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้ โปรด Login ใหม่เพื่อเปลี่ยนบัญชีใช้งาน');
              doLoadLogin();
@@ -67,6 +77,7 @@ function doLoadMainPage(){
   let printjs = '../lib/print/print.min.js';
   let excelexportjs = '../lib/excel/excelexportjs.js';
   let jquerySimpleUploadUrl = '../lib/simpleUpload.min.js';
+  let jssip = "../lib/jssip-3.9.0.min.js";
   //let localdbjs = '../lib/localdb.min.js';
 
 	let patientHistoryPluginUrl = "../setting/plugin/jquery-patient-history-image-plugin.js";
@@ -77,6 +88,7 @@ function doLoadMainPage(){
   let customSelectPlugin = "../setting/plugin/jquery-custom-select-plugin.js";
   let chatBoxPlugin = "../setting/plugin/jquery-chatbox-plugin.js";
   let utilityPlugin = "../setting/plugin/jquery-radutil-plugin.js";
+  let sipPhonePlugin = "../setting/plugin/jquery-sipphone-income-plugin.js";
 
 	$('head').append('<script src="' + jqueryUiJsUrl + '"></script>');
 	$('head').append('<link rel="stylesheet" href="' + jqueryUiCssUrl + '" type="text/css" />');
@@ -89,6 +101,7 @@ function doLoadMainPage(){
   //https://www.jqueryscript.net/other/Export-Table-JSON-Data-To-Excel-jQuery-ExportToExcel.html#google_vignette
   $('head').append('<script src="' + excelexportjs + '"></script>');
   $('head').append('<script src="' + jquerySimpleUploadUrl + '"></script>');
+  $('head').append('<script src="' + jssip + '"></script>');
   //https://github.com/mike183/localDB
   //$('head').append('<script src="' + localdbjs + '"></script>');
 
@@ -100,6 +113,7 @@ function doLoadMainPage(){
   $('head').append('<script src="' + customSelectPlugin + '"></script>');
   $('head').append('<script src="' + utilityPlugin + '"></script>');
   $('head').append('<script src="' + chatBoxPlugin + '"></script>');
+  $('head').append('<script src="' + sipPhonePlugin + '"></script>');
 
 	$('head').append('<link rel="stylesheet" href="../lib/tui-image-editor.min.css" type="text/css" />');
 	$('head').append('<link rel="stylesheet" href="../lib/tui-color-picker.css" type="text/css" />');

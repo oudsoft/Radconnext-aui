@@ -145,7 +145,7 @@ module.exports = function ( jq ) {
 	      } else {
 	        //$(caseColumn).append($('<span>not found Task</span>'));
 					$(caseColumn).append($('<span style="color: red;">-</span>'));
-					console.error('not found Task');
+					//console.error('not found Task');
 	  		}
 			} else {
 				$(caseColumn).append($('<span>-</span>'));
