@@ -442,7 +442,7 @@ module.exports = function ( jq ) {
 
 	const doCreateSoftPhoneCallCmd = function(caseItem){
 		const softPhoneIconUrl = '/images/phone-call-icon-2.png';
-		let softPhoneBox = $('<div style="position: relative; display: inline-block; text-align: center; margin-right: 20px;"></div>');
+		let softPhoneBox = $('<div style="position: relative; display: inline-block; text-align: center; margin-right: 20px; bottom: 10px;"></div>');
     let softPhoneIcon = $('<img style="postion: absolute; width: 30px; height: auto; cursor: pointer;"/>');
     $(softPhoneIcon).attr('src', softPhoneIconUrl);
 		$(softPhoneBox).data('softPhoneData', {caseData: caseItem});
@@ -456,10 +456,10 @@ module.exports = function ( jq ) {
 		let softPhoneCmd = $(evt.currentTarget);
 		let softPhoneData = $(softPhoneCmd).data('softPhoneData');
 		console.log(softPhoneData);
-		let radioId = softPhoneData.caseData.case.Case_RadiologistId;
-		let callSocketUrl = '/api/cases/radio/socket/' + radioId;
-		let rqParams = {};
-		common.doCallApi(callSocketUrl, rqParams).then((radioSockets)=>{
+		//let radioId = softPhoneData.caseData.case.Case_RadiologistId;
+		//let callSocketUrl = '/api/cases/radio/socket/' + radioId;
+		//let rqParams = {};
+		//common.doCallApi(callSocketUrl, rqParams).then((radioSockets)=>{
 			const phoneNoTHRegEx = /^[0]?[689]\d{8}$/;
 			/*
 			let callNumber = undefined;
@@ -495,12 +495,12 @@ module.exports = function ( jq ) {
 			}
 			//$.notify('ฟังก์นนี้อยู่ระหว่างดำเนินการเชื่อมต่อระบบฯ', "warn");
 			$('body').loading('stop');
-		});
+		//});
 	}
 
 	const doCreateZoomCallCmd = function(caseItem, chatHandle){
 		const zoomIconUrl = '/images/zoom-white-icon.png';
-		let zoomBox = $('<div style="position: relative; display: inline-block; text-align: center; margin-right: 20px;"></div>');
+		let zoomBox = $('<div style="position: relative; display: inline-block; text-align: center; margin-right: 20px; bottom: 10px;"></div>');
     let zoomIcon = $('<img style="postion: absolute; width: 30px; height: auto; cursor: pointer;"/>');
     $(zoomIcon).attr('src', zoomIconUrl);
 		$(zoomBox).data('zoomData', {caseData: caseItem});

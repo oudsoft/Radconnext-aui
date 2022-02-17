@@ -82,12 +82,24 @@ module.exports = function ( jq ) {
 			});
 		}
 
+		function doGetNextSipPhone(usertypeId){
+			return new Promise(async function(resolve, reject) {
+				let rqParams = {};
+				let result = await common.doGetApi('/nextsipphonenumber/' + usertypeId, rqParams);
+				if (result.status.code == 200) {
+					resolve(result);
+				} else {
+					resolve({});
+				}
+			});
+		}
+
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
 		const hospitalId = userdata.hospitalId;
 		const userId = userdata.id
 
   	const spacingBox = $('<span>&nbsp;</span>');
-  	const inputStyleClass = {"font-family": "THSarabunNew", "font-size": "24px"};
+  	const inputStyleClass = {/*"font-family": "THSarabunNew", "font-size": "24px"*/};
 
   	$('#HistoryDialogBox').empty();
 		let newUsername = await randomUsernameReq();
@@ -117,6 +129,8 @@ module.exports = function ( jq ) {
 				$(submitActionCmd).click(async (e)=> {
 					let userParams = doValidateForm(registerForm, newUsername.username, hospitalId);
 					if (userParams){
+						let nextSipPhone = await doGetNextSipPhone(5);
+						userParams.User_SipPhone = nextSipPhone.sipNext;
 						let result = await regiternewUserReq(userParams);
 						if ((result.status) && (result.status.code == 200)) {
 							let apiUrl = '/api/cases/options/' + hospitalId;
