@@ -276,8 +276,11 @@ module.exports = function ( jq ) {
 			myId: userdata.username,
 			myName: userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH,
 			myDisplayName: 'ฉัน',
+			myHospitalName: userdata.hospital.Hos_Name,
 			audienceId: setup.audienceId,
 			audienceName: setup.audienceName,
+			audienceUserId: setup.audienceUserId,
+			audienceContact: setup.audienceContact,
 			wantBackup: true,
 			externalClassStyle: {},
 			sendMessageCallback: doSendMessageCallback,
@@ -296,7 +299,7 @@ module.exports = function ( jq ) {
 			const main = require('../main.js');
 			const wsm = main.doGetWsm();
 			if ((wsm.readyState == 0) || (wsm.readyState == 1)) {
-				let msgSend = {type: 'message', msg: msg, sendto: sendto, from: from, context: context};
+				let msgSend = {type: 'message', msg: msg, sendto: sendto, from: from, context: context, sendtotype: 4, fromtype: 2};
 				wsm.send(JSON.stringify(msgSend));
 			} else {
 				$.notify('Now. Your Socket not ready. Please refresh page antry again', 'warn');
@@ -508,9 +511,12 @@ module.exports = function ( jq ) {
 				let audienceInfo = await apiconnector.doGetApi('/api/users/select/' + audienceUserId, {});
 				let audienceId = audienceInfo.user[0].username;
 				let audienceName = audienceInfo.user[0].userinfo.User_NameTH + ' ' + audienceInfo.user[0].userinfo.User_LastNameTH;
+				let audienceContact = {email: audienceInfo.user[0].userinfo.User_Email, phone: audienceInfo.user[0].userinfo.User_Phone, sipphone: audienceInfo.user[0].userinfo.User_SipPhone, lineuserId: audienceInfo.lineusers[0].UserId};
 				let setup = {
 					audienceId: audienceId,
 					audienceName: audienceName,
+					audienceUserId: audienceUserId,
+					audienceContact: audienceContact,
 					topicId: topicId,
 					topicStatusId: consultItem.consult.casestatusId,
 					patientHN: consultItem.consult.PatientHN,
@@ -858,6 +864,7 @@ module.exports = function ( jq ) {
 			let setup = {
 				audienceId: audienceId,
 				audienceName: audienceName,
+				audienceUserId: audienceUserId,
 				topicId: topicId,
 				topicStatusId: consultItem.casestatusId,
 				patientHN: consultItem.PatientHN,

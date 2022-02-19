@@ -280,7 +280,8 @@ module.exports = function ( jq ) {
 					}
 				});
 			}
-
+			//console.log(localHistory);
+			//console.log(cloudHistory);
 			if (localHistory) {
 				if (cloudHistory) {
 					if (localHistory.length > 0) {
@@ -298,7 +299,11 @@ module.exports = function ( jq ) {
 							resolve(localHistory);
 						}
 					} else {
-						resolve([]);
+						if (cloudHistory.length > 0) {
+							resolve(cloudHistory);
+						} else {
+							resolve([]);
+						}
 					}
 				} else {
 					resolve(localHistory);

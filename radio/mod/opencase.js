@@ -10,7 +10,7 @@ module.exports = function ( jq ) {
 	const commandLinkStyle = {'padding': '3px', 'cursor': 'pointer', 'border': '1px solid white', 'color': 'white', 'background-color': 'blue'};
 	const commandButtonStyle = {'padding': '3px', 'cursor': 'pointer', 'border': '1px solid white'/*, 'color': 'white', 'background-color': 'blue'*/};
 
-	const backwardCaseStatus = [5, 6, 10, 11, 12, 13, 14];
+	const backwardCaseStatus = [1, 2, 5, 6, 10, 11, 12, 13, 14];
 	let caseHospitalId = undefined;
 	let casePatientId = undefined;
 	let caseId = undefined;
@@ -871,12 +871,17 @@ module.exports = function ( jq ) {
 					let dicomCmdBox = doCreateDicomCmdBox(backward.Case_OrthancStudyID, backward.Case_StudyInstanceUID, casedate, casetime, backward.hospitalId);
 					let patientHRBackwardBox = await doCreateHRBackwardBox(patientFullName, backward.Case_PatientHRLink, casedate);
 					let responseBackwardBox = undefined;
-					if ((backward.caseresponses) && (backward.caseresponses.length > 0)) {
-						responseBackwardBox = doCreateResponseBackwardBox(backward.id, backward.caseresponses[0].id, backward.caseresponses[0].Response_HTML, patientFullName, casedate);
+					const caseSuccessStatusIds = [5, 6, 10, 11, 12, 13, 14];
+					let hadSuccess = util.contains.call(caseSuccessStatusIds, backward.casestatusId);
+					if (hadSuccess) {
+						if ((backward.caseresponses) && (backward.caseresponses.length > 0)) {
+							responseBackwardBox = doCreateResponseBackwardBox(backward.id, backward.caseresponses[0].id, backward.caseresponses[0].Response_HTML, patientFullName, casedate);
+						} else {
+							responseBackwardBox = $('<div style="text-align: center">ไมพบผลอ่าน</div>');
+						}
 					} else {
-						responseBackwardBox = $('<span>-</span>');
+						responseBackwardBox = $('<div style="text-align: center">เคสยังไม่มีผลอ่าน</div>');
 					}
-
 					$(backwardRow).append($('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">' + (i+1) + '</span>'));
 					$(backwardRow).append($('<span style="display: table-cell; text-align: left; padding: 4px; vertical-align: middle;">' + casedateDisplay + '</span>'));
 					$(backwardRow).append($('<span style="display: table-cell; text-align: left; vertical-align: middle;">' + backward.Case_BodyPart + '</span>'));

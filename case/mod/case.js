@@ -822,7 +822,9 @@ module.exports = function ( jq ) {
 			//radio online
 			let callZoomMsg = {type: 'callzoom', sendTo: radioSockets[0].id, openurl: zoomMeeting.join_url, password: zoomMeeting.password, topic: zoomMeeting.topic, sender: userdata.username}
 			//let myWsm = main.doGetWsm();
-			let myWsm = util.wsm;
+			//console.log(JSON.stringify(callZoomMsg));
+			const main = require('../main.js');
+			let myWsm = main.doGetWsm();
 			myWsm.send(JSON.stringify(callZoomMsg));
 			window.open(zoomMeeting.start_url, '_blank');
 		} else {

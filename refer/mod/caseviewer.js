@@ -8,7 +8,7 @@ module.exports = function ( jq ) {
 	const createnewcase = require('../../case/mod/createnewcase.js')($);
 	const ai = require('../../radio/mod/ai-lib.js')($);
 
-	const backwardCaseStatus = [5, 6, 10, 11, 12, 13, 14];
+	const backwardCaseStatus = [1, 2, 5, 6, 10, 11, 12, 13, 14];
 	const pageFontStyle = {"font-family": "THSarabunNew", "font-size": "24px"};
 	const commandButtonStyle = {'padding': '3px', 'cursor': 'pointer', 'border': '1px solid white', 'color': 'white', 'background-color': 'blue'};
 
@@ -91,6 +91,8 @@ module.exports = function ( jq ) {
 				let history = await doSeachChatHistory(dicomData.caseId);
 				localStorage.setItem('localmessage', JSON.stringify(history));
 				let userdata = JSON.parse(localStorage.getItem('userdata'));
+				let audienceContact = {email: caseItem.Radiologist.email, phone: caseItem.Radiologist.phone, sipphone: caseItem.Radiologist.sipphone, lineuserId: caseItem.Radiologist.LineUserId};
+				//console.log(audienceContact);
 				let simpleChatBoxOption = {
 					topicId: dicomData.caseId,
 		      topicName: patientHN + ' ' + patentFullName + ' ' + patientSA + ' ' + caseBodypart,
@@ -99,8 +101,11 @@ module.exports = function ( jq ) {
 					myId: userdata.username,
 					myName: userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH,
 		      myDisplayName: 'ฉัน',
+					myHospitalName: userdata.hospital.Hos_Name,
 					audienceId: caseItem.Radiologist.username,
 		      audienceName: caseItem.Radiologist.User_NameTH + ' ' + caseItem.Radiologist.User_LastNameTH,
+					audienceUserId: caseItem.Radiologist.id,
+					audienceContact: audienceContact,
 					wantBackup: true,
 		      externalClassStyle: {},
 		      sendMessageCallback: doSendMessageCallback,
@@ -408,17 +413,18 @@ module.exports = function ( jq ) {
 		return new Promise(async function(resolve, reject){
 			const main = require('../main.js');
 			const wsm = main.doGetWsm();
-			let msgSend = {type: 'message', msg: msg, sendto: sendto, from: from, context: context};
+			const userdata = main.doGetUserData();
+			let msgSend = {type: 'message', msg: msg, sendto: sendto, from: from, context: context, sendtotype: 4, fromtype: 5};
 			wsm.send(JSON.stringify(msgSend));
-			if (context.topicStatusId != 14) {
-				let newStatus = 14;
+			let newStatus = 14;
+			if (context.topicStatusId != newStatus) {
 				let newDescription = 'Case have Issue Message to Radio.';
 				let updateStatusRes = await common.doUpdateCaseStatus(context.topicId, newStatus, newDescription);
 				console.log(updateStatusRes);
 				if (updateStatusRes.status.code == 200){
 					let selector = '#'+sendto + ' .chatbox';
 					let targetChatBox = $(selector);
-					let eventData = {topicStatusId: 14};
+					let eventData = {topicStatusId: newStatus};
 					$(targetChatBox).trigger('updatetopicstatus', [eventData]);
 				} else {
 					$.notify('Now. can not update case status.', 'warn');
@@ -680,10 +686,16 @@ module.exports = function ( jq ) {
 					let dicomCmdBox = doCreateDicomCmdBox(backward.Case_OrthancStudyID, backward.Case_StudyInstanceUID, casedate, backward.hospitalId);
 					//let patientHRBackwardBox = await doCreateHRBackwardBox(patientFullName, backward.Case_PatientHRLink, casedate);
 					let responseBackwardBox = undefined;
-					if ((backward.caseresponses) && (backward.caseresponses.length > 0)) {
-						responseBackwardBox = doCreateResponseBackwardBox(backward.id, backward.caseresponses[0].Response_HTML, patientFullName, casedate);
+					const caseSuccessStatusIds = [5, 6, 10, 11, 12, 13, 14];
+					let hadSuccess = util.contains.call(caseSuccessStatusIds, backward.casestatusId);
+					if (hadSuccess) {
+						if ((backward.caseresponses) && (backward.caseresponses.length > 0)) {
+								responseBackwardBox = doCreateResponseBackwardBox(backward.id, backward.caseresponses[0].Response_HTML, patientFullName, casedate);
+						} else {
+							responseBackwardBox = $('<div style="text-align: center">ไมพบผลอ่าน</div>');
+						}
 					} else {
-						responseBackwardBox = $('<span>-</span>');
+						responseBackwardBox = $('<div style="text-align: center">เคสยังไม่มีผลอ่าน</div>');
 					}
 
 					$(backwardRow).append($('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">' + (i+1) + '</span>'));

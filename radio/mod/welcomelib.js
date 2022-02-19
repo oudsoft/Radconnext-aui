@@ -178,22 +178,34 @@ module.exports = function ( jq ) {
 	const doInterruptZoomCallEvt = function(evt) {
 		$('body').loading('start');
 		const main = require('../main.js');
-		let userConfirm = confirm('คุณมีสายเรียกเข้าเพื่อ Conference ทาง Zoom\nคลิก ตกลง หรือ OK เพื่อรับสายและเปิด Zoom Conference หรือ คลิก ยกเลิก หรือ Cancel เพื่อปฏิเสธการรับสาย');
 		let myWsm = main.doGetWsm();
-		if (userConfirm) {
-			let callData = evt.detail.data;
-			alert('Password ในการเข้าร่วม Conference ของคุณคิอ ' + callData.password + '\n');
-			window.open(callData.openurl, '_blank');
-			//Say yes back to caller
-			let callZoomMsg = {type: 'callzoomback', sendTo: callData.sender, result: 1};
-			myWsm.send(JSON.stringify(callZoomMsg));
-			$('body').loading('stop');
-		} else {
-			//Say no back to caller
-			let callZoomMsg = {type: 'callzoomback', sendTo: callData.sender, result: 0};
-			myWsm.send(JSON.stringify(callZoomMsg));
-			$('body').loading('stop');
+
+		let radAlertMsg = $('<div></div>');
+		$(radAlertMsg).append($('<p>คุณมีสายเรียกเข้าเพื่อ Conference ทาง Zoom</p>'));
+		$(radAlertMsg).append($('<p>คลิก ตกลง เพื่อรับสายและเปิด Zoom Conference</p>'));
+		$(radAlertMsg).append($('<p>หรือ คลิก ยกเลิก เพื่อปฏิเสธการรับสาย</p>'));
+		const radconfirmoption = {
+			title: 'Zoom Conference',
+			msg: $(radAlertMsg),
+			width: '420px',
+			onOk: function(evt) {
+				let callData = evt.detail.data;
+				alert('Password ในการเข้าร่วม Conference คิอ ' + callData.password + '\n');
+				window.open(callData.openurl, '_blank');
+				//Say yes back to caller
+				let callZoomMsg = {type: 'callzoomback', sendTo: callData.sender, result: 1};
+				myWsm.send(JSON.stringify(callZoomMsg));
+				$('body').loading('stop');
+				radConfirmBox.closeAlert();
+			},
+			onCancel: function(evt){
+				let callZoomMsg = {type: 'callzoomback', sendTo: callData.sender, result: 0};
+				myWsm.send(JSON.stringify(callZoomMsg));
+				$('body').loading('stop');
+				radConfirmBox.closeAlert();
+			}
 		}
+		let radConfirmBox = $('body').radalert(radconfirmoption);
 	}
 
   return {
