@@ -1297,7 +1297,18 @@ module.exports = function ( jq ) {
 			urgenttypeId = urgentType;
 		}
 		if (!urgenttypeId) {
-			alert('ค่าความเร่งด่วนไม่ถูกต้อง โปรดแก้ไข');
+			let content = $('<div></div>');
+			$(content).append($('<p>ค่าความเร่งด่วนไม่ถูกต้อง โปรดแก้ไข</p>'));
+			const radalertoption = {
+				title: 'ข้อมูลไม่ถูกต้อง',
+				msg: $(content),
+				width: '410px',
+				onOk: function(evt) {
+					radAlertBox.closeAlert();
+				}
+			}
+			let radAlertBox = $('body').radalert(radalertoption);
+			$(radAlertBox.cancelCmd).hide();
 			return;
 		} else {
 	    let patientNameEN = $('.mainfull').find('#PatientNameEN').val();
