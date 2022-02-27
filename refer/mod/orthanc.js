@@ -215,30 +215,66 @@ module.exports = function ( jq ) {
 
     $(operationField).load('/api/cases/status/by/dicom/' + dicomID, function(response){
 			const waitingResultStatus = [1, 2, 8, 9];
-			const successResultStatus = [5];
-			const openResultStatus = [6, 10, 11, 12, 13, 14];
-
-			let statusIcon = undefined;
+			const successResultStatus = [5, 6, 10, 11, 12, 13, 14];
+			let caseStatusBox = $('<div style="width: 100%; font-size: 12px;"></div>');
       let loadRes = JSON.parse(response);
       if (loadRes.Records.length > 0) {
 				let casestatusId = loadRes.Records[0].casestatusId;
 				let onWaiting = util.contains.call(waitingResultStatus, casestatusId);
 				let onSuccess = util.contains.call(successResultStatus, casestatusId);
-				let onOpening = util.contains.call(openResultStatus, casestatusId);
 				if (onWaiting) {
-					statusIcon = $('<img src="/images/refer-dicom-status-2.png" width="28px" heigth="auto" data-toggle="tooltip"/>');
+					if (casestatusId != 9){
+						$(caseStatusBox).append($('<div style="width: 100%; text-align: center;">กำลังรอผล</div>'));
+					} else {
+						$(caseStatusBox).append($('<div style="width: 100%; text-align: center;">กำลังแปลผล</div>'));
+					}
+					let startDate = new Date(loadRes.Records[0].createdAt);
+					let accPeriodParam = JSON.parse(loadRes.Records[0].urgent.UGType_AcceptStep);
+					let wrkPeriodParam = JSON.parse(loadRes.Records[0].urgent.UGType_WorkingStep);
+		      let accDay = Number(accPeriodParam.dd) * 24 * 60 * 60 * 1000;
+		      let accHour = Number(accPeriodParam.hh) * 60 * 60 * 1000;
+		      let accMinute = Number(accPeriodParam.mn) * 60 * 1000;
+					let wrkDay = Number(wrkPeriodParam.dd) * 24 * 60 * 60 * 1000;
+		      let wrkHour = Number(wrkPeriodParam.hh) * 60 * 60 * 1000;
+		      let wrkMinute = Number(wrkPeriodParam.mn) * 60 * 1000;
+					let totalTime = startDate.getTime() + accDay + accHour + accMinute + wrkDay + wrkHour + wrkMinute;
+		      let endDateTime = new Date(totalTime);
+
+					let endDateTimeFmt = util.formatDateTimeStr(endDateTime);
+					let endDTs = endDateTimeFmt.split('T');
+					let endDateString = endDTs[0].split('-').join('');
+					let endTimeString = endDTs[1].split(':').join('');
+
+					let successDefDate = util.formatStudyDate(endDateString);
+					let successDefTime = util.formatStudyTime(endTimeString);
+					$(caseStatusBox).append($('<div style="width: 100%; text-align: center;">' + successDefDate + '</div>'));
+					$(caseStatusBox).append($('<div style="width: 100%; text-align: center;">' + successDefTime + '</div>'));
+					let now = new Date();
+					let nowTime = now.getTime()
+					let diffTime = totalTime - nowTime;
+					let doPlayBlink = function(box){
+						let state = $(box).css('border');
+						if (state == ''){
+							$(box).css('border', '2px solid red');
+						} else {
+							$(box).css('border', '');
+						}
+						setTimeout(()=>{
+							doPlayBlink(box)
+						}, 1000)
+					}
+					if (diffTime <= 0) {
+						doPlayBlink(caseStatusBox);
+					}
 				} else if (onSuccess) {
-					statusIcon = $('<img src="/images/refer-dicom-status-3.png" width="28px" heigth="auto" data-toggle="tooltip"/>');
-				} else if (onOpening) {
-					statusIcon = $('<img src="/images/refer-dicom-status-4.png" width="28px" heigth="auto" data-toggle="tooltip"/>');
+					$(caseStatusBox).append($('<div style="width: 100%; text-align: center;">มีผลอ่านแล้ว</div>'));
 				}
-				$(statusIcon).attr('title', loadRes.Records[0].casestatus.CS_Name_EN);
-        $(operationField).empty().append($(statusIcon));
+				$(operationField).empty().append($(caseStatusBox));
         let dicomData = {caseId: loadRes.Records[0].id, casestatusId: loadRes.Records[0].casestatusId, dicomID: dicomID, studyInstanceUID: defualtValue.studyInstanceUID}
         $(tableRow).data(dicomData);
       } else {
-				statusIcon = $('<img src="/images/refer-dicom-status-1.png" width="28px" heigth="auto" data-toggle="tooltip" title="ยังไมส่งอ่าน"/>');
-				$(operationField).empty().append($(statusIcon));
+				$(caseStatusBox).append($('<div style="width: 100%; text-align: center;">ยังไม่ส่งอ่าน</div>'));
+				$(operationField).empty().append($(caseStatusBox));
         let dicomData = {dicomID: dicomID, studyInstanceUID: defualtValue.studyInstanceUID, hn, name, sa, sdd}
         $(tableRow).data(dicomData);
       }
@@ -266,6 +302,15 @@ module.exports = function ( jq ) {
 				common.doSaveQueryDicom(filterKey);
 				doLoadDicomFromOrthanc();
 			});
+			let yesterDayFormat = util.getYesterdayDevFormat();
+			let arrTmps = yesterDayFormat.split('-');
+			let fromDateTextValue = arrTmps[2] + '-' + arrTmps[1] + '-' + arrTmps[0];
+			let toDayFormat = util.getTodayDevFormat();
+			arrTmps = toDayFormat.split('-');
+			let toDateTextValue = arrTmps[2] + '-' + arrTmps[1] + '-' + arrTmps[0];
+
+			$(dicomFilterForm).find('#StudyFromDateInput').val(fromDateTextValue);
+			$(dicomFilterForm).find('#StudyToDateInput').val(toDateTextValue);
 			$(dicomFilterForm).append($('<div style="display: table-cell; text-align: left;" class="header-cell"></div>'));
 			$(dicomFilterForm).find('#ScanPartInput').css('width', '97%');
 			$(dicomFilterForm).find('#StudyFromDateInput').css('width', '55px');
@@ -290,13 +335,18 @@ module.exports = function ( jq ) {
 								bdp = '';
 							}
 						}
-						desc = '<div class="study-desc">' + bdp + '</div>';
-
+						if (bdp != '') {
+							desc = '<div class="study-desc">' + bdp + '</div>';
+						} else {
+							desc = '';
+						}
+						/*
 						if (dj[i].SamplingSeries.MainDicomTags.ProtocolName) {
 							protoname = '<div class="protoname">' + dj[i].SamplingSeries.MainDicomTags.ProtocolName + '</div>';
 						} else {
 							protoname = '';
 						}
+						*/
 						if (dj[i].SamplingSeries.MainDicomTags.Modality) {
 							mld = dj[i].SamplingSeries.MainDicomTags.Modality;
 						} else {
@@ -346,7 +396,9 @@ module.exports = function ( jq ) {
 
 						let hn = dj[i].PatientMainDicomTags.PatientID;
 						let name = dj[i].PatientMainDicomTags.PatientName;
-						let sdd =  desc +  protoname;
+						//let sdd =  desc +  protoname;
+						let sdd = desc;
+
 						let dicomDataRow = doCreateDicomItemRow(no, studyDate, studyTime, hn, name, sa, mld, sdd, defualtValue, dj[i].Series, dj[i].ID);
 						$(dicomDataRow).appendTo($(table));
 					}

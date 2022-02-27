@@ -41,7 +41,6 @@ $( document ).ready(function() {
     			  doLoadMainPage();
             wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
             doSetupAutoReadyAfterLogin();
-            doAutoAcceptCase();
             if (userdata.userinfo.User_SipPhone){
                sipUA = softphone.doRegisterSoftphone(userdata.userinfo.User_SipPhone);
                sipUA.start();
@@ -244,8 +243,9 @@ function doLoadMainPage(){
       });
       $(document).on('opensearchcase', async (evt, data)=>{
         $('body').loading('start');
-        let toDayFormat = util.getYesterdayDevFormat();
-        let defaultSearchKey = {fromDateKeyValue: toDayFormat, patientNameENKeyValue: '*', patientHNKeyValue: '*', bodypartKeyValue: '*', caseStatusKeyValue: 0};
+        let yesterDayFormat = util.getYesterdayDevFormat();
+        let toDayFormat = util.getTodayDevFormat();
+        let defaultSearchKey = {fromDateKeyValue: yesterDayFormat, toDateKeyValue: toDayFormat, patientNameENKeyValue: '*', patientHNKeyValue: '*', bodypartKeyValue: '*', caseStatusKeyValue: 0};
         let defaultSearchParam = {key: defaultSearchKey, hospitalId: userdata.hospitalId, userId: userdata.id, usertypeId: userdata.usertypeId};
         let searchTitlePage = searchcase.doCreateSearchTitlePage();
 
@@ -368,7 +368,7 @@ function doLoadMainPage(){
 
 			doUseFullPage();
 			//doLoadDefualtPage();
-
+      doAutoAcceptCase();
 
       $('.mainfull').bind('paste', (evt)=>{
         common.onSimpleEditorPaste(evt);
@@ -604,8 +604,10 @@ function doSetupAutoReadyAfterLogin(){
 function doAutoAcceptCase(){
   const userdata = JSON.parse(localStorage.getItem('userdata'));
   const autoAcc = userdata.userprofiles[0].Profile.activeState.autoAcc;
+  console.log(autoAcc);
   if (autoAcc == 1){
     newcase.doCallMyNewCase().then(async (myNewCase)=>{
+      console.log(myNewCase);
       if (myNewCase.status.code == 200){
         let caseLists = myNewCase.Records;
         for (let i=0; i < caseLists.length; i++) {
@@ -619,6 +621,8 @@ function doAutoAcceptCase(){
         }
       }
     });
+  } else {
+    doLoadDefualtPage();
   }
 }
 

@@ -59,7 +59,7 @@ module.exports = function ( jq ) {
 			$(caseTitle).find('#PatientHN').text(patientHN);
 			$(caseTitle).find('#PatentFullName').text(patentFullName);
 			$(caseTitle).find('#PatientSA').text(patientSA);
-			$(caseTitle).find('#CaseBodypart').text(caseBodypart);
+			//$(caseTitle).find('#CaseBodypart').text(caseBodypart);
 
 			if (dicomData.studyInstanceUID) {
 				let openStoneWebViewerCmd = $('<input type="button" value=" เปิดภาพ "/>');
@@ -80,52 +80,22 @@ module.exports = function ( jq ) {
 
 			let caseResultInfoBox = await doCreateResulteSection(dicomData, caseItem);
 			//$(caseResultInfoBox).css({'min-height': '100px'});
-			$(caseResultInfoBox).appendTo($(caseView));
+			$(caseView).append($(caseResultInfoBox));
 
 			let referCommandBox = await doCreateReferCommand(dicomData, caseItem, defualtValue, dicomSeries);
 			$(referCommandBox).css({'margin-top': '10px'});
 			$(referCommandBox).appendTo($(caseView));
 
 			let contactRadioToolsBar = $('<div id="ContactTools" style="width: 99%; min-height: 80px; text-align: right; display: none;"></div>');
-			if ((dicomData.casestatusId == 5) || (dicomData.casestatusId == 6) || (dicomData.casestatusId == 10) || (dicomData.casestatusId == 11) || (dicomData.casestatusId == 12) || (dicomData.casestatusId == 13) || (dicomData.casestatusId == 14)) {
-				let history = await doSeachChatHistory(dicomData.caseId);
-				localStorage.setItem('localmessage', JSON.stringify(history));
-				let userdata = JSON.parse(localStorage.getItem('userdata'));
-				let audienceContact = {email: caseItem.Radiologist.email, phone: caseItem.Radiologist.phone, sipphone: caseItem.Radiologist.sipphone, lineuserId: caseItem.Radiologist.LineUserId};
-				//console.log(audienceContact);
-				let simpleChatBoxOption = {
-					topicId: dicomData.caseId,
-		      topicName: patientHN + ' ' + patentFullName + ' ' + patientSA + ' ' + caseBodypart,
-					topicStatusId: dicomData.casestatusId,
-					topicType: 'case',
-					myId: userdata.username,
-					myName: userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH,
-		      myDisplayName: 'ฉัน',
-					myHospitalName: userdata.hospital.Hos_Name,
-					audienceId: caseItem.Radiologist.username,
-		      audienceName: caseItem.Radiologist.User_NameTH + ' ' + caseItem.Radiologist.User_LastNameTH,
-					audienceUserId: caseItem.Radiologist.id,
-					audienceContact: audienceContact,
-					wantBackup: true,
-		      externalClassStyle: {},
-		      sendMessageCallback: doSendMessageCallback,
-					resetUnReadMessageCallback: doResetUnReadMessageCallback
-				};
-				let simpleChatBox = $('<div id="SimpleChatBox"></div>');
-				let simpleChatBoxHandle = $(simpleChatBox).chatbox(simpleChatBoxOption);
-
-				simpleChatBoxHandle.restoreLocal();
-
-				let softPhoneCmd = doCreateSoftPhoneCallCmd(caseItem);
-				let zoomCmd = doCreateZoomCallCmd(caseItem, simpleChatBoxHandle);
-				let externalToolsBox = $('<div style="position: relative; display: inline-block; bottom: -14px;"></div>');
-				$(externalToolsBox).append($(softPhoneCmd)).append($(zoomCmd))
-
-				$(simpleChatBox).find('#ChatSendBox').prepend($(externalToolsBox));
-
+			$(caseView).append($(contactRadioToolsBar));
+			const successCaseStatusIds = [5, 6, 10, 11, 12, 13, 14];
+			let hadSuccess = util.contains.call(successCaseStatusIds, dicomData.casestatusId);
+			if (hadSuccess) {
+				let topicName = patientHN + ' ' + patentFullName + ' ' + patientSA + ' ' + caseBodypart;
+				let simpleChatBox = await doCreateSimpleChatBox(dicomData, caseItem, topicName);
 				$(simpleChatBox).appendTo($(contactRadioToolsBar));
 			}
-			$(contactRadioToolsBar).appendTo($(caseView));
+
 
       let caseFooterBar = $('<div style="width: 100%; text-align: center; margin-top: 10px;"></div>');
       $(".mainfull").append($(caseFooterBar));
@@ -140,6 +110,51 @@ module.exports = function ( jq ) {
     });
   }
 
+	const doCreateSimpleChatBox = function(dicomData, caseItem, topicName){
+		return new Promise(async function(resolve, reject){
+			let history = await doSeachChatHistory(dicomData.caseId);
+			localStorage.setItem('localmessage', JSON.stringify(history));
+			let userdata = JSON.parse(localStorage.getItem('userdata'));
+			let audienceContact = {email: caseItem.Radiologist.email, phone: caseItem.Radiologist.phone, sipphone: caseItem.Radiologist.sipphone, lineuserId: caseItem.Radiologist.LineUserId};
+			let simpleChatBoxOption = {
+				topicId: dicomData.caseId,
+				topicName: topicName,
+				topicStatusId: dicomData.casestatusId,
+				topicType: 'case',
+				myId: userdata.username,
+				myName: userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH,
+				myDisplayName: 'ฉัน',
+				myHospitalName: userdata.hospital.Hos_Name,
+				audienceId: caseItem.Radiologist.username,
+				audienceName: caseItem.Radiologist.User_NameTH + ' ' + caseItem.Radiologist.User_LastNameTH,
+				audienceUserId: caseItem.Radiologist.id,
+				audienceContact: audienceContact,
+				wantBackup: true,
+				externalClassStyle: {},
+				sendMessageCallback: doSendMessageCallback,
+				resetUnReadMessageCallback: doResetUnReadMessageCallback
+			};
+			let simpleChatBox = $('<div id="SimpleChatBox"></div>');
+			let simpleChatBoxHandle = $(simpleChatBox).chatbox(simpleChatBoxOption);
+
+			simpleChatBoxHandle.restoreLocal();
+
+			let softPhoneCmd = doCreateSoftPhoneCallCmd(caseItem);
+			let zoomCmd = doCreateZoomCallCmd(caseItem, simpleChatBoxHandle);
+			let externalToolsBox = $('<div style="position: relative; display: inline-block; bottom: -14px;"></div>');
+			$(externalToolsBox).append($(softPhoneCmd)).append($(zoomCmd))
+
+			$(simpleChatBox).find('#ChatSendBox').prepend($(externalToolsBox));
+			resolve($(simpleChatBox));
+		});
+	}
+
+	const doCreatePageViewTitle = function(dicomData){
+		return new Promise(async function(resolve, reject){
+
+		});
+	}
+
   const doCreateCaseTitle = function(dicomData){
     return new Promise(async function(resolve, reject){
       let caseTitle = $('<div id="CaseTitle"><div><span><b>ผู้ป่วย</b></span></div></div>');
@@ -151,8 +166,8 @@ module.exports = function ( jq ) {
       $(summaryLine).append($('<span id="PatentFullName" style="margin-left: 5px; font-weight: bold;"></span>'));
       $(summaryLine).append($('<span style="margin-left: 10px;">Age/sex:</span>'));
       $(summaryLine).append($('<span id="PatientSA" style="margin-left: 5px; font-weight: bold;"></span>'));
-      $(summaryLine).append($('<span style="margin-left: 10px;">Body Part:</span>'));
-      $(summaryLine).append($('<span id="CaseBodypart" style="margin-left: Spx; font-weight: bold;"></span>'));
+      //$(summaryLine).append($('<span style="margin-left: 10px;">Body Part:</span>'));
+      //$(summaryLine).append($('<span id="CaseBodypart" style="margin-left: Spx; font-weight: bold;"></span>'));
       $(summaryLine).css(common.pageLineStyle);
       resolve($(caseTitle));
     });
@@ -268,7 +283,7 @@ module.exports = function ( jq ) {
 				console.log(err);
 				embetObject = $('<object data="" type="application/pdf" width="100%" height="480"></object>');
 			} finally {
-				let resultBox = $('<div style="width: 97%; padding: 10px; border: 1px solid black; background-color: #ccc; margin-top: 4px;"></div>');
+				let resultBox = $('<div id="ResultBox" style="width: 97%; padding: 10px; border: 1px solid black; background-color: #ccc; margin-top: 4px;"></div>');
 
 	      $(embetObject).appendTo($(resultBox));
 	      resolve($(resultBox));
@@ -282,9 +297,10 @@ module.exports = function ( jq ) {
 			let commandBox = $('<div style="display: table-row; width: 100%;"></div>');
 			$(commandBox).appendTo($(commandView));
 			let aiCmdBox = $('<div style="display: table-cell; text-align: center; width: 30%;"></div>');
-			//$(aiCmdBox).appendTo($(commandBox));
-			let aiCmd = $('<input type="button" value=" AI "/>');
-			//$(aiCmd).appendTo($(aiCmdBox));
+			$(aiCmdBox).appendTo($(commandBox));
+			//let aiCmd = $('<input type="button" value=" AI "/>');
+			let aiCmd = $('<span></span>');
+			$(aiCmd).appendTo($(aiCmdBox));
 			$(aiCmd).on('click', async(evt)=>{
 				let aiResultLogRes = await common.doCallAIResultLog(dicomData.dicomID);
 				if (aiResultLogRes.Log) {
@@ -373,28 +389,57 @@ module.exports = function ( jq ) {
 			let patientName = defualtValue.patient.name;
 			let allSeries = dicomSeries.length;
 			if (dicomData.caseId) {
-	      if ((dicomData.casestatusId == 1) || (dicomData.casestatusId == 2) || (dicomData.casestatusId == 8) || (dicomData.casestatusId == 9)) {
-					let yourConfirm = confirm('รายการ dicom นี้ได้ถูกส่งไปหารังสีแพทย์แล้วและอยู่ระหว่างรอผลอ่าน\nโปรดยืนโดยการคลิกปุ่ม OK หรือ ตกลง ว่าคุณต้องการสร้างเคสใหม่จาก dicom รายการนี้อีกหนึ่งเคส?');
-					if (yourConfirm == true){
+				const newCaseStatusIds = [1, 2, 8, 9];
+				const failCaseStatusIds = [3, 4, 7]
+				const successCaseStatusIds = [5, 6, 10, 11, 12, 13, 14];
+				let isNewCase = util.contains.call(newCaseStatusIds, dicomData.casestatusId);
+				let hadFail = util.contains.call(failCaseStatusIds, dicomData.casestatusId);
+				let hadSuccess = util.contains.call(successCaseStatusIds, dicomData.casestatusId);
+				const doShowRadConfirm = function(okCallback, cancelCallback){
+					let radConfirmBox = $('<div></div>');
+					$(radConfirmBox).append($('<p>รายการภาพชุดนี้ได้ถูกส่งไปหารังสีแพทย์แล้ว และอยู่ระหว่างรอผลอ่าน</p>'));
+					$(radConfirmBox).append($('<p>โปรดยืนโดยการคลิกปุ่ม<b>ตกลง</b> เพื่อยืนยันว่าคุณต้องการสร้างเคสใหม่จากภาพชุดนี้อีกหนึ่งเคส</p>'));
+					$(radConfirmBox).append($('<p>หรือคลิกปุ่ม<b>ยกเลิก</b> เพื่อยกเลิกการสร้างเคสใหม</p>'));
+					const radConfirmOption = {
+			      title: 'ยืนยันการสร้างเคสใหม่',
+			      msg: $(radConfirmBox),
+			      width: '500px',
+			      onOk: function(evt) {
+							radConfirm.closeAlert();
+							if (okCallback){
+								okCallback();
+							}
+			      },
+			      onCancel: function(evt) {
+			        radConfirm.closeAlert();
+							if (cancelCallback){
+								cancelCallback();
+							}
+			      }
+			    }
+			    let radConfirm = $('body').radalert(radConfirmOption);
+				}
+
+	      if (isNewCase) {
+					doShowRadConfirm(async()=>{
 						let allImageInstances = await createnewcase.doCallCountInstanceImage(dicomSeries, patientName);
 						createnewcase.doCreateNewCaseFirstStep(defualtValue, allSeries, allImageInstances);
 						resolve();
-					} else {
+					}, ()=>{
 						resolve();
-					}
-				} else if ((dicomData.casestatusId == 3) || (dicomData.casestatusId == 4) || (dicomData.casestatusId == 7)) {
+					});
+				} else if (hadFail) {
 					let allImageInstances = await createnewcase.doCallCountInstanceImage(dicomSeries, patientName);
 					createnewcase.doCreateNewCaseFirstStep(defualtValue, allSeries, allImageInstances);
 					resolve();
-	      } else if ((dicomData.casestatusId == 5) || (dicomData.casestatusId == 6) || (dicomData.casestatusId == 10) || (dicomData.casestatusId == 11) || (dicomData.casestatusId == 12) || (dicomData.casestatusId == 13) || (dicomData.casestatusId == 14)) {
-					let yourConfirm = confirm('รายการ dicom นี้ได้ถูกส่งไปหารังสีแพทย์แล้วและได้ผลอ่านกลับมาแล้ว\nโปรดยืนโดยการคลิกปุ่ม OK หรือ ตกลง ว่าคุณต้องการสร้างเคสใหม่จาก dicom รายการนี้อีกหนึ่งเคส?');
-					if (yourConfirm == true){
+	      } else if (hadSuccess) {
+					doShowRadConfirm(async()=>{
 						let allImageInstances = await createnewcase.doCallCountInstanceImage(dicomSeries, patientName);
 						createnewcase.doCreateNewCaseFirstStep(defualtValue, allSeries, allImageInstances);
 						resolve();
-					} else {
+					}, ()=>{
 						resolve();
-					}
+					});
 				}
 			} else {
 				let allImageInstances = await createnewcase.doCallCountInstanceImage(dicomSeries, patientName);
@@ -671,8 +716,8 @@ module.exports = function ( jq ) {
 			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">วันที่</span>'));
 			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">รายการ</span>'));
 			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">ภาพ</span>'));
-			//$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">ไฟล์ประวัติ</span>'));
 			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">ผลอ่าน</span>'));
+			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">รังสีแพทย์</span>'));
 			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">หมายเหตุ/อื่นๆ</span>'));
 			const promiseList = new Promise(async function(resolve2, reject2){
 				for (let i=0; i < backwards.length; i++) {
@@ -683,14 +728,18 @@ module.exports = function ( jq ) {
 					let casedateSegment = casedatetime[0].split('-');
 					casedateSegment = casedateSegment.join('');
 					let casedate = casedateSegment;
-					let dicomCmdBox = doCreateDicomCmdBox(backward.Case_OrthancStudyID, backward.Case_StudyInstanceUID, casedate, backward.hospitalId);
+					let caseDateFmt = util.formatStudyDate(casedate);
+					let dicomCmdBox = doCreateDicomCmdBox(backward.Case_OrthancStudyID, backward.Case_StudyInstanceUID);
 					//let patientHRBackwardBox = await doCreateHRBackwardBox(patientFullName, backward.Case_PatientHRLink, casedate);
+					casedateSegment = casedatetime[1].split(':');
+					casedateSegment = casedateSegment.join('');
+					let casetime = casedateSegment;
 					let responseBackwardBox = undefined;
 					const caseSuccessStatusIds = [5, 6, 10, 11, 12, 13, 14];
 					let hadSuccess = util.contains.call(caseSuccessStatusIds, backward.casestatusId);
 					if (hadSuccess) {
 						if ((backward.caseresponses) && (backward.caseresponses.length > 0)) {
-								responseBackwardBox = doCreateResponseBackwardBox(backward.id, backward.caseresponses[0].Response_HTML, patientFullName, casedate);
+								responseBackwardBox = doCreateResponseBackwardBox(backward.id, backward.caseresponses[0].Response_HTML, patientFullName, casedate, casetime);
 						} else {
 							responseBackwardBox = $('<div style="text-align: center">ไมพบผลอ่าน</div>');
 						}
@@ -698,20 +747,23 @@ module.exports = function ( jq ) {
 						responseBackwardBox = $('<div style="text-align: center">เคสยังไม่มีผลอ่าน</div>');
 					}
 
+					let radioBackwardBox = doCreateRadioStatusCell(backward.id, backward.Case_RadiologistId, backward.casestatusId, backward.Case_OrthancStudyID);
+
 					$(backwardRow).append($('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">' + (i+1) + '</span>'));
-					$(backwardRow).append($('<span style="display: table-cell; text-align: left; padding: 4px; vertical-align: middle;">' + casedate + '</span>'));
+					$(backwardRow).append($('<span style="display: table-cell; text-align: left; padding: 4px; vertical-align: middle;">' + caseDateFmt + '</span>'));
 					$(backwardRow).append($('<span style="display: table-cell; text-align: left; vertical-align: middle;">' + backward.Case_BodyPart + '</span>'));
 					let dicomCmdCell = $('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></span>');
 					$(dicomCmdCell).append($(dicomCmdBox));
 					$(backwardRow).append($(dicomCmdCell));
-					/*
-					let hrBackwardCell = $('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></span>');
-					$(hrBackwardCell).append($(patientHRBackwardBox));
-					$(backwardRow).append($(hrBackwardCell));
-					*/
+
 					let responseBackwardCell = $('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></span>');
 					$(responseBackwardCell).append($(responseBackwardBox));
 					$(backwardRow).append($(responseBackwardCell));
+
+					let radioBackwardCell = $('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></span>');
+					$(radioBackwardCell).append($(radioBackwardBox));
+					$(backwardRow).append($(radioBackwardCell));
+
 					$(backwardRow).append($('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">-</span>'));
 					$(backwardRow).appendTo($(backwardView));
 				}
@@ -725,7 +777,7 @@ module.exports = function ( jq ) {
 		});
 	}
 
-	const doCreateDicomCmdBox = function(orthancStudyID, studyInstanceUID, casedate, hospitalId){
+	const doCreateDicomCmdBox = function(orthancStudyID, studyInstanceUID){
 		let dicomCmdBox = $('<div></div>');
 		/*
 		let downloadCmd = $('<span>Download</span>');
@@ -746,7 +798,7 @@ module.exports = function ( jq ) {
 		return $(dicomCmdBox);
 	}
 
-	const doCreateResponseBackwardBox = function(backwardCaseId, responseText, patientFullName, casedate){
+	const doCreateResponseBackwardBox = function(backwardCaseId, responseText, patientFullName, casedate, casetime){
 		let responseBackwarBox = $('<div></div>');
 		let downloadCmd = $('<span>Download</span>');
 		$(downloadCmd).css(commandButtonStyle);
@@ -756,7 +808,7 @@ module.exports = function ( jq ) {
       const userdata = JSON.parse(localStorage.getItem('userdata'));
       let reportCreateCallerEndPoint = "/api/casereport/create";
 			let fileExt = 'pdf';
-			let fileName = (patientFullName.split(' ').join('_')) + '-' + casedate + '.' + fileExt;
+			let fileName = (patientFullName.split(' ').join('_')) + '-' + casedate + '-' + casetime + '.' + fileExt;
       let params = {caseId: backwardCaseId, hospitalId: caseHospitalId, userId: userdata.id, pdfFileName: fileName};
 			let reportPdf = await $.post(reportCreateCallerEndPoint, params);
 			var pom = document.createElement('a');
@@ -765,19 +817,29 @@ module.exports = function ( jq ) {
 			pom.click();
 			$('body').loading('stop');
 		});
-		/*
-		let pasteCmd = $('<span>Paste</span>');
-		$(pasteCmd).css(commandButtonStyle);
-		$(pasteCmd).appendTo($(responseBackwarBox));
-		$(pasteCmd).on('click', async (evt)=>{
-			let yourResponse = $('#SimpleEditor').val();
-			let yourNewResponse = yourResponse + '<br/>' + responseText;
-			$('#SimpleEditor').jqteVal(yourNewResponse);
-			doBackupDraft(backwardCaseId, yourNewResponse);
-			keytypecounter = 0;
-		});
-		*/
 		return $(responseBackwarBox);
+	}
+
+	const doCreateRadioStatusCell = function(backwardCaseId, backwardRadioId, backwardCasestatusId, backwardCaseOrthancStudyID){
+		const caseSuccessStatusIds = [5, 6, 10, 11, 12, 13, 14];
+		let radioStatusBox = $('<div></div>');
+		let hadSuccess = util.contains.call(caseSuccessStatusIds, backwardCasestatusId);
+		if (hadSuccess) {
+			let loadUrl = '/api/users/select/' + backwardRadioId;
+			$(radioStatusBox).load(loadUrl, function(loadRes){
+				let radioFN = loadRes.user[0].userinfo.User_NameTH + ' ' + loadRes.user[0].userinfo.User_LastNameTH;
+				let contactRadioCmd = $('<span>' + radioFN + '</span>');
+				$(contactRadioCmd).css(commandButtonStyle);
+				$(contactRadioCmd).a + ppendTo($(responseBackwarBox));
+				$(contactRadioCmd).on('click', async (evt)=>{
+
+				});
+				$(radioStatusBox).append($(contactRadioCmd));
+				return $(radioStatusBox);
+			});
+		} else {
+
+		}
 	}
 
 	const doSeachChatHistory = function(topicId){

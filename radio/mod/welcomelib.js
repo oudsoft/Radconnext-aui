@@ -10,7 +10,7 @@ module.exports = function ( jq ) {
   let accstatusCases = [];
 	let newConsult = [];
 
-	let dicomzipsync = [];
+	//let dicomzipsync = [];
 
   const doCreateHomeTitlePage = function() {
     const welcomeTitle = 'ยินดีต้อนรับเข้าสู่ระบบ Rad Connext';
@@ -150,20 +150,20 @@ module.exports = function ( jq ) {
 
 				newConsult = [];
 
-				dicomzipsync = [];
+				//dicomzipsync = [];
 
 				await myList.newList.Records.forEach((item, i) => {
 					newstatusCases.push(Number(item.id));
 				});
 				await myList.accList.Records.forEach((item, i) => {
 					accstatusCases.push(Number(item.id));
-					let newDicomZipSync = {caseId: item.id, studyID: item.Case_OrthancStudyID};
-					dicomzipsync.push(newDicomZipSync);
+					//let newDicomZipSync = {caseId: item.id, studyID: item.Case_OrthancStudyID};
+					//dicomzipsync.push(newDicomZipSync);
 				});
 				myList.newConsultList.Records.forEach((item, i) => {
 					newConsult.push(Number(item.id));
 				});
-				localStorage.setItem('dicomzipsync', JSON.stringify(dicomzipsync));
+				//localStorage.setItem('dicomzipsync', JSON.stringify(dicomzipsync));
 				caseCounter.doShowCaseCounter(newstatusCases, accstatusCases, newConsult);
 				$('body').loading('stop');
 				resolve();

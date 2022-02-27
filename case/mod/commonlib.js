@@ -119,14 +119,14 @@ module.exports = function ( jq ) {
 			};
 		});
 
-		let patientHNInput = $('<input type="text" value="*" id="PatientHNInput" size="15"/>');
+		let patientHNInput = $('<input type="text" value="*" id="PatientHNInput" size="12"/>');
 		$(patientHNInput).on('keypress',function(evt) {
 			if(evt.which == 13) {
 				doVerifyForm();
 			};
 		});
 
-		let patientNameInput = $('<input type="text" value="*" id="PatientNameInput" size="18"/>');
+		let patientNameInput = $('<input type="text" value="*" id="PatientNameInput" size="15"/>');
 		$(patientNameInput).on('keypress',function(evt) {
 			if(evt.which == 13) {
 				doVerifyForm();

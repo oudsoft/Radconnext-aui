@@ -61,13 +61,29 @@ $( document ).ready(function() {
     document.addEventListener("logreturn", client.onClientLogReturn);
     document.addEventListener("echoreturn", client.onClientEchoReturn);
 
-    let remoteBox = client.doOpenRemoteRun();
+    let remoteBox = undefined;
+    let urlQuery = urlQueryToObject();
+    if ((urlQuery) && (urlQuery.hospitalId)){
+      remoteBox = client.doOpenRemoteRun(urlQuery.hospitalId);
+    } else {
+      remoteBox = client.doOpenRemoteRun();
+    }
+
     $('#app').append($(remoteBox));
 	};
 
 	initPage();
 });
 
+const urlQueryToObject = function(url) {
+  let result = url.split(/[?&]/).slice(1).map(function(paramPair) {
+        return paramPair.split(/=(.+)?/).slice(0, 2);
+    }).reduce(function (obj, pairArray) {
+        obj[pairArray[0]] = pairArray[1];
+        return obj;
+    }, {});
+  return result;
+}
 
 module.exports = {
 

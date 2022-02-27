@@ -7,7 +7,7 @@ module.exports = function ( jq ) {
 	const pageFontStyle = {"font-family": "THSarabunNew", "font-size": "24px"};
 
 
-  const doOpenRemoteRun = function(){
+  const doOpenRemoteRun = function(hospitalId){
 
 
     let hospitalIdBox = $('<div style="display: table-row; width: 100%;"></div>');
@@ -59,7 +59,11 @@ module.exports = function ( jq ) {
 		$(exampleCommandBox).append($('<p>curl --list-only --user radconnext:A4AYitoDUB -T C:\\RadConnext\\Radconnext-win32-x64\\resources\\app\\http\\log\\log.log ftp://119.59.125.63/domains/radconnext.com/private_html/radconnext/inc_files/</p>'));
 		$(exampleCommandBox).append($('<p>D:/Radconnext/restart.bat</p>'));
     const userdata = JSON.parse(localStorage.getItem('userdata'));
-    $(hospitalInput).val(userdata.hospitalId);
+		if (hospitalId){
+			$(hospitalInput).val(hospitalId);
+		} else {
+			$(hospitalInput).val(userdata.hospitalId);
+		}
 
     const wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
     /*
