@@ -451,7 +451,15 @@ module.exports = function ( jq ) {
 
 	const doContactRadioCmdClick = function(dicomData, caseData){
 		let contactToolsBox = $('#ContactTools');
-		$(contactToolsBox).slideToggle();
+		let patentFullName = caseData.case.patient.Patient_NameEN + ' ' + caseData.case.patient.Patient_LastNameEN;
+		let patientHN = caseData.case.patient.Patient_HN;
+		let patientSA = caseData.case.patient.Patient_Age + '/' + caseData.case.patient.Patient_Sex;
+		let caseBodypart = caseData.case.Case_BodyPart;
+		let topicName = patientHN + ' ' + patentFullName + ' ' + patientSA + ' ' + caseBodypart;
+		doCreateSimpleChatBox(dicomData, caseData, topicName).then((simpleChatBox)=>{
+			$(contactRadioToolsBar).empty().append($(simpleChatBox));
+			$(contactToolsBox).slideToggle();
+		});
 	}
 
 	const doSendMessageCallback = function(msg, sendto, from, context){
@@ -465,7 +473,7 @@ module.exports = function ( jq ) {
 			if (context.topicStatusId != newStatus) {
 				let newDescription = 'Case have Issue Message to Radio.';
 				let updateStatusRes = await common.doUpdateCaseStatus(context.topicId, newStatus, newDescription);
-				console.log(updateStatusRes);
+				//console.log(updateStatusRes);
 				if (updateStatusRes.status.code == 200){
 					let selector = '#'+sendto + ' .chatbox';
 					let targetChatBox = $(selector);
@@ -506,47 +514,33 @@ module.exports = function ( jq ) {
 		$('body').loading('start');
 		let softPhoneCmd = $(evt.currentTarget);
 		let softPhoneData = $(softPhoneCmd).data('softPhoneData');
-		console.log(softPhoneData);
-		//let radioId = softPhoneData.caseData.case.Case_RadiologistId;
-		//let callSocketUrl = '/api/cases/radio/socket/' + radioId;
-		//let rqParams = {};
-		//common.doCallApi(callSocketUrl, rqParams).then((radioSockets)=>{
-			const phoneNoTHRegEx = /^[0]?[689]\d{8}$/;
-			/*
-			let callNumber = undefined;
-			if (radioSockets.length > 0) {
-				callNumber = softPhoneData.caseData.Radiologist.sipphone;
+		//console.log(softPhoneData);
+		const phoneNoTHRegEx = /^[0]?[689]\d{8}$/;
+		let callNumber = softPhoneData.caseData.Radiologist.phone;
+		if (callNumber){
+			let isCorrectFormat = phoneNoTHRegEx.test(callNumber);
+			if (isCorrectFormat){
+				const main = require('../main.js');
+				const mySipUA = main.doGetSipUA();
+				let callSession = mySipUA.call(callNumber, main.softphone.callOptions);
+				//console.log(callSession);
+				callSession.connection.addEventListener('addstream', function (e) {
+					var remoteAudio = document.getElementById('RemoteAudio');
+					remoteAudio.srcObject = e.stream;
+					setTimeout(() => {
+			      remoteAudio.play();
+						$('#SipPhoneIncomeBox').css({'top': '10px'});
+			      $('#SipPhoneIncomeBox').find('#IncomeBox').css({'display': 'none'});
+			      $('#SipPhoneIncomeBox').find('#AnswerBox').css({'display': 'block'});
+			    }, 500);
+				});
 			} else {
-				callNumber = softPhoneData.caseData.Radiologist.phone;
+				console.log('Your Phone Number is wrong format.');
 			}
-			*/
-			let callNumber = softPhoneData.caseData.Radiologist.phone;
-			if (callNumber){
-				let isCorrectFormat = phoneNoTHRegEx.test(callNumber);
-				if (isCorrectFormat){
-					const main = require('../main.js');
-					const mySipUA = main.doGetSipUA();
-					let callSession = mySipUA.call(callNumber, main.softphone.callOptions);
-					console.log(callSession);
-					callSession.connection.addEventListener('addstream', function (e) {
-						var remoteAudio = document.getElementById('RemoteAudio');
-						remoteAudio.srcObject = e.stream;
-						setTimeout(() => {
-				      remoteAudio.play();
-							$('#SipPhoneIncomeBox').css({'top': '10px'});
-				      $('#SipPhoneIncomeBox').find('#IncomeBox').css({'display': 'none'});
-				      $('#SipPhoneIncomeBox').find('#AnswerBox').css({'display': 'block'});
-				    }, 500);
-					});
-				} else {
-					console.log('Your Phone Number is wrong format.');
-				}
-			} else {
-				console.log('Your Phone Number is Null.');
-			}
-			//$.notify('ฟังก์นนี้อยู่ระหว่างดำเนินการเชื่อมต่อระบบฯ', "warn");
-			$('body').loading('stop');
-		//});
+		} else {
+			console.log('Your Phone Number is Null.');
+		}
+		$('body').loading('stop');
 	}
 
 	const doCreateZoomCallCmd = function(caseItem, chatHandle){
@@ -739,7 +733,7 @@ module.exports = function ( jq ) {
 					let hadSuccess = util.contains.call(caseSuccessStatusIds, backward.casestatusId);
 					if (hadSuccess) {
 						if ((backward.caseresponses) && (backward.caseresponses.length > 0)) {
-								responseBackwardBox = doCreateResponseBackwardBox(backward.id, backward.caseresponses[0].Response_HTML, patientFullName, casedate, casetime);
+								responseBackwardBox = doCreateResponseBackwardBox(backward.id, backward.caseresponses[0].id, patientFullName, casedate, casetime);
 						} else {
 							responseBackwardBox = $('<div style="text-align: center">ไมพบผลอ่าน</div>');
 						}
@@ -747,7 +741,7 @@ module.exports = function ( jq ) {
 						responseBackwardBox = $('<div style="text-align: center">เคสยังไม่มีผลอ่าน</div>');
 					}
 
-					let radioBackwardBox = doCreateRadioStatusCell(backward.id, backward.Case_RadiologistId, backward.casestatusId, backward.Case_OrthancStudyID);
+					let radioBackwardBox = await doCreateRadioStatusCell(backward.id, backward.Case_RadiologistId, backward.casestatusId, backward.Case_OrthancStudyID);
 
 					$(backwardRow).append($('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">' + (i+1) + '</span>'));
 					$(backwardRow).append($('<span style="display: table-cell; text-align: left; padding: 4px; vertical-align: middle;">' + caseDateFmt + '</span>'));
@@ -779,16 +773,6 @@ module.exports = function ( jq ) {
 
 	const doCreateDicomCmdBox = function(orthancStudyID, studyInstanceUID){
 		let dicomCmdBox = $('<div></div>');
-		/*
-		let downloadCmd = $('<span>Download</span>');
-		$(downloadCmd).css(commandButtonStyle);
-		$(downloadCmd).appendTo($(dicomCmdBox));
-		$(downloadCmd).on('click', async (evt)=>{
-			$('body').loading('start');
-			let downloadRes = await doDownloadDicom(orthancStudyID, hospitalId, casedate);
-			$('body').loading('stop');
-		});
-		*/
 		let openViewerCmd = $('<span>เปิดภาพ</span>');
 		$(openViewerCmd).appendTo($(dicomCmdBox));
 		$(openViewerCmd).css(commandButtonStyle);
@@ -798,7 +782,7 @@ module.exports = function ( jq ) {
 		return $(dicomCmdBox);
 	}
 
-	const doCreateResponseBackwardBox = function(backwardCaseId, responseText, patientFullName, casedate, casetime){
+	const doCreateResponseBackwardBox = function(backwardCaseId, caseresponseId, patientFullName, casedate, casetime){
 		let responseBackwarBox = $('<div></div>');
 		let downloadCmd = $('<span>Download</span>');
 		$(downloadCmd).css(commandButtonStyle);
@@ -806,10 +790,11 @@ module.exports = function ( jq ) {
 		$(downloadCmd).on('click', async (evt)=>{
 			$('body').loading('start');
       const userdata = JSON.parse(localStorage.getItem('userdata'));
+			let caseHospitalId = userdata.hospitalId;
       let reportCreateCallerEndPoint = "/api/casereport/create";
 			let fileExt = 'pdf';
 			let fileName = (patientFullName.split(' ').join('_')) + '-' + casedate + '-' + casetime + '.' + fileExt;
-      let params = {caseId: backwardCaseId, hospitalId: caseHospitalId, userId: userdata.id, pdfFileName: fileName};
+      let params = {caseId: backwardCaseId, hospitalId: caseHospitalId, responseId: caseresponseId, userId: userdata.id, pdfFileName: fileName};
 			let reportPdf = await $.post(reportCreateCallerEndPoint, params);
 			var pom = document.createElement('a');
 			pom.setAttribute('href', reportPdf.reportLink);
@@ -821,25 +806,42 @@ module.exports = function ( jq ) {
 	}
 
 	const doCreateRadioStatusCell = function(backwardCaseId, backwardRadioId, backwardCasestatusId, backwardCaseOrthancStudyID){
-		const caseSuccessStatusIds = [5, 6, 10, 11, 12, 13, 14];
-		let radioStatusBox = $('<div></div>');
-		let hadSuccess = util.contains.call(caseSuccessStatusIds, backwardCasestatusId);
-		if (hadSuccess) {
-			let loadUrl = '/api/users/select/' + backwardRadioId;
-			$(radioStatusBox).load(loadUrl, function(loadRes){
+		return new Promise(async function(resolve, reject) {
+			const caseSuccessStatusIds = [5, 6, 10, 11, 12, 13, 14];
+			let loadUrl = '/api/cases/status/by/dicom/' + backwardCaseOrthancStudyID;
+			let loadRes = await common.doGetApi(loadUrl, {});
+			const dicomData = {caseId: loadRes.Records[0].id, casestatusId: loadRes.Records[0].casestatusId, dicomID: backwardCaseOrthancStudyID, studyInstanceUID: loadRes.Records[0].Case_StudyInstanceUID}
+			loadUrl = '/api/cases/select/'+ dicomData.caseId;
+			loadRes = await apiconnector.doCallApi(loadUrl, {});
+			const caseData = loadRes.Records[0];
+			let radioStatusBox = $('<div></div>');
+			let hadSuccess = util.contains.call(caseSuccessStatusIds, backwardCasestatusId);
+			if (hadSuccess) {
+				let loadUrl = '/api/users/select/' + backwardRadioId;
+				let loadRes = await common.doGetApi(loadUrl, {});
 				let radioFN = loadRes.user[0].userinfo.User_NameTH + ' ' + loadRes.user[0].userinfo.User_LastNameTH;
 				let contactRadioCmd = $('<span>' + radioFN + '</span>');
 				$(contactRadioCmd).css(commandButtonStyle);
-				$(contactRadioCmd).a + ppendTo($(responseBackwarBox));
-				$(contactRadioCmd).on('click', async (evt)=>{
-
+				$(contactRadioCmd).appendTo($(radioStatusBox));
+				$(contactRadioCmd).on('click', async(evt)=>{
+					doContactRadioCmdClick(dicomData, caseData);
 				});
 				$(radioStatusBox).append($(contactRadioCmd));
-				return $(radioStatusBox);
-			});
-		} else {
-
-		}
+				resolve($(radioStatusBox));
+			} else {
+				let createNewCaseCmd = $('<span>ส่งรังสีแพทย์อ่านผล</span>');
+				$(createNewCaseCmd).css(commandButtonStyle);
+				$(createNewCaseCmd).appendTo($(radioStatusBox));
+				$(createNewCaseCmd).on('click', async(evt)=>{
+					let studyTag = await common.doGetSeriesList(backwardCaseOrthancStudyID);
+					let defualtValue = doCreateDefualtValue(studyTag);
+					let dicomSeries = studyTag.Series;
+					doCreateNewCaseCmdClick(dicomData, caseData, defualtValue, dicomSeries);
+				});
+				$(radioStatusBox).append($(createNewCaseCmd));
+				resolve($(radioStatusBox));
+			}
+		});
 	}
 
 	const doSeachChatHistory = function(topicId){
@@ -896,6 +898,27 @@ module.exports = function ( jq ) {
 				}
 			}
 		});
+	}
+
+	const doCreateDefualtValue = function(studyTag){
+		let defualtValue = {patient: {id: studyTag.PatientMainDicomTags.PatientID, name: studyTag.PatientMainDicomTags.PatientName, age: patientProps[1], sex: patientProps[0]}, bodypart: bdp, studyID: studyTag.ID, acc: studyTag.MainDicomTags.AccessionNumber, mdl: mld};
+		if (studyTag.MainDicomTags.StudyDescription) {
+			defualtValue.studyDesc = studyTag.MainDicomTags.StudyDescription;
+		} else {
+			defualtValue.studyDesc = '';
+		}
+		if (studyTag.SamplingSeries.MainDicomTags.ProtocolName) {
+			defualtValue.protocalName = studyTag.SamplingSeries.MainDicomTags.ProtocolName;
+		} else {
+			defualtValue.protocalName = '';
+		}
+		defualtValue.manufacturer = studyTag.SamplingSeries.MainDicomTags.Manufacturer;
+		defualtValue.stationName = studyTag.SamplingSeries.MainDicomTags.StationName;
+		defualtValue.studyInstanceUID = studyTag.MainDicomTags.StudyInstanceUID;
+		defualtValue.studyDate = studyTag.MainDicomTags.StudyDate;
+		defualtValue.headerCreateCase = 'ส่งอ่านผล';
+		defualtValue.urgenttype = 'standard';
+		return defualtValue;
 	}
 
   return {

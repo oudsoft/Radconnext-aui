@@ -144,7 +144,7 @@ module.exports = function ( jq ) {
 			const userdata = JSON.parse(localStorage.getItem('userdata'));
 			let userId = userdata.id;
 			doLoadCaseForSetupCounter(userId).then(async (myList)=>{
-
+				//console.log(myList);
 				newstatusCases = [];
 			  accstatusCases = [];
 
