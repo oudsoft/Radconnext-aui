@@ -331,7 +331,8 @@ module.exports = function ( jq ) {
 			});
 			let createNewCaseCmdBox = $('<div style="display: table-cell; text-align: center; width: 50%;"></div>');
 			$(createNewCaseCmdBox).appendTo($(commandBox));
-			let createNewCaseCmd = $('<input type="button" value=" ส่งรังสีแพทย์อ่านผล "/>');
+			//let createNewCaseCmd = $('<input type="button" value=" ส่งรังสีแพทย์อ่านผล "/>');
+			let createNewCaseCmd = $('<span></span>');
 			$(createNewCaseCmd).appendTo($(createNewCaseCmdBox));
 			$(createNewCaseCmd).on('click', (evt)=>{
 				doCreateNewCaseCmdClick(dicomData, caseData, defualtValue, dicomSeries);
@@ -829,7 +830,7 @@ module.exports = function ( jq ) {
 				$(radioStatusBox).append($(contactRadioCmd));
 				resolve($(radioStatusBox));
 			} else {
-				let createNewCaseCmd = $('<span>ส่งรังสีแพทย์อ่านผล</span>');
+				let createNewCaseCmd = $('<span>ไม่ได้ส่งอ่าน</span>');
 				$(createNewCaseCmd).css(commandButtonStyle);
 				$(createNewCaseCmd).appendTo($(radioStatusBox));
 				$(createNewCaseCmd).on('click', async(evt)=>{
