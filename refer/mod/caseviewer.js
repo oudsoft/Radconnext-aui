@@ -808,6 +808,11 @@ module.exports = function ( jq ) {
 
 	const doCreateRadioStatusCell = function(backwardCaseId, backwardRadioId, backwardCasestatusId, backwardCaseOrthancStudyID){
 		return new Promise(async function(resolve, reject) {
+			const circleBox = function(bkColor){
+				let circle = $('<span style="height: 25px; width: 25px; border: 1px solid #ccc; border-radius: 50%; display: inline-block; margin-left: 4px;"></span>');
+				$(circle).css('background-color', bkColor);
+				return $(circle);
+			}
 			const caseSuccessStatusIds = [5, 6, 10, 11, 12, 13, 14];
 			let loadUrl = '/api/cases/status/by/dicom/' + backwardCaseOrthancStudyID;
 			let loadRes = await common.doGetApi(loadUrl, {});
@@ -821,6 +826,8 @@ module.exports = function ( jq ) {
 				let loadUrl = '/api/users/select/' + backwardRadioId;
 				let loadRes = await common.doGetApi(loadUrl, {});
 				let radioFN = loadRes.user[0].userinfo.User_NameTH + ' ' + loadRes.user[0].userinfo.User_LastNameTH;
+				let radioUsername = loadRes.user[0].username;
+				let radioId = loadRes.user[0].id;
 				let contactRadioCmd = $('<span>' + radioFN + '</span>');
 				$(contactRadioCmd).css(commandButtonStyle);
 				$(contactRadioCmd).appendTo($(radioStatusBox));
@@ -828,6 +835,16 @@ module.exports = function ( jq ) {
 					doContactRadioCmdClick(dicomData, caseData);
 				});
 				$(radioStatusBox).append($(contactRadioCmd));
+				$(radioStatusBox).append($('<span> </span>'));
+				loadUrl = '/api/cases/radio/socket/' + radioId;
+				let radioSockets = await common.doCallApi(loadUrl, {});
+				let radioStateBox = undefined
+				if (radioSockets.length > 0) {
+					radioStateBox = circleBox('green');
+				} else {
+					radioStateBox = circleBox('red');
+				}
+				$(radioStatusBox).append($(radioStateBox));
 				resolve($(radioStatusBox));
 			} else {
 				let createNewCaseCmd = $('<span>ไม่ได้ส่งอ่าน</span>');
