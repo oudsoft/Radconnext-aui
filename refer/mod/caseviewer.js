@@ -457,7 +457,7 @@ module.exports = function ( jq ) {
 		let caseBodypart = caseData.case.Case_BodyPart;
 		let topicName = patientHN + ' ' + patentFullName + ' ' + patientSA + ' ' + caseBodypart;
 		doCreateSimpleChatBox(dicomData, caseData, topicName).then((simpleChatBox)=>{
-			$(contactRadioToolsBar).empty().append($(simpleChatBox));
+			$(contactToolsBox).empty().append($(simpleChatBox));
 			$(contactToolsBox).slideToggle();
 		});
 	}

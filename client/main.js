@@ -62,13 +62,13 @@ $( document ).ready(function() {
     document.addEventListener("echoreturn", client.onClientEchoReturn);
 
     let remoteBox = undefined;
-    let urlQuery = urlQueryToObject();
+    let urlQuery = urlQueryToObject(window.location.href);
+    console.log(urlQuery);
     if ((urlQuery) && (urlQuery.hospitalId)){
       remoteBox = client.doOpenRemoteRun(urlQuery.hospitalId);
     } else {
       remoteBox = client.doOpenRemoteRun();
     }
-
     $('#app').append($(remoteBox));
 	};
 

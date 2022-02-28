@@ -123,6 +123,25 @@ module.exports = function ( jq ) {
     return date.getDate() + '/' + (date.getMonth() + 1) + '/' + (date.getFullYear() + 543);
   }
 
+	const doCheckOutTime = function(d){
+		let date = new Date(d);
+		let hh = date.getHours();
+		let mn = date.getMinutes();
+		if (hh < 8) {
+			return true;
+		} else {
+			if (hh == 8) {
+				if (mn == 0) {
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+	}
+
   function fmtReportNumber(x) {
     return x.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
@@ -525,6 +544,7 @@ module.exports = function ( jq ) {
 	        for (let j=0; j < scanParts.length; j++){
 	          let itemRow = $(contentRow);
 	          let fmtDate = fmtReportDate(item.createdAt);
+						let isOutTime = doCheckOutTime(item.createdAt);
 						let fmtPrice = undefined;
 						if (scanParts[j].PR) {
 	          	fmtPrice = fmtReportNumber(Number(scanParts[j].PR));
@@ -542,6 +562,9 @@ module.exports = function ( jq ) {
 						$(itemRow).append('<td align="left">' + item.radio.User_NameTH + ' ' + item.radio.User_LastNameTH + '</td>');
 	          $(itemRow).append('<td align="left">' + scanParts[j].Code + '</td>');
 	          $(itemRow).append('<td align="right">' + fmtPrice + '</td>');
+						if (isOutTime) {
+							$(itemRow).css({'background-color': 'grey', 'color': 'white'});
+						}
 	          $(contentTable).append($(itemRow));
 	          itemNo += 1;
 	        }

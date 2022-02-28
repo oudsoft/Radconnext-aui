@@ -40,6 +40,7 @@ module.exports = function ( jq ) {
 		let reportLogFileCmdCmd = $('<input type="button" value=" Report Log File " style="margin-left: 20px;"/>');
 		let dicomLogFileCmdCmd = $('<input type="button" value=" Dicom Log File " style="margin-left: 20px;"/>');
 		let restartServiceCmdCmd = $('<input type="button" value=" Restart Service " style="margin-left: 20px;"/>');
+		let backCmd = $('<input type="button" value=" Back " style="margin-left: 20px;"/>');
     $(executeCmdValueCell).append($(executeCmdCmd)).append($(echoCmdCmd)).append($(logFileCmdCmd)).append($(reportLogFileCmdCmd)).append($(dicomLogFileCmdCmd)).append($(restartServiceCmdCmd));
     $(executeCmdBox).append($(executeCmdLabelCell)).append($(executeCmdValueCell));
 
@@ -120,10 +121,16 @@ module.exports = function ( jq ) {
 			wsm.send(JSON.stringify({type: 'clientrestart', hospitalId: hospitalId, sender: username, sendto: 'orthanc'}));
 		});
 
+		$(backCmd).on('click', (evt)=>{
+			window.open('/staff.html');
+		});
+
     let remoteRunBox = $('<div id ="RemoteRunBox" style="display: table; width: 100%; border-collapse: collapse;"></div>');
     $(remoteRunBox).append($(hospitalIdBox)).append($(monitorBox)).append($(commandsListBox)).append($(executeCmdBox));
 		let remoteBox = $('<div style="position: relative; width: 100%;"></div>');
-		return $(remoteBox).append($(remoteRunBox)).append($(exampleCommandBox));
+		let backCmdBox = $('<div style="position: relative; width: 100%; text-align: center;"></div>');
+		$(backCmdBox).append($(backCmd));
+		return $(remoteBox).append($(remoteRunBox)).append($(exampleCommandBox)).append($(backCmdBox));
   }
 
 	const doCreateResultMonitor = function(){
