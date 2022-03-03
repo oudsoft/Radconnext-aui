@@ -724,7 +724,7 @@ module.exports = function ( jq ) {
 					casedateSegment = casedateSegment.join('');
 					let casedate = casedateSegment;
 					let caseDateFmt = util.formatStudyDate(casedate);
-					let dicomCmdBox = doCreateDicomCmdBox(backward.Case_OrthancStudyID, backward.Case_StudyInstanceUID);
+					let dicomCmdBox = doCreateDicomCmdBox(backwardRow, backward.Case_OrthancStudyID, backward.Case_StudyInstanceUID);
 					//let patientHRBackwardBox = await doCreateHRBackwardBox(patientFullName, backward.Case_PatientHRLink, casedate);
 					casedateSegment = casedatetime[1].split(':');
 					casedateSegment = casedateSegment.join('');
@@ -734,7 +734,7 @@ module.exports = function ( jq ) {
 					let hadSuccess = util.contains.call(caseSuccessStatusIds, backward.casestatusId);
 					if (hadSuccess) {
 						if ((backward.caseresponses) && (backward.caseresponses.length > 0)) {
-								responseBackwardBox = doCreateResponseBackwardBox(backward.id, backward.caseresponses[0].id, patientFullName, casedate, casetime);
+								responseBackwardBox = doCreateResponseBackwardBox(backwardRow, backward.id, backward.caseresponses[0].id, patientFullName, casedate, casetime);
 						} else {
 							responseBackwardBox = $('<div style="text-align: center">ไมพบผลอ่าน</div>');
 						}
@@ -742,7 +742,8 @@ module.exports = function ( jq ) {
 						responseBackwardBox = $('<div style="text-align: center">เคสยังไม่มีผลอ่าน</div>');
 					}
 
-					let radioBackwardBox = await doCreateRadioStatusCell(backward.id, backward.Case_RadiologistId, backward.casestatusId, backward.Case_OrthancStudyID);
+					let radioId = backward.Case_RadiologistId;
+					let radioBackwardBox = await doCreateRadioStatusCell(backwardRow, backward.id, radioId, backward.casestatusId, backward.Case_OrthancStudyID);
 
 					$(backwardRow).append($('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">' + (i+1) + '</span>'));
 					$(backwardRow).append($('<span style="display: table-cell; text-align: left; padding: 4px; vertical-align: middle;">' + caseDateFmt + '</span>'));
@@ -757,9 +758,22 @@ module.exports = function ( jq ) {
 
 					let radioBackwardCell = $('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></span>');
 					$(radioBackwardCell).append($(radioBackwardBox));
+					let loadUrl = '/api/cases/radio/socket/' + radioId;
+					let radioSockets = await common.doCallApi(loadUrl, {});
+					let radioStateBox = undefined
+					if (radioSockets.length > 0) {
+						radioStateBox = doCreateRadioStateBox('green');
+					} else {
+						radioStateBox = doCreateRadioStateBox('red');
+					}
+					$(radioBackwardCell).append($(radioStateBox));
+
 					$(backwardRow).append($(radioBackwardCell));
 
 					$(backwardRow).append($('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">-</span>'));
+					if (i == 0){
+						$(backwardRow).addClass('row-selected');
+					}
 					$(backwardRow).appendTo($(backwardView));
 				}
 				setTimeout(()=> {
@@ -772,23 +786,27 @@ module.exports = function ( jq ) {
 		});
 	}
 
-	const doCreateDicomCmdBox = function(orthancStudyID, studyInstanceUID){
+	const doCreateDicomCmdBox = function(backwardRow, orthancStudyID, studyInstanceUID){
 		let dicomCmdBox = $('<div></div>');
 		let openViewerCmd = $('<span>เปิดภาพ</span>');
 		$(openViewerCmd).appendTo($(dicomCmdBox));
 		$(openViewerCmd).css(commandButtonStyle);
 		$(openViewerCmd).on('click', async (evt)=>{
+			$('.row-selected').removeClass('row-selected');
+			$(backwardRow).addClass('row-selected');
 			common.doOpenStoneWebViewer(studyInstanceUID);
 		});
 		return $(dicomCmdBox);
 	}
 
-	const doCreateResponseBackwardBox = function(backwardCaseId, caseresponseId, patientFullName, casedate, casetime){
+	const doCreateResponseBackwardBox = function(backwardRow, backwardCaseId, caseresponseId, patientFullName, casedate, casetime){
 		let responseBackwarBox = $('<div></div>');
 		let downloadCmd = $('<span>Download</span>');
 		$(downloadCmd).css(commandButtonStyle);
 		$(downloadCmd).appendTo($(responseBackwarBox));
 		$(downloadCmd).on('click', async (evt)=>{
+			$('.row-selected').removeClass('row-selected');
+			$(backwardRow).addClass('row-selected');
 			$('body').loading('start');
       const userdata = JSON.parse(localStorage.getItem('userdata'));
 			let caseHospitalId = userdata.hospitalId;
@@ -806,13 +824,8 @@ module.exports = function ( jq ) {
 		return $(responseBackwarBox);
 	}
 
-	const doCreateRadioStatusCell = function(backwardCaseId, backwardRadioId, backwardCasestatusId, backwardCaseOrthancStudyID){
+	const doCreateRadioStatusCell = function(backwardRow, backwardCaseId, backwardRadioId, backwardCasestatusId, backwardCaseOrthancStudyID){
 		return new Promise(async function(resolve, reject) {
-			const circleBox = function(bkColor){
-				let circle = $('<span style="height: 25px; width: 25px; border: 1px solid #ccc; border-radius: 50%; display: inline-block; margin-left: 4px;"></span>');
-				$(circle).css('background-color', bkColor);
-				return $(circle);
-			}
 			const caseSuccessStatusIds = [5, 6, 10, 11, 12, 13, 14];
 			let loadUrl = '/api/cases/status/by/dicom/' + backwardCaseOrthancStudyID;
 			let loadRes = await common.doGetApi(loadUrl, {});
@@ -820,44 +833,32 @@ module.exports = function ( jq ) {
 			loadUrl = '/api/cases/select/'+ dicomData.caseId;
 			loadRes = await apiconnector.doCallApi(loadUrl, {});
 			const caseData = loadRes.Records[0];
-			let radioStatusBox = $('<div></div>');
 			let hadSuccess = util.contains.call(caseSuccessStatusIds, backwardCasestatusId);
 			if (hadSuccess) {
 				let loadUrl = '/api/users/select/' + backwardRadioId;
 				let loadRes = await common.doGetApi(loadUrl, {});
 				let radioFN = loadRes.user[0].userinfo.User_NameTH + ' ' + loadRes.user[0].userinfo.User_LastNameTH;
 				let radioUsername = loadRes.user[0].username;
-				let radioId = loadRes.user[0].id;
 				let contactRadioCmd = $('<span>' + radioFN + '</span>');
 				$(contactRadioCmd).css(commandButtonStyle);
-				$(contactRadioCmd).appendTo($(radioStatusBox));
 				$(contactRadioCmd).on('click', async(evt)=>{
+					$('.row-selected').removeClass('row-selected');
+					$(backwardRow).addClass('row-selected');
 					doContactRadioCmdClick(dicomData, caseData);
 				});
-				$(radioStatusBox).append($(contactRadioCmd));
-				$(radioStatusBox).append($('<span> </span>'));
-				loadUrl = '/api/cases/radio/socket/' + radioId;
-				let radioSockets = await common.doCallApi(loadUrl, {});
-				let radioStateBox = undefined
-				if (radioSockets.length > 0) {
-					radioStateBox = circleBox('green');
-				} else {
-					radioStateBox = circleBox('red');
-				}
-				$(radioStatusBox).append($(radioStateBox));
-				resolve($(radioStatusBox));
+				resolve($(contactRadioCmd));
 			} else {
 				let createNewCaseCmd = $('<span>ไม่ได้ส่งอ่าน</span>');
 				$(createNewCaseCmd).css(commandButtonStyle);
-				$(createNewCaseCmd).appendTo($(radioStatusBox));
 				$(createNewCaseCmd).on('click', async(evt)=>{
+					$('.row-selected').removeClass('row-selected');
+					$(backwardRow).addClass('row-selected');
 					let studyTag = await common.doGetSeriesList(backwardCaseOrthancStudyID);
 					let defualtValue = doCreateDefualtValue(studyTag);
 					let dicomSeries = studyTag.Series;
 					doCreateNewCaseCmdClick(dicomData, caseData, defualtValue, dicomSeries);
 				});
-				$(radioStatusBox).append($(createNewCaseCmd));
-				resolve($(radioStatusBox));
+				resolve($(createNewCaseCmd));
 			}
 		});
 	}
@@ -937,6 +938,12 @@ module.exports = function ( jq ) {
 		defualtValue.headerCreateCase = 'ส่งอ่านผล';
 		defualtValue.urgenttype = 'standard';
 		return defualtValue;
+	}
+
+	const doCreateRadioStateBox = function(bkColor){
+		let circle = $('<span style="position: relative; height: 15px; width: 15px; border: 1px solid #ccc; border-radius: 50%; display: inline-block; margin-left: 4px; bottom: -1px;"></span>');
+		$(circle).css('background-color', bkColor);
+		return $(circle);
 	}
 
   return {

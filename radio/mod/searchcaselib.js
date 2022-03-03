@@ -145,7 +145,7 @@ module.exports = function ( jq ) {
 
     let fromDateKeyBox = $('<div style="text-align: left; display: inline-block;"></div>'); //<span>ตั้งแต่</span>
     $(fromDateKeyBox).appendTo($(formField));
-    let fromDateKey = $('<input type="text" id="FromDateKey" size="6" style="margin-left: 5px;"/>');
+    let fromDateKey = $('<input type="text" id="FromDateKey" size="6" style="margin-left: 1px;"/>');
     if (key.fromDateKeyValue) {
       let arrTmps = key.fromDateKeyValue.split('-');
       let fromDateTextValue = arrTmps[2] + '-' + arrTmps[1] + '-' + arrTmps[0];
@@ -155,11 +155,11 @@ module.exports = function ( jq ) {
     $(fromDateKey).appendTo($(fromDateKeyBox));
     $(fromDateKey).datepicker({ dateFormat: 'dd-mm-yy' });
 
-    $(formField).append($('<span style="margin-left: 5px; margin-right: 2px; display: inline-block;">-</span>'));
+    $(formField).append($('<span style="margin-left: 2px; display: inline-block;">-</span>'));
 
     let toDateKeyBox = $('<div style="text-align: left; display: inline-block;"></div>'); //<span>ถึง</span>
     $(toDateKeyBox).appendTo($(formField));
-    let toDateKey = $('<input type="text" id="ToDateKey" size="6" style="margin-left: 5px;"/>');
+    let toDateKey = $('<input type="text" id="ToDateKey" size="6" style="margin-left: 2px;"/>');
     if (key.toDateKeyValue) {
       let arrTmps = key.toDateKeyValue.split('-');
       let toDateTextValue = arrTmps[2] + '-' + arrTmps[1] + '-' + arrTmps[0];

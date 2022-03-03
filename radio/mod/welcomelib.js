@@ -20,7 +20,8 @@ module.exports = function ( jq ) {
     let titleText = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>' + welcomeTitle + '</h3></div>');
     $(titleText).appendTo($(homeTitle));
 
-		$('.case-counter, .consult-counter').hide();
+		$('.case-counter').hide();
+		$('.consult-counter').hide();
 
     return $(homeTitle);
   }
