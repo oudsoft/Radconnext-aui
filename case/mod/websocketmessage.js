@@ -101,7 +101,7 @@ module.exports = function ( jq, wsm ) {
 			document.dispatchEvent(event);
 		} else if (data.type == 'clientresult') {
 			let eventName = 'clientresult';
-			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.result}});
+			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.result, hospitalId: data.hospitalId, owner: data.owner}});
 			document.dispatchEvent(event);
 		} else if (data.type == 'logreturn') {
 			let eventName = 'logreturn';
