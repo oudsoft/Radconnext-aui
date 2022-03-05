@@ -121,7 +121,8 @@ module.exports = function ( jq ) {
 		});
 
 		$(backCmd).on('click', (evt)=>{
-			window.open('/staff.html');
+			//window.open('/staff.html');
+			window.location.replace('/staff.html');
 		});
 
     let remoteRunBox = $('<div id ="RemoteRunBox" style="display: table; width: 100%; border-collapse: collapse;"></div>');
