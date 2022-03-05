@@ -172,7 +172,7 @@ module.exports = function ( jq ) {
     $(formField).appendTo($(searchFormRow));
 
     formField = $('<div style="display: table-cell; text-align: left; vertical-align: middle;" class="header-cell"></div>');
-    let patientNameENKey = $('<input type="text" id="PatientNameENKey" size="8"/>');
+    let patientNameENKey = $('<input type="text" id="PatientNameENKey" size="15"/>');
     $(patientNameENKey).val(key.patientNameENKeyValue);
     $(formField).append($(patientNameENKey));
     $(formField).appendTo($(searchFormRow));

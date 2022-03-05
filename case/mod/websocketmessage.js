@@ -2,6 +2,7 @@
 module.exports = function ( jq, wsm ) {
 	const $ = jq;
   const onMessageHospital = function (msgEvt) {
+		let userdata = JSON.parse(localStorage.getItem('userdata'));
     let data = JSON.parse(msgEvt.data);
     console.log(data);
     if (data.type !== 'test') {
@@ -75,7 +76,7 @@ module.exports = function ( jq, wsm ) {
     } else if (data.type == 'runresult') {
       //$('#RemoteDicom').dispatchEvent(new CustomEvent("runresult", {detail: { data: data.result, owner: data.owner, hospitalId: data.hospitalId }}));
       let evtData = { data: data.result, owner: data.owner, hospitalId: data.hospitalId };
-      $("#RemoteDicom").trigger('runresult', [evtData]);
+      $('body').trigger('runresult', [evtData]);
     } else if (data.type == 'refresh') {
       let event = new CustomEvent(data.section, {"detail": {eventname: data.section, stausId: data.statusId, caseId: data.caseId}});
       document.dispatchEvent(event);

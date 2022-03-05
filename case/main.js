@@ -142,6 +142,7 @@ function doLoadMainPage(){
   document.addEventListener("triggerconsultcounter", casecounter.onConsultChangeStatusTrigger);
   document.addEventListener("triggernewdicom", onNewDicomTransferTrigger);
   document.addEventListener("clientreconnecttrigger", onClientReconnectTrigger);
+  document.addEventListener("clientresult", onClientResult);
 
   let userdata = JSON.parse(doGetUserData());
 
@@ -491,6 +492,25 @@ const onClientReconnectTrigger = function(evt){
     wsl.send(JSON.stringify({type: 'client-reconnect'}));
     localStorage.removeItem('masternotify');
   },2100);
+}
+
+const onClientResult = async function(evt){
+  let clientData = evt.detail.data;
+  let clientDataObject = JSON.parse(clientData);
+  let parentResources = clientDataObject.hasOwnProperty('ParentResources');
+  let failedInstancesCount = clientDataObject.hasOwnProperty('FailedInstancesCount');
+  let instancesCount = clientDataObject.hasOwnProperty('InstancesCount');
+  if ((parentResources.length == 1) && (failedInstancesCount == 0) && (instancesCount > 0)){
+    let studyID = parentResources[0];
+    let clientHospitalId = evt.detail.hospitalId;
+    let studyTags = await common.doCallLoadStudyTags(clientHospitalId, studyID);
+    console.log(studyTags);
+    let reStudyRes = await common.doReStructureDicom(clientHospitalId, studyID, studyTags);
+    console.log(reStudyRes);
+    alert('ดำเนินการส่งภาพเข้าระบบสำเร็จ');
+    $('body').loading('stop');
+  }
+
 }
 
 function doGetToken(){

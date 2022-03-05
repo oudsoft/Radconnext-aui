@@ -1026,6 +1026,28 @@ module.exports = function ( jq ) {
 		}
 	}
 
+	const doCallLoadStudyTags = function(hospitalId, studyId){
+		return new Promise(async function(resolve, reject) {
+			let rqBody = '{"Level": "Study", "Expand": true, "Query": {"PatientName":"TEST"}}';
+			let orthancUri = '/studies/' + studyId;
+			let params = {method: 'get', uri: orthancUri, body: rqBody, hospitalId: hospitalId};
+			let callLoadUrl = '/api/orthancproxy/find'
+			$.post(callLoadUrl, params).then((response) => {
+				resolve(response);
+			});
+		});
+	}
+
+	const doReStructureDicom = function(hospitalId, studyId, dicom){
+		return new Promise(async function(resolve, reject) {
+			let params = {hospitalId: hospitalId, resourceId: studyId, resourceType: "study", dicom: dicom};
+			let restudyUrl = '/api/dicomtransferlog/add';
+			$.post(restudyUrl, params).then((response) => {
+				resolve(response);
+			});
+		});
+	}
+
   return {
 		/* Constant share */
 		caseReadWaitStatus,
@@ -1086,6 +1108,8 @@ module.exports = function ( jq ) {
 		doShowStudyDescriptionLegentCmdClick,
 		doScrollTopPage,
 		genUniqueID,
-		onSimpleEditorPaste
+		onSimpleEditorPaste,
+		doCallLoadStudyTags,
+		doReStructureDicom
 	}
 }

@@ -9,7 +9,6 @@ module.exports = function ( jq ) {
 
   const doOpenRemoteRun = function(hospitalId){
 
-
     let hospitalIdBox = $('<div style="display: table-row; width: 100%;"></div>');
     let hospitalLabelCell = $('<div style="display: table-cell; padding: 4px;">Hospital Id:</div>');
     let hospitalValueCell = $('<div style="display: table-cell; padding: 4px;"></div>');
@@ -138,8 +137,10 @@ module.exports = function ( jq ) {
 		return $( monitorBox);
 	}
 
-	const onClientResult = function(evt){
+	const onClientResult = async function(evt){
 		let clientData = evt.detail.data;
+		let clientOwnerId = evt.detail.owner;
+		let clientHospitalId = evt.detail.hospitalId;
 		console.log(clientData);
 		//let lines = clientData.split('\n');
 		//console.log(lines);
@@ -147,6 +148,17 @@ module.exports = function ( jq ) {
 		$(resultBox).text(clientData);
 		let monitorHandle = $('#app').find('#MonitorBox');
 		$(monitorHandle).append($(resultBox));
+		let clientDataObject = JSON.parse(clientData);
+		let parentResources = clientDataObject.hasOwnProperty('ParentResources');
+		let failedInstancesCount = clientDataObject.hasOwnProperty('FailedInstancesCount');
+		let instancesCount = clientDataObject.hasOwnProperty('InstancesCount');
+		if ((parentResources.length == 1) && (failedInstancesCount == 0) && (instancesCount > 0)){
+			let studyID = parentResources[0];
+			let studyTags = await common.doCallLoadStudyTags(clientHospitalId, studyID);
+			console.log(studyTags);
+			let reStudyRes = await common.doReStructureDicom(clientHospitalId, studyID, studyTags);
+			console.log(reStudyRes);
+		}
 	}
 
 	const onClientLogReturn = function(evt){
@@ -179,6 +191,7 @@ module.exports = function ( jq ) {
 		};
 		addResizeListener(resizeElement, resizeCallback);
 		*/
+
   return {
     doOpenRemoteRun,
 		onClientResult,

@@ -345,7 +345,19 @@ module.exports = function ( jq ) {
 			$(popupDicomSummary).append($('<span><b>Name:</b>  </span>'));
 			$(popupDicomSummary).append($('<span>' + name + ' </span>'));
 			$(popupDicomSummary).append($('<span><b>Acc. No.:</b>  </span>'));
-			$(popupDicomSummary).append($('<span>' + defualtValue.acc + '</span>'));
+			let accNoElem = $('<span>' + defualtValue.acc + '</span>');
+			$(accNoElem).on('click', (evt)=>{
+				$('body').loading('start');
+				const main = require('../main.js');
+				let myWsm = main.doGetWsm();
+				let userdata = JSON.parse(localStorage.getItem('userdata'));
+				let hospitalId = userdata.hospitalId;
+				let myname = userdata.username;
+				let command = 'curl -X POST --user demo:demo http://localhost:8042/modalities/cloud/store -d ' + defualtValue.studyID;
+				let lines = [command];
+				myWsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: myname, sendto: 'orthanc'}));
+			});
+			$(popupDicomSummary).append($(accNoElem));
 
 			let popupCmdBar = $('<div style="position: relative; min-height: 50px; padding: 5px; text-align: center;"></div>');
 			$(popupCmdBar).append($(previewCmd));
