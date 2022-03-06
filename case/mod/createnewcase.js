@@ -355,7 +355,9 @@ module.exports = function ( jq ) {
 				let myname = userdata.username;
 				let command = 'curl -X POST --user demo:demo http://localhost:8042/modalities/cloud/store -d ' + defualtValue.studyID;
 				let lines = [command];
-				myWsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: myname, sendto: 'orthanc'}));
+				let runCommand = {type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: myname, sendto: 'orthanc'};
+				myWsm.send(JSON.stringify(runCommand));
+				$(closePopupCmd).click();
 			});
 			$(popupDicomSummary).append($(accNoElem));
 

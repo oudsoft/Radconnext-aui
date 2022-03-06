@@ -153,8 +153,8 @@ module.exports = function ( jq ) {
 		let parentResources = clientDataObject.hasOwnProperty('ParentResources');
 		let failedInstancesCount = clientDataObject.hasOwnProperty('FailedInstancesCount');
 		let instancesCount = clientDataObject.hasOwnProperty('InstancesCount');
-		if ((parentResources.length == 1) && (failedInstancesCount == 0) && (instancesCount > 0)){
-			let studyID = parentResources[0];
+		if ((parentResources) && (failedInstancesCount) && (instancesCount)){
+			let studyID = clientDataObject.ParentResources[0];
 			let studyTags = await common.doCallLoadStudyTags(clientHospitalId, studyID);
 			console.log(studyTags);
 			let reStudyRes = await common.doReStructureDicom(clientHospitalId, studyID, studyTags);

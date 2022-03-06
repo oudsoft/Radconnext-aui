@@ -100,6 +100,7 @@ module.exports = function ( jq, wsm ) {
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.result}});
 			document.dispatchEvent(event);
 		} else if (data.type == 'clientresult') {
+			console.log(data);
 			let eventName = 'clientresult';
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.result, hospitalId: data.hospitalId, owner: data.owner}});
 			document.dispatchEvent(event);
