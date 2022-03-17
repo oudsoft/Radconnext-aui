@@ -604,7 +604,7 @@ function doSetupAutoReadyAfterLogin(){
 function doAutoAcceptCase(){
   const userdata = JSON.parse(localStorage.getItem('userdata'));
   const autoAcc = userdata.userprofiles[0].Profile.activeState.autoAcc;
-  console.log(autoAcc);
+  //console.log(autoAcc);
   if (autoAcc == 1){
     newcase.doCallMyNewCase().then(async (myNewCase)=>{
       console.log(myNewCase);
