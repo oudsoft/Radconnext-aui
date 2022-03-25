@@ -462,7 +462,11 @@ module.exports = function ( jq ) {
 		let topicName = patientHN + ' ' + patentFullName + ' ' + patientSA + ' ' + caseBodypart;
 		doCreateSimpleChatBox(dicomData, caseData, topicName).then((simpleChatBox)=>{
 			$(contactToolsBox).empty().append($(simpleChatBox));
-			$(contactToolsBox).slideToggle();
+			let isExpand = $(contactToolsBox).css('display');
+			console.log(isExpand);
+			if (isExpand == 'none'){
+				$(contactToolsBox).slideToggle();
+			}
 		});
 	}
 
@@ -805,7 +809,7 @@ module.exports = function ( jq ) {
 					$(backwardRow).on('dblclick', (evt)=>{
 						common.doOpenStoneWebViewer(backward.Case_StudyInstanceUID);
 						$('.row-selected').removeClass('row-selected');
-						$(backwardRow).addClass('row-selected');						
+						$(backwardRow).addClass('row-selected');
 					});
 					if (i == 0){
 						$(backwardRow).addClass('row-selected');
@@ -886,9 +890,17 @@ module.exports = function ( jq ) {
 				let contactRadioCmd = $('<span>' + radioFN + '</span>');
 				$(contactRadioCmd).css(commandButtonStyle);
 				$(contactRadioCmd).on('click', async(evt)=>{
-					$('.row-selected').removeClass('row-selected');
-					$(backwardRow).addClass('row-selected');
-					doContactRadioCmdClick(dicomData, backwardItem);
+					loadUrl = '/api/cases/select/'+ dicomData.caseId;
+					loadRes = await apiconnector.doCallApi(loadUrl, {});
+					console.log(loadRes);
+					if (loadRes.status.code == 200){
+		        let caseBackwardItem = loadRes.Records[0];
+						$('.row-selected').removeClass('row-selected');
+						$(backwardRow).addClass('row-selected');
+						doContactRadioCmdClick(dicomData, caseBackwardItem);
+					} else {
+						$.notify('Your request case not found.', 'error');
+					}
 				});
 				resolve($(contactRadioCmd));
 			} else {

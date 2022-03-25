@@ -263,11 +263,18 @@ module.exports = function ( jq ) {
 
 	const doCallDownloadDicom = function(studyID, hospitalId){
 		return new Promise(function(resolve, reject) {
+      const progBar = $('body').radprogress({value: 0, apiname: 'Preparing Zip File'});
+      $(progBar.progressBox).screencenter({offset: {x: 50, y: 50}});
+      $(progBar.progressValueBox).remove();
   		let orthancProxyEndPoint = proxyRootUri + orthancProxyApi + '/loadarchive/' + studyID;
   		let params = {hospitalId: hospitalId};
       //doCallApi(orthancProxyEndPoint, params).then((data)=>{
   		$.post(orthancProxyEndPoint, params, function(data){
+        progBar.doCloseProgress();
 				resolve(data);
+      }).fail(function(error) {
+        progBar.doCloseProgress();
+				reject(error);
 			});
   	});
 	}
@@ -369,6 +376,28 @@ module.exports = function ( jq ) {
         reject(err);
   		})
   	});
+  }
+
+  const doCallLoadStudyTags = function(hospitalId, studyId){
+    return new Promise(async function(resolve, reject) {
+      let rqBody = '{"Level": "Study", "Expand": true, "Query": {"PatientName":"TEST"}}';
+      let orthancUri = '/studies/' + studyId;
+	  	let params = {method: 'get', uri: orthancUri, body: rqBody, hospitalId: hospitalId};
+      let callLoadUrl = '/api/orthancproxy/find'
+      $.post(callLoadUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
+
+  const doReStructureDicom = function(hospitalId, studyId, dicom){
+    return new Promise(async function(resolve, reject) {
+      let params = {hospitalId: hospitalId, resourceId: studyId, resourceType: "study", dicom: dicom};
+      let restudyUrl = '/api/dicomtransferlog/add';
+      $.post(restudyUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
   }
 
   /* Zoom API Connection */
@@ -529,6 +558,8 @@ module.exports = function ( jq ) {
     doDownloadResult,
     doConvertPdfToDicom,
     doCallNewTokenApi,
+    doCallLoadStudyTags,
+    doReStructureDicom,
     doGetZoomMeeting
 	}
 }

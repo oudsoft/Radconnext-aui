@@ -763,9 +763,33 @@ module.exports = function ( jq ) {
 				openStoneWebViewerCounter += 1;
 				common.doOpenStoneWebViewer(defualtValue.studyInstanceUID);
 			});
-			$(tableCell).append(allSeries + ' / ' + allImageInstances);
+			let sumSeriesImages = $('<span id="SumSeriesImages">' + allSeries + ' / ' + allImageInstances +'</span>');
+			$(tableCell).append($(sumSeriesImages));
 			$(tableCell).append('<span>   </span>');
 			$(tableCell).append($(previewCmd));
+
+			let reStructDicomCmd = $('<img data-toggle="tooltip" src="../images/refresh-icon.png" title="ปรับปรุงจำนวนซีรีส์และภาพใหม่" width="22" height="auto"/>');
+			$(reStructDicomCmd).css({'cursor': 'pointer', 'margin-bottom': '-8px'});
+			$(reStructDicomCmd).on('click', async function(evt){
+				let userdata = JSON.parse(localStorage.getItem('userdata'));
+				let hospitalId = userdata.hospitalId;
+				let studyId = defualtValue.studyID;
+				let studyTags = await apiconnector.doCallLoadStudyTags(hospitalId, studyId);
+				console.log(studyTags);
+				let reStudyRes = await apiconnector.doReStructureDicom(hospitalId, studyId, studyTags);
+				console.log(reStudyRes);
+				let updateDicom = reStudyRes.Record.StudyTags;
+				let patientTargetName = defualtValue.patient.name;
+				let allNewSeries = updateDicom.Series.length;
+				let allNewImageInstances = await doCallCountInstanceImage(updateDicom.Series, patientTargetName);
+				let allNewSum = allNewSeries + ' / ' + allNewImageInstances;
+				console.log(allNewSum);
+				$('#SumSeriesImages').text(allNewSum);
+				$.notify("ปรับปรุงจำนวนซีรีส์และภาพใหม่สำเร็จ", "success");
+			});
+			$(tableCell).append('<span>   </span>');
+			$(tableCell).append($(reStructDicomCmd));
+
 			$(tableCell).appendTo($(tableRow));
 			$(tableRow).appendTo($(table));
 

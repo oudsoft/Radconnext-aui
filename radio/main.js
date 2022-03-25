@@ -42,13 +42,16 @@ $( document ).ready(function() {
             wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
             doSetupAutoReadyAfterLogin();
             if (userdata.userinfo.User_SipPhone){
-               sipUA = softphone.doRegisterSoftphone(userdata.userinfo.User_SipPhone);
-               sipUA.start();
-               let sipPhoneOptions = {onRejectCallCallback: softphone.doRejectCall, onAcceptCallCallback: softphone.doAcceptCall, onEndCallCallback: softphone.doEndCall};
-               let mySipPhoneIncomeBox = $('<div id="SipPhoneIncomeBox" tabindex="1"></div>');
-               $(mySipPhoneIncomeBox).css({'position': 'absolute', 'width': '98%', 'min-height': '50px;', 'max-height': '50px', 'background-color': '#fefefe', 'padding': '5px', 'border': '1px solid #888',  'z-index': '192', 'top': '-65px'});
-               let mySipPhone = $(mySipPhoneIncomeBox).sipphoneincome(sipPhoneOptions);
-               $('body').append($(mySipPhoneIncomeBox));
+              let sipPhoneNumber = userdata.userinfo.User_SipPhone;
+              let sipPhoneSecret = userdata.userinfo.User_SipSecret;
+              sipUA = softphone.doRegisterSoftphone(sipPhoneNumber, sipPhoneSecret);
+
+              sipUA.start();
+              let sipPhoneOptions = {onRejectCallCallback: softphone.doRejectCall, onAcceptCallCallback: softphone.doAcceptCall, onEndCallCallback: softphone.doEndCall};
+              let mySipPhoneIncomeBox = $('<div id="SipPhoneIncomeBox" tabindex="1"></div>');
+              $(mySipPhoneIncomeBox).css({'position': 'absolute', 'width': '98%', 'min-height': '50px;', 'max-height': '50px', 'background-color': '#fefefe', 'padding': '5px', 'border': '1px solid #888',  'z-index': '192', 'top': '-65px'});
+              let mySipPhone = $(mySipPhoneIncomeBox).sipphoneincome(sipPhoneOptions);
+              $('body').append($(mySipPhoneIncomeBox));
             }
           } else {
             //$.notify('บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้ โปรด Login ใหม่เพื่อเปลี่ยนบัญชีใช้งาน', 'error');
@@ -604,6 +607,7 @@ function doSetupAutoReadyAfterLogin(){
 function doAutoAcceptCase(){
   const userdata = JSON.parse(localStorage.getItem('userdata'));
   const autoAcc = userdata.userprofiles[0].Profile.activeState.autoAcc;
+  $('.case-counter').hide();
   //console.log(autoAcc);
   if (autoAcc == 1){
     newcase.doCallMyNewCase().then(async (myNewCase)=>{
@@ -614,12 +618,15 @@ function doAutoAcceptCase(){
           let caseItem = caseLists[i];
           await common.doUpdateCaseStatus(caseItem.id, 2, 'Radiologist Accept case by Auto Acc.');
         }
+        /*
         if (caseLists.length > 0){
           $('#AcceptedCaseCmd').click();
         } else {
           doLoadDefualtPage();
         }
+        */
       }
+      $('#AcceptedCaseCmd').click();
     });
   } else {
     doLoadDefualtPage();

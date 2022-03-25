@@ -36,7 +36,9 @@ $( document ).ready(function() {
 			       doLoadMainPage();
              wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
              if (userdata.userinfo.User_SipPhone){
-                sipUA = softphone.doRegisterSoftphone(userdata.userinfo.User_SipPhone);
+                let sipPhoneNumber = userdata.userinfo.User_SipPhone;
+                let sipPhoneSecret = userdata.userinfo.User_SipSecret;
+                sipUA = softphone.doRegisterSoftphone(sipPhoneNumber, sipPhoneSecret);
                 sipUA.start();
                 let sipPhoneOptions = {onRejectCallCallback: softphone.doRejectCall, onAcceptCallCallback: softphone.doAcceptCall, onEndCallCallback: softphone.doEndCall};
                 let mySipPhoneIncomeBox = $('<div id="SipPhoneIncomeBox" tabindex="1"></div>');
