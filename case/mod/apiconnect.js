@@ -266,6 +266,7 @@ module.exports = function ( jq ) {
       const progBar = $('body').radprogress({value: 0, apiname: 'Preparing Zip File'});
       $(progBar.progressBox).screencenter({offset: {x: 50, y: 50}});
       $(progBar.progressValueBox).remove();
+      $(progBar.progressBox).css({'font-size': '50px'});
   		let orthancProxyEndPoint = proxyRootUri + orthancProxyApi + '/loadarchive/' + studyID;
   		let params = {hospitalId: hospitalId};
       //doCallApi(orthancProxyEndPoint, params).then((data)=>{
@@ -325,6 +326,16 @@ module.exports = function ( jq ) {
       let orthancProxyEndPoint = proxyRootUri + orthancProxyApi + '/orthancexternalport';
       let params = {hospitalId: hospitalId};
       $.get(orthancProxyEndPoint, params, function(data){
+				resolve(data);
+			})
+    });
+  }
+
+  const doCallDicomArchiveExist = function(archiveFilename){
+    return new Promise(function(resolve, reject) {
+      let orthancProxyEndPoint = proxyRootUri + orthancProxyApi + '/archivefile/exist';
+      let params = {filename: archiveFilename};
+      $.post(orthancProxyEndPoint, params, function(data){
 				resolve(data);
 			})
     });
@@ -554,6 +565,7 @@ module.exports = function ( jq ) {
 		doCallTransferHistory,
 		doCallDeleteDicom,
     doGetOrthancPort,
+    doCallDicomArchiveExist,
     doConvertPageToPdf,
     doDownloadResult,
     doConvertPdfToDicom,

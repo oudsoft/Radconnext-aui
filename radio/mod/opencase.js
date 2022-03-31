@@ -19,21 +19,6 @@ module.exports = function ( jq ) {
 	let downloadDicomList = [];
 	let syncTimer = undefined;
 
-	const doesFileExist = function(urlToFile) {
-		return new Promise(function(resolve, reject) {
-	    let xhr = new XMLHttpRequest();
-			xhr.onreadystatechange = function() {
-		    if (this.readyState == 4 && this.status == 200) {
-					resolve(true);
-		    } else {
-					resolve(false);
-				}
-		  };
-	    xhr.open('HEAD', urlToFile, false);
-	    xhr.send();
-		});
-	}
-
 	const doDownloadZipBlob = function(link, outputFilename){
 		var pom = document.createElement('a');
 		$.ajax({
@@ -86,50 +71,45 @@ module.exports = function ( jq ) {
 			*/
 			let dicomzipfilename = downloadData.dicomzipfilename;
 			let dicomzipfilepath = '/img/usr/zip/' + dicomzipfilename;
+			//console.log(dicomzipfilepath);
 			let orthanczipfilename = downloadData.studyID + '.zip';
 			let orthanczipfilepath = '/img/usr/zip/' + orthanczipfilename;
-			let isExistDicomFile = await doesFileExist(dicomzipfilepath);
-			let isExistOrthancFile = await doesFileExist(orthanczipfilepath);
-			console.log(isExistDicomFile);
-			console.log(isExistOrthancFile);
+			//console.log(orthanczipfilepath);
+
+			let existDicomFileRes = await apiconnector.doCallDicomArchiveExist(dicomzipfilename);
+			console.log(existDicomFileRes);
 			let pom = document.createElement('a');
 			pom.setAttribute('download', dicomzipfilename);
 			pom.setAttribute('target', "_blank");
-			if (isExistDicomFile){
-				console.log('ok 1');
+
+			if (existDicomFileRes.link){
 				pom.setAttribute('href', dicomzipfilepath);
-				setTimeout(()=>{
-					pom.click();
-					//doDownloadZipBlob(dicomzipfilepath, dicomzipfilename);
-					downloadDicomList.push(dicomzipfilename);
-					resolve();
-				}, 2000);
-			} else if (isExistOrthancFile){
-				console.log('ok 2');
-				pom.setAttribute('href', orthanczipfilepath);
-				setTimeout(()=>{
-					pom.click();
-					//doDownloadZipBlob(orthanczipfilepath, dicomzipfilename);
-					downloadDicomList.push(dicomzipfilename);
-					resolve();
-				}, 2000);
+				pom.click();
+				downloadDicomList.push(dicomzipfilename);
+				resolve();
 			} else {
-				let studyID = downloadData.studyID;
-				let hospitalId = downloadData.hospitalId;
-				apiconnector.doCallDownloadDicom(studyID, hospitalId).then((response) => {
-					console.log(response);
-					//let pom = document.createElement('a');
-					//pom.setAttribute('download', dicomzipfilename);
-					pom.setAttribute('href', response.link);
-					setTimeout(()=>{
-						pom.click();
-						//doDownloadZipBlob(response.link, dicomzipfilename);
-						downloadDicomList.push(dicomzipfilename);
-						resolve();
-					}, 3500);
-				});
+				let existOrthancFileRes = await apiconnector.doCallDicomArchiveExist(orthanczipfilename);
+				console.log(existOrthancFileRes);
+				if (existOrthancFileRes.link){
+					pom.setAttribute('href', orthanczipfilepath);
+					pom.click();
+					downloadDicomList.push(dicomzipfilename);
+					resolve();
+				} else {
+					let studyID = downloadData.studyID;
+					let hospitalId = downloadData.hospitalId;
+					apiconnector.doCallDownloadDicom(studyID, hospitalId).then((response) => {
+						console.log(response);
+						pom.setAttribute('href', response.link);
+						setTimeout(()=>{
+							pom.click();
+							downloadDicomList.push(dicomzipfilename);
+							resolve();
+						}, 3500);
+					});
+				}
 			}
-  	})
+  	});
   }
 
 	const doCreateResultPDFDialog = function(caseId, pdfReportLink, createNewResultData, okCmdClickCallback){
@@ -340,25 +320,32 @@ module.exports = function ( jq ) {
 				}
 			} else {
 				//Save without Radio Preview PDF
-				if (!caseResponseId){
-					let saveDraftResponseData = {type: 'draft', caseId: caseId};
-					saveDraftRes = await doSaveDraft(saveDraftResponseData);
-					console.log(saveDraftRes);
-					caseResponseId = saveDraftRes.result.responseId;
+				if ((params.caseId) && (Number(params.caseId) > 0)) {
+					if (!caseResponseId){
+						let saveDraftResponseData = {type: 'draft', caseId: caseId};
+						saveDraftRes = await doSaveDraft(saveDraftResponseData);
+						console.log(saveDraftRes);
+						caseResponseId = saveDraftRes.result.responseId;
+						params.responseId = caseResponseId;
+					}
+
+					saveNewResponseData.responseid = caseResponseId;
+					saveNewResponseData.reportPdfLinkPath = '/img/usr/pdf/' + fileName;
+
+					doCreateResultManagementDialog(saveNewResponseData);
+					//let saveResponseRes = doCallSaveResult(params);
+					//->ตรงนี้คืออะไร
+					//-> ตรงนี้คือการสั่งให้เซิร์ฟเวอร์สร้างผลอ่าน pdf
+					let saveResultApiURL = '/api/uicommon/radio/saveresult';
+					$.post(saveResultApiURL, params, function(saveResponseRes){
+						console.log(saveResponseRes);
+					}).catch((err) => {
+						console.log(err);
+						$.notify("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ โปรดแจ้งผู้ดูแลระบบ", "error");
+					});
+				} else {
+					alert('ข้อมูลที่ต้องการบันทึกไม่ถูกต้อง ไม่พบหมายเลขเคสของคุณ');
 				}
-
-				saveNewResponseData.responseid = caseResponseId;
-				saveNewResponseData.reportPdfLinkPath = '/img/usr/pdf/' + fileName;
-
-				doCreateResultManagementDialog(saveNewResponseData);
-				//let saveResponseRes = doCallSaveResult(params);
-				//->ตรงนี้คืออะไร
-				//-> ตรงนี้คือการสั่งให้เซิร์ฟเวอร์สร้างผลอ่าน pdf
-				var saveResultApiRRL = '/api/uicommon/radio/saveresult';
-				$.post(saveResultApiRRL, params, function(saveResponseRes){
-					console.log(saveResponseRes);
-				});
-
 			}
 		} else {
 			$.notify("ผลอ่านว่างเปล่า ไม่สามารถบันทึกได้", "warn");
@@ -1169,8 +1156,8 @@ module.exports = function ( jq ) {
 							let cloudUpdatedAt = new Date(draftResponseRes.Record[0].updatedAt);
 							if ((draftBackup) && (draftBackup.content !== '')) {
 								let localUpdateAt = new Date(draftBackup.backupAt);
-								console.log(cloudUpdatedAt);
-								console.log(localUpdateAt);
+								//console.log(cloudUpdatedAt);
+								//console.log(localUpdateAt);
 								if (localUpdateAt.getTime() > cloudUpdatedAt.getTime()) {
 									doConfirmUpdateFromCache(summary, draftBackup.content);
 								} else {

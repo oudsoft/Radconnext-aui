@@ -7,6 +7,9 @@ module.exports = function ( jq ) {
   const realm = '202.28.68.6';
   const wsUrl = 'wss://' + realm + ':8089/ws';
 
+	//const realm = 'radconnext.me';
+  //const wsUrl = 'wss://' + realm + '/ws';
+
 	const eventHandlers = {
 	  'progress': function(e) {
 	    console.log('call is in progress ...');
