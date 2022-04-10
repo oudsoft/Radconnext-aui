@@ -128,8 +128,8 @@ module.exports = function ( jq ) {
     let contactBox = $('<div class="contact" style="position: relative; display: inline-block; text-align: center; margin-right: 2px;"></div>');
     let contactIcon = $('<img style="postion: relative; width: 40px; height: auto; cursor: pointer;"/>');
     $(contactIcon).attr('src', contactIconUrl);
-    let closeContactIcon = $('<img style="position: absolute; width: 20px; height: 20px; cursor: pointer; margin-left: 20px; margin-top: -70px;"/>');
-    $(closeContactIcon).attr('src', closeContactIconUrl);
+    //let closeContactIcon = $('<img style="position: absolute; width: 20px; height: 20px; cursor: pointer; margin-left: 20px; margin-top: -70px;"/>');
+    //$(closeContactIcon).attr('src', closeContactIconUrl);
 		//$(closeContactIcon).css('display', 'none');
 		//$(contactIcon).hover((evt) =>{$(closeContactIcon).toggle()});
     let contactName = $('<div style="position: relative; font-size: 16px; color: auto;"></div>');
@@ -138,9 +138,11 @@ module.exports = function ( jq ) {
     $(contactBox).on('click', async (evt)=>{
       await onContactIconClickCallback(Id);
     });
+		/*
     $(closeContactIcon).on('click', async (evt)=>{
       await onCloseContactClickCallback(Id, contactBox);
     });
+		*/
 		$(contactBox).attr('id', Id);
     return $(contactBox).append($(contactIcon)).append($(contactName)).append($(closeContactIcon)).append($(reddot));
   }

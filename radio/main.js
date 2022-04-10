@@ -564,7 +564,7 @@ function onLockScreenTrigger() {
 
 function onUnLockScreenTrigger(evt){
   resetScreen();
-  util.doSetScreenState(0);
+
 }
 
 function onAutoLogoutTrigger(evt){

@@ -467,7 +467,7 @@ module.exports = function ( jq ) {
     $(saveCmd).on('click', (evt)=>{
 
 			let activeWebNotify = pageHandle.find('#ActiveControl').find('#WebNotifySwitchBox').find('input[type=checkbox]').prop('checked');
-			let activeLineNotify = pageHandle.find('#ActiveControl').find('#WebNotifySwitchBox').find('input[type=checkbox]').prop('checked');
+			let activeLineNotify = pageHandle.find('#ActiveControl').find('#LineBotNotifySwitchBox').find('input[type=checkbox]').prop('checked');
 			let activePhoneCall = pageHandle.find('#ActiveControl').find('#PhoneCallSwitchBox').find('input[type=checkbox]').prop('checked');
 			let activeManAutoOption = pageHandle.find('#ActiveControl').find('input[name="ManAutoActiveGroup"]:checked').val();
 			let activePhoneCall1H = pageHandle.find('#ActiveControl').find('#PhoneCallOptionBox').find('#Option1HRInput').val();
@@ -477,7 +477,7 @@ module.exports = function ( jq ) {
 			let activeAutoAcc = pageHandle.find('#ActiveControl').find('#AutoAcceptSwitchBox').find('input[type=checkbox]').prop('checked');
 			let activeAutoReady = pageHandle.find('#ActiveControl').find('#AutoOnReadySwitchBox').find('input[type=checkbox]').prop('checked');
 
-			let lockLineNotify = pageHandle.find('#LockControl').find('#WebNotifySwitchBox').find('input[type=checkbox]').prop('checked');
+			let lockLineNotify = pageHandle.find('#LockControl').find('#LineBotNotifySwitchBox').find('input[type=checkbox]').prop('checked');
 			let lockPhoneCall = pageHandle.find('#LockControl').find('#PhoneCallSwitchBox').find('input[type=checkbox]').prop('checked');
 			let lockManAutoOption = pageHandle.find('#LockControl').find('input[name="ManAutoLockGroup"]:checked').val();
 			let lockPhoneCall1H = pageHandle.find('#LockControl').find('#PhoneCallOptionBox').find('#Option1HRInput').val();
@@ -487,7 +487,7 @@ module.exports = function ( jq ) {
 			let lockAutoLockScreenMinut = pageHandle.find('#LockControl').find('#AutoLockScreenControlBox').find('#AutoLockScreenMinuteInput').val();
 			let lockPasswordUnlock = pageHandle.find('#LockControl').find('#UnlockOptionSwitchBox').find('input[type=checkbox]').prop('checked');
 
-			let offlineLineNotify = pageHandle.find('#OfflineControl').find('#WebNotifySwitchBox').find('input[type=checkbox]').prop('checked');
+			let offlineLineNotify = pageHandle.find('#OfflineControl').find('#LineBotNotifySwitchBox').find('input[type=checkbox]').prop('checked');
 			let offlinePhoneCall = pageHandle.find('#OfflineControl').find('#PhoneCallSwitchBox').find('input[type=checkbox]').prop('checked');
 			let offlineManAutoOption = pageHandle.find('#OfflineControl').find('input[name="ManAutoOfflineGroup"]:checked').val();
 			let offlinePhoneCall1H = pageHandle.find('#OfflineControl').find('#PhoneCallOptionBox').find('#Option1HRInput').val();

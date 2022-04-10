@@ -457,6 +457,7 @@ module.exports = function ( jq ) {
           await meetings.forEach(async (item, i) => {
             reqParams.meetingId = item.id;
             let meetingRes = await doCallApi(reqUrl, reqParams);
+            console.log(meetingRes);
             if (meetingRes.response.status === 'waiting') {
               readyMeetings.push(item);
               return;

@@ -123,6 +123,23 @@ module.exports = function ( jq ) {
     return date.getDate() + '/' + (date.getMonth() + 1) + '/' + (date.getFullYear() + 543);
   }
 
+	const fmtReportTime = function(d){
+    let date = new Date(d);
+		let hh = date.getHours();
+		if (hh < 10) {
+			hh = '0' + hh;
+		} else {
+			hh = '' + hh;
+		}
+		let mn = date.getMinutes();
+		if (mn < 10){
+			mn = '0' + mn;
+		} else {
+			mn = '' + mn;
+		}
+    return hh + '.' + mn;
+  }
+
 	const doCheckOutTime = function(d){
 		let date = new Date(d);
 		let hh = date.getHours();
@@ -508,8 +525,8 @@ module.exports = function ( jq ) {
 		return new Promise(async function(resolve, reject) {
 	    const reportViewBox = $('<div id="ReportViewBox" style="position: relative; width: 100%; padding: 5p; margin-top: 8px;"></div>');
 	    const contentRow = '<tr></tr>';
-	    const upperHeaderFeilds = [{name: 'ลำดับที่', width: 7}, {name: 'วันเดือนปี', width: 10}, {name: 'HN', width: 10}, {name: 'ชื่อ-สกุล', width: 20}, {name: 'รายการ', width: 20}, {name: 'รังสีแพทย์', width: 13}, {name: 'รหัส', width: 10}, {name: 'ราคาที่', width: 10}];
-	    const lowerHeaderFeilds = ['', 'ที่รับบริการ', '', '', '', '', 'กรมบัญชีกลาง', 'เรียกเก็บ'];
+	    const upperHeaderFeilds = [{name: 'ลำดับที่', width: 7}, {name: 'วันเดือนปี', width: 10}, {name: 'เวลา', width: 8}, {name: 'HN', width: 10}, {name: 'ชื่อ-สกุล', width: 20}, {name: 'รายการ', width: 20}, {name: 'รังสีแพทย์', width: 13}, {name: 'รหัส', width: 10}, {name: 'ราคาที่', width: 10}];
+	    const lowerHeaderFeilds = ['', 'ที่รับบริการ', '', '', '', '', '', 'กรมบัญชีกลาง', 'เรียกเก็บ'];
 	    if (contents.length > 0){
 	      let contentTable = $('<table id ="ContentTable" width="100%" cellpadding="5" cellspacing="0" border="1px solid black"></table>');
 	      let upperHeaderRow = $(contentRow);
@@ -543,8 +560,13 @@ module.exports = function ( jq ) {
 	        let scanParts = item.Case_ScanPart;
 	        for (let j=0; j < scanParts.length; j++){
 	          let itemRow = $(contentRow);
+						/*
 	          let fmtDate = fmtReportDate(item.createdAt);
 						let isOutTime = doCheckOutTime(item.createdAt);
+						*/
+						let fmtDate = fmtReportDate(item.casereport.createdAt);
+						let fmtTime = fmtReportTime(item.casereport.createdAt);
+						let isOutTime = doCheckOutTime(item.casereport.createdAt);
 						let fmtPrice = undefined;
 						if (scanParts[j].PR) {
 	          	fmtPrice = fmtReportNumber(Number(scanParts[j].PR));
@@ -556,6 +578,7 @@ module.exports = function ( jq ) {
 						}
 	          $(itemRow).append('<td align="center">' + itemNo + '</td>');
 	          $(itemRow).append('<td align="left">' + fmtDate + '</td>');
+						$(itemRow).append('<td align="left">' + fmtTime + '</td>');
 	          $(itemRow).append('<td align="left">' + item.patient.Patient_HN + '</td>');
 	          $(itemRow).append('<td align="left">' + item.patient.Patient_NameTH + ' ' + item.patient.Patient_LastNameTH + '</td>');
 	          $(itemRow).append('<td align="left">' + scanParts[j].Name + '</td>');
