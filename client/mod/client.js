@@ -6,13 +6,14 @@ module.exports = function ( jq ) {
 
 	const pageFontStyle = {"font-family": "THSarabunNew", "font-size": "24px"};
 
+	var wsm = undefined;
 
   const doOpenRemoteRun = function(hospitalId){
 
     let hospitalIdBox = $('<div style="display: table-row; width: 100%;"></div>');
     let hospitalLabelCell = $('<div style="display: table-cell; padding: 4px;">Hospital Id:</div>');
     let hospitalValueCell = $('<div style="display: table-cell; padding: 4px;"></div>');
-    let hospitalInput = $('<input type="text"/>');
+    let hospitalInput = $('<input id="HospitalInput" type="text"/>');
     $(hospitalValueCell).append($(hospitalInput));
     $(hospitalIdBox).append($(hospitalLabelCell)).append($(hospitalValueCell));
 
@@ -26,7 +27,7 @@ module.exports = function ( jq ) {
     let commandsListBox = $('<div style="display: table-row; width: 100%;"></div>');
     let commandsListLabelCell = $('<div style="display: table-cell; padding: 4px;">Command Script:</div>');
     let commandsListValueCell = $('<div style="display: table-cell; padding: 4px;"></div>');
-    let commandsListInput = $('<textarea cols="80" rows="10"></textarea>');
+    let commandsListInput = $('<textarea id="CommandsListInput" cols="80" rows="10"></textarea>');
     $(commandsListValueCell).append($(commandsListInput));
     $(commandsListBox).append($(commandsListLabelCell)).append($(commandsListValueCell));
 
@@ -40,7 +41,8 @@ module.exports = function ( jq ) {
 		let dicomLogFileCmdCmd = $('<input type="button" value=" Dicom Log File " style="margin-left: 20px;"/>');
 		let restartServiceCmdCmd = $('<input type="button" value=" Restart Service " style="margin-left: 20px;"/>');
 		let backCmd = $('<input type="button" value=" Back " style="margin-left: 20px;"/>');
-    $(executeCmdValueCell).append($(executeCmdCmd)).append($(echoCmdCmd)).append($(logFileCmdCmd)).append($(reportLogFileCmdCmd)).append($(dicomLogFileCmdCmd)).append($(restartServiceCmdCmd));
+		let reSendDicomCmd = $('<input type="button" value=" Re-Send Dicom " style="margin-left: 20px;"/>');
+    $(executeCmdValueCell).append($(executeCmdCmd)).append($(echoCmdCmd)).append($(logFileCmdCmd)).append($(reportLogFileCmdCmd)).append($(dicomLogFileCmdCmd)).append($(restartServiceCmdCmd)).append($(reSendDicomCmd));
     $(executeCmdBox).append($(executeCmdLabelCell)).append($(executeCmdValueCell));
 
 		// Clear command
@@ -65,7 +67,7 @@ module.exports = function ( jq ) {
 			$(hospitalInput).val(userdata.hospitalId);
 		}
 
-    const wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
+    wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
     /*
     let extOnMsg = $.extend({
         onmessage : function(evt){
@@ -125,6 +127,21 @@ module.exports = function ( jq ) {
 			window.location.replace('/staff.html');
 		});
 
+		$(reSendDicomCmd).on('click', (evt)=>{
+			let loadModalityCommand = 'curl --user demo:demo http://localhost:8042/modalities?expand';
+			let lines = [loadModalityCommand];
+			let username = userdata.username;
+			let hospitalId = $(hospitalInput).val();
+			wsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
+			setTimeout(()=>{
+				let studyId = $(commandsListInput).val();
+				let reSendStudyCommand = 'curl -v -X POST --user demo:demo http://localhost:8042/modalities/cloud/store -d ' + studyId;
+				lines = [reSendStudyCommand];
+				wsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
+				$.notify("ระบบกำลังจัดส่งภาพเข้าระบบด้วยเส้นทางใหม่ โปรดรอสักครู่", "info");
+			}, 5000);
+		});
+
     let remoteRunBox = $('<div id ="RemoteRunBox" style="display: table; width: 100%; border-collapse: collapse;"></div>');
     $(remoteRunBox).append($(hospitalIdBox)).append($(monitorBox)).append($(commandsListBox)).append($(executeCmdBox));
 		let remoteBox = $('<div style="position: relative; width: 100%;"></div>');
@@ -139,17 +156,37 @@ module.exports = function ( jq ) {
 	}
 
 	const onClientResult = async function(evt){
+		const userdata = JSON.parse(localStorage.getItem('userdata'));
 		let clientData = evt.detail.data;
 		let clientOwnerId = evt.detail.owner;
 		let clientHospitalId = evt.detail.hospitalId;
-		console.log(clientData);
+		//console.log(clientData);
 		//let lines = clientData.split('\n');
 		//console.log(lines);
 		let resultBox = $('<div style="position: relative; width: 100%; padding: 5px; color: white;"></div>');
 		$(resultBox).text(clientData);
 		let monitorHandle = $('#app').find('#MonitorBox');
 		$(monitorHandle).append($(resultBox));
-		let clientDataObject = JSON.parse(clientData);
+
+		let clientDataObject = undefined;
+		//console.log(typeof clientData);
+	  if ((typeof clientData) == 'string') {
+			if (clientData !== '') {
+	    	clientDataObject = JSON.parse(clientData);
+			} else {
+				clientDataObject = {};
+			}
+	  } else if ((typeof clientData) == 'object') {
+			if (clientData && clientData.length > 0){
+	    	clientDataObject = clientData;
+			} else {
+				clientDataObject = {};
+			}
+	  } else {
+	    clientDataObject = {};
+	  }
+		//console.log(clientDataObject);
+
 		let parentResources = clientDataObject.hasOwnProperty('ParentResources');
 		let failedInstancesCount = clientDataObject.hasOwnProperty('FailedInstancesCount');
 		let instancesCount = clientDataObject.hasOwnProperty('InstancesCount');
@@ -159,6 +196,27 @@ module.exports = function ( jq ) {
 			console.log(studyTags);
 			let reStudyRes = await common.doReStructureDicom(clientHospitalId, studyID, studyTags);
 			console.log(reStudyRes);
+		} else {
+			let cloudModality = clientDataObject.hasOwnProperty('cloud');
+			console.log(cloudModality);
+	    if (cloudModality) {
+	      let cloudHost = clientDataObject.cloud.Host;
+	      let newCloudHost = undefined;
+	      if (cloudHost == '150.95.26.106'){
+	        newCloudHost = '202.28.68.28';
+	      } else {
+	        newCloudHost = '150.95.26.106'
+	      }
+	      let cloudAET = clientDataObject.cloud.AET;
+	      let cloudPort = clientDataObject.cloud.Port;
+	      let changeCloudCommand = 'curl -v --user demo:demo -X PUT http://localhost:8042/modalities/cloud -d "{\\"AET\\" : \\"' + cloudAET + '\\", \\"Host\\": \\"' + newCloudHost +'\\", \\"Port\\": ' + cloudPort + '}"';
+				console.log(changeCloudCommand);
+	      let lines = [changeCloudCommand];
+				let username = userdata.username;
+				let hospitalId = $('#HospitalInput').val();
+	      wsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
+	      $('body').loading('stop');
+	    }
 		}
 	}
 

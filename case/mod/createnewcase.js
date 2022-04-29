@@ -763,7 +763,8 @@ module.exports = function ( jq ) {
 				openStoneWebViewerCounter += 1;
 				common.doOpenStoneWebViewer(defualtValue.studyInstanceUID);
 			});
-			let sumSeriesImages = $('<span id="SumSeriesImages">' + allSeries + ' / ' + allImageInstances +'</span>');
+			let summarySeriesImages = allSeries + ' / ' + allImageInstances;
+			let sumSeriesImages = $('<span id="SumSeriesImages">' + summarySeriesImages + '</span>');
 			$(tableCell).append($(sumSeriesImages));
 			$(tableCell).append('<span>   </span>');
 			$(tableCell).append($(previewCmd));
@@ -772,6 +773,7 @@ module.exports = function ( jq ) {
 			$(reStructDicomCmd).css({'cursor': 'pointer', 'margin-bottom': '-8px'});
 			$(reStructDicomCmd).on('click', async function(evt){
 				let userdata = JSON.parse(localStorage.getItem('userdata'));
+				let username = userdata.username;
 				let hospitalId = userdata.hospitalId;
 				let studyId = defualtValue.studyID;
 				let studyTags = await apiconnector.doCallLoadStudyTags(hospitalId, studyId);
@@ -782,10 +784,24 @@ module.exports = function ( jq ) {
 				let patientTargetName = defualtValue.patient.name;
 				let allNewSeries = updateDicom.Series.length;
 				let allNewImageInstances = await doCallCountInstanceImage(updateDicom.Series, patientTargetName);
-				let allNewSum = allNewSeries + ' / ' + allNewImageInstances;
-				console.log(allNewSum);
-				$('#SumSeriesImages').text(allNewSum);
-				$.notify("ปรับปรุงจำนวนซีรีส์และภาพใหม่สำเร็จ", "success");
+				if (allNewSum !== summarySeriesImages){
+					let allNewSum = allNewSeries + ' / ' + allNewImageInstances;
+					console.log(allNewSum);
+					$('#SumSeriesImages').text(allNewSum);
+					$.notify("ปรับปรุงจำนวนซีรีส์และภาพใหม่สำเร็จ", "success");
+				} else {
+					let loadModalityCommand = 'curl --user demo:demo http://localhost:8042/modalities?expand';
+					let lines = [loadModalityCommand];
+					const main = require('../main.js');
+					let myWsm = main.doGetWsm();
+					myWsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
+					setTimeout(()=>{
+						let reSendStudyCommand = 'curl -v -X POST --user demo:demo http://localhost:8042/modalities/cloud/store -d ' + studyId;
+						lines = [reSendStudyCommand];
+						myWsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
+						$.notify("ระบบกำลังจัดส่งภาพเข้าระบบด้วยเส้นทางใหม่ โปรดรอสักครู่", "info");
+					}, 5000);
+				}
 			});
 			$(tableCell).append('<span>   </span>');
 			$(tableCell).append($(reStructDicomCmd));
@@ -1328,7 +1344,7 @@ module.exports = function ( jq ) {
 		return customurgent;
 	}
 
-  function doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected){
+  async function doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId){
 		let urgentType = $('.mainfull').find('#Urgenttype').val();
 		let urgenttypeId = defualtValue.urgent;
 		if (urgentType) {
@@ -1352,7 +1368,18 @@ module.exports = function ( jq ) {
 	    let patientNameEN = $('.mainfull').find('#PatientNameEN').val();
 	    let patientNameTH = $('.mainfull').find('#PatientNameTH').val();
 	    let patientHistory = phrImages;
-			let scanpartItem = scanparts;
+			let scanpartItem = [];
+			let isOutTime = common.doCheckOutTime(new Date());
+			for (let i=0; i < scanparts.length; i++){
+				let thisScanPart = scanparts[i];
+				let dfRes = await common.doCallPriceChart(hospitalId, thisScanPart.id);
+				if (isOutTime) {
+					thisScanPart.DF = dfRes.prdf.df.night;
+				} else {
+					thisScanPart.DF = dfRes.prdf.df.normal;
+				}
+				scanpartItem.push(thisScanPart);
+			}
 	    let studyID = defualtValue.studyID;
 	    let patientSex = $('.mainfull').find('#Sex').val();
 	    let patientAge = $('.mainfull').find('#Age').val();
@@ -1366,7 +1393,7 @@ module.exports = function ( jq ) {
 	    let bodyPart = $('.mainfull').find('#Bodypart').val();
 			let scanPart = $('.mainfull').find('#Scanpart').val();
 	    //let drReader = $('.mainfull').find('#Radiologist').val();
-			console.log(radioSelected);
+			//console.log(radioSelected);
 			let drReader = radioSelected.radioId;
 	    let detail = $('.mainfull').find('#Detail').val();
 			let wantSaveScanpart = 0;
@@ -1388,13 +1415,13 @@ module.exports = function ( jq ) {
   }
 
 	const doSaveNewCaseStep = async function(defualtValue, options, phrImages, scanparts, radioSelected){
-		let newCaseData = doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected);
+		const userdata = JSON.parse(localStorage.getItem('userdata'));
+		const hospitalId = userdata.hospitalId;
+		const userId = userdata.id
+		let newCaseData = doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId);
 		if (newCaseData) {
 	    $('body').loading('start');
 	    try {
-	      const userdata = JSON.parse(localStorage.getItem('userdata'));
-	      const hospitalId = userdata.hospitalId;
-	      const userId = userdata.id
 	      let rqParams = {key: {Patient_HN: newCaseData.hn}};
 	      let patientdb = await common.doCallApi('/api/patient/search', rqParams);
 	      let patientId, patientRes;
@@ -1466,6 +1493,9 @@ module.exports = function ( jq ) {
 	}
 
 	const doSaveUpdateCaseStep = async function (defualtValue, options, phrImages, scanparts, radioSelected){
+		const userdata = JSON.parse(localStorage.getItem('userdata'));
+		const hospitalId = userdata.hospitalId;
+		const userId = userdata.id
 		const goToNextPage = function(statusId){
 			if (statusId == 1) {
 				$('#NewStatusSubCmd').click();
@@ -1477,14 +1507,10 @@ module.exports = function ( jq ) {
 				$('#NegativeStatusSubCmd').click();
 			}
 		}
-		let updateCaseData = doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected);
+		let updateCaseData = doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId);
 
 		if (updateCaseData) {
 			$('body').loading('start');
-			const userdata = JSON.parse(localStorage.getItem('userdata'));
-			const hospitalId = userdata.hospitalId;
-			const userId = userdata.id
-
 			let patientData =  common.doPreparePatientParams(updateCaseData);
 			let rqParams = {data: patientData, patientId: defualtValue.patientId};
 			let patientRes = await common.doCallApi('/api/patient/update', rqParams);

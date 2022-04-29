@@ -65,7 +65,13 @@ module.exports = function ( jq ) {
     const main = require('../main.js');
     let userdata = JSON.parse(main.doGetUserData());
     let caseCmdBox = $('<div style="text-align: center; padding: 4px;"></div>');
-    let openCmd = $('<div>อ่านผล</div>');
+		let openCmdText = undefined;
+		if (caseItem.casestatusId == 14) {
+			openCmdText = 'ตอบข้อความ';
+		} else {
+			openCmdText = 'อ่านผล';
+		}
+    let openCmd = $('<div></div>').text(openCmdText);
     $(openCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '5px 12px', 'border-radius': '12px', 'cursor': 'pointer', 'color': 'white'});
 		if (caseItem.casestatusId == 2) {
 			$(openCmd).css({'background-color' : 'orange'});

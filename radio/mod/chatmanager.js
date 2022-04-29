@@ -32,7 +32,7 @@ module.exports = function ( jq ) {
 					let simpleChat = doCreateSimpleChatBox(data.topicId, data.topicName, data.topicType, data.audienceId, data.audienceName, data.topicStatusId);
 					$(simpleChat.chatBox).css('display', 'none');
 					$(simpleChat.chatBox).appendTo($(chatBoxContainer));
-					simpleChat.handle.restoreLocal();
+					await simpleChat.handle.restoreLocal();
 					let chatBoxTarget = contactLists.find((item)=>{
 						if (item.Id == data.audienceId) { return item}
 					});
@@ -80,7 +80,7 @@ module.exports = function ( jq ) {
 							$(chatBoxContainer).css('display', 'block');
 							$(simpleChat.chatBox).css('display', 'block');
 							$(simpleChat.chatBox).appendTo($(chatBoxContainer));
-							simpleChat.handle.restoreLocal();
+							await simpleChat.handle.restoreLocal();
 							simpleChat.handle.scrollDown();
 							let chatBoxTarget = contactLists.find((item)=>{
 								if (item.Id == audienceId) { return item}
@@ -113,23 +113,23 @@ module.exports = function ( jq ) {
       if (!chatBoxTarget){
         let newAudience = {Id: Id, Name: Name, topicId: topicId, topicName: topicName};
         contactLists.push(newAudience);
-        let contactIcon = doCreateContactIcon(Id, Name, onContactIconClickCallback, onCloseContactClickCallback);
+        let contactIcon = doCreateContactIcon(Id, Name, topicId, onContactIconClickCallback, onCloseContactClickCallback);
         resolve($(contactIcon));
       } else {
 				//let contactIcon = chatBoxTarget.contact[0];
-				//let contactIcon = doCreateContactIcon(Id, Name, onContactIconClickCallback, onCloseContactClickCallback);
+				//let contactIcon = doCreateContactIcon(Id, Name, topicId, onContactIconClickCallback, onCloseContactClickCallback);
         //resolve($(contactIcon));
 				resolve();
       }
     });
   }
 
-  const doCreateContactIcon = function(Id, Name, onContactIconClickCallback, onCloseContactClickCallback) {
+  const doCreateContactIcon = function(Id, Name, topicId, onContactIconClickCallback, onCloseContactClickCallback) {
     let contactBox = $('<div class="contact" style="position: relative; display: inline-block; text-align: center; margin-right: 2px;"></div>');
     let contactIcon = $('<img style="postion: relative; width: 40px; height: auto; cursor: pointer;"/>');
     $(contactIcon).attr('src', contactIconUrl);
-    //let closeContactIcon = $('<img style="position: absolute; width: 20px; height: 20px; cursor: pointer; margin-left: 20px; margin-top: -70px;"/>');
-    //$(closeContactIcon).attr('src', closeContactIconUrl);
+    let closeContactIcon = $('<img style="position: absolute; width: 20px; height: 20px; cursor: pointer; margin-left: 20px; margin-top: -70px;"/>');
+    $(closeContactIcon).attr('src', closeContactIconUrl);
 		//$(closeContactIcon).css('display', 'none');
 		//$(contactIcon).hover((evt) =>{$(closeContactIcon).toggle()});
     let contactName = $('<div style="position: relative; font-size: 16px; color: auto;"></div>');
@@ -138,11 +138,9 @@ module.exports = function ( jq ) {
     $(contactBox).on('click', async (evt)=>{
       await onContactIconClickCallback(Id);
     });
-		/*
     $(closeContactIcon).on('click', async (evt)=>{
-      await onCloseContactClickCallback(Id, contactBox);
+      await onCloseContactClickCallback(Id, topicId, contactBox);
     });
-		*/
 		$(contactBox).attr('id', Id);
     return $(contactBox).append($(contactIcon)).append($(contactName)).append($(closeContactIcon)).append($(reddot));
   }
@@ -183,7 +181,7 @@ module.exports = function ( jq ) {
 		}
   }
 
-  const onCloseContactClickCallback = function(Id, contactBox) {
+  const onCloseContactClickCallback = function(Id, topicId, contactBox) {
     return new Promise(async function(resolve, reject) {
       let indexAt = undefined;
       let chatBoxTarget = await contactLists.find((item, index)=>{
@@ -198,6 +196,9 @@ module.exports = function ( jq ) {
 				$(targetChatBox).remove();
 				$(contactBox).remove();
         contactLists.splice(indexAt, 1);
+				const main = require('../main.js');
+				const myWsm = main.doGetWsm();
+		    myWsm.send(JSON.stringify({type: 'closetopic', topicId: topicId}));
       }
     });
   }
@@ -284,8 +285,8 @@ module.exports = function ( jq ) {
 			}
 			//console.log(localHistory);
 			//console.log(cloudHistory);
-			if (localHistory) {
-				if (cloudHistory) {
+			if ((localHistory) && (localHistory.length > 0)) {
+				if ((cloudHistory) && (cloudHistory.length > 0)) {
 					if (localHistory.length > 0) {
 						if (cloudHistory.length > 0) {
 							let localLastMsg = localHistory[localHistory.length-1];

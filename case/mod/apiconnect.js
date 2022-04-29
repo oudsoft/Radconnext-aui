@@ -458,12 +458,16 @@ module.exports = function ( jq ) {
             reqParams.meetingId = item.id;
             let meetingRes = await doCallApi(reqUrl, reqParams);
             console.log(meetingRes);
-            if (meetingRes.response.status === 'waiting') {
-              readyMeetings.push(item);
+            if ((meetingRes.response) && (meetingRes.response.status)){
+              if (meetingRes.response.status === 'waiting') {
+                readyMeetings.push(item);
+                return;
+              } else if (meetingRes.response.status === 'end') {
+                reqUrl = '/api/zoom/deletemeeting';
+                meetingRes = await doCallApi(reqUrl, reqParams);
+              }
+            } else {
               return;
-            } else if (meetingRes.response.status === 'end') {
-              reqUrl = '/api/zoom/deletemeeting';
-              meetingRes = await doCallApi(reqUrl, reqParams);
             }
           });
           setTimeout(()=> {
@@ -472,12 +476,13 @@ module.exports = function ( jq ) {
         });
         Promise.all([promiseList]).then(async (ob)=>{
           let patientFullNameEN = incident.case.patient.Patient_NameEN + ' ' + incident.case.patient.Patient_LastNameEN;
+          let patientHN = incident.case.patient.Patient_HN;
           if (ob[0].length >= 1) {
             let readyMeeting = ob[0][0];
             console.log('readyMeeting =>', readyMeeting);
             console.log('case dtail =>', incident);
             //update meeting for user
-            let joinTopic = 'โรงพยาบาล' + hospitalName + ' ผู้ป่วยชื่อ ' + patientFullNameEN;
+            let joinTopic = 'โรงพยาบาล' + hospitalName + '  ' + patientFullNameEN + '  HN: ' + patientHN;
             let startTime = startMeetingTime;
             let zoomParams = {
               topic: joinTopic,
@@ -502,7 +507,7 @@ module.exports = function ( jq ) {
             //create new meeting
             reqUrl = '/api/zoom/createmeeting';
             reqParams.zoomUserId = zoomUserId;
-            let joinTopic =  'โรงพยาบาล' + hospitalName + ' ผู้ป่วยชื่อ ' + patientFullNameEN;
+            let joinTopic =  'โรงพยาบาล' + hospitalName + ' ' + patientFullNameEN + ' HN: ' + patientHN;
             let startTime = startMeetingTime;
             let zoomParams = {
               topic: joinTopic,

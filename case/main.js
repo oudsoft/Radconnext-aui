@@ -498,13 +498,26 @@ const onClientReconnectTrigger = function(evt){
 }
 
 const onClientResult = async function(evt){
-  console.log(evt.detail);
+  //console.log(evt.detail);
+  const userdata = JSON.parse(localStorage.getItem('userdata'));
+  let username = userdata.username;
+  let hospitalId = userdata.hospitalId;
   let clientData = evt.detail.data;
   let clientDataObject = undefined;
-  if ((typeof clientData) == 'string'){
-    clientDataObject = JSON.parse(clientData);
+  if ((typeof clientData) == 'string') {
+    if (clientData !== '') {
+      clientDataObject = JSON.parse(clientData);
+    } else {
+      clientDataObject = {};
+    }
   } else if ((typeof clientData) == 'object') {
-    clientDataObject = clientData;
+    if (clientData && clientData.length > 0){
+      clientDataObject = clientData;
+    } else {
+      clientDataObject = {};
+    }
+  } else {
+    clientDataObject = {};
   }
   let parentResources = clientDataObject.hasOwnProperty('ParentResources');
   let failedInstancesCount = clientDataObject.hasOwnProperty('FailedInstancesCount');
@@ -530,6 +543,23 @@ const onClientResult = async function(evt){
     let radAlertBox = $('body').radalert(radalertoption);
     $(radAlertBox.cancelCmd).hide();
     $('body').loading('stop');
+  } else {
+    let cloudModality = clientDataObject.hasOwnProperty('cloud');
+    if (cloudModality) {
+      let cloudHost = clientDataObject.cloud.Host;
+      let newCloudHost = undefined;
+      if (cloudHost == '150.95.26.106'){
+        newCloudHost = '202.28.68.28';
+      } else {
+        newCloudHost = '150.95.26.106'
+      }
+      let cloudAET = clientDataObject.cloud.AET;
+      let cloudPort = clientDataObject.cloud.Port;
+      let changeCloudCommand = 'curl -v --user demo:demo -X PUT http://localhost:8042/modalities/cloud -d "{\\"AET\\" : \\"' + cloudAET + '\\", \\"Host\\": \\"' + newCloudHost +'\\", \\"Port\\": ' + cloudPort + '}"';
+      let lines = [changeCloudCommand];
+      wsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
+      $('body').loading('stop');
+    }
   }
 
 }

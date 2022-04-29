@@ -10,7 +10,7 @@ module.exports = function ( jq ) {
 
 	const backwardCaseStatus = [1, 2, 5, 6, 10, 11, 12, 13, 14];
 	const pageFontStyle = {"font-family": "THSarabunNew", "font-size": "24px"};
-	const commandButtonStyle = {'padding': '3px', 'cursor': 'pointer', 'border': '1px solid white', 'color': 'white', 'background-color': 'blue'};
+	const commandButtonStyle = {'padding': '3px', 'cursor': 'pointer', 'border': '1px solid white', 'color': 'white', 'background-color': '#3296EF'};
 
 	const backwardBoxHeight = '210px';
 
@@ -463,7 +463,6 @@ module.exports = function ( jq ) {
 		doCreateSimpleChatBox(dicomData, caseData, topicName).then((simpleChatBox)=>{
 			$(contactToolsBox).empty().append($(simpleChatBox));
 			let isExpand = $(contactToolsBox).css('display');
-			console.log(isExpand);
 			if (isExpand == 'none'){
 				$(contactToolsBox).slideToggle();
 			}
@@ -571,6 +570,7 @@ module.exports = function ( jq ) {
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		let startMeetingTime = util.formatStartTimeStr();
 		let hospName = userdata.hospital.Hos_Name;
+		let caseBodypart = zoomData.caseData.case.Case_BodyPart;
 		let zoomMeeting = await apiconnector.doGetZoomMeeting(zoomData.caseData, startMeetingTime, hospName);
 		//find radio socketId
 		let radioId = zoomData.caseData.case.Case_RadiologistId;
@@ -585,35 +585,21 @@ module.exports = function ( jq ) {
 			const myWsm = main.doGetWsm();
 			myWsm.send(JSON.stringify(callZoomMsg));
 
-			let linkMsg = '<p>ลิงค์สำหรับเข้าร่วมสนทนา</p><p><b><a href="' + zoomMeeting.join_url + '" target="_blank">' + zoomMeeting.join_url + '</a></b></p>';
-			let pwdMsg = '<p>Password เข้าร่วมสนทนา</p><p><b>' + zoomMeeting.password + '</b></p>';
-			let topicMsg = '<p>ชื่อหัวข้อสนทนา</p><p><b>' + zoomMeeting.topic + '</b></p>';
-
-			let chatMsg = linkMsg + pwdMsg + topicMsg;
+			let line2 = caseBodypart + '   ' + util.formatFullDateStr(startMeetingTime) + ' ' + util.formatTimeHHMNStr(startMeetingTime);
+			let line4 = 'pass: ' + zoomMeeting.password;
+			let blockMsgs = [{msg: zoomMeeting.topic, type: 'text'}, {msg: line2, type: 'text'}, {msg: zoomMeeting.join_url, type: 'link'}, {msg: line4, type: 'text'}];
 			let myInfo = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
 			let audienceInfo = zoomData.caseData.Radiologist.User_NameTH + ' ' + zoomData.caseData.Radiologist.User_LastNameTH;
-			let contextData = {topicId: zoomData.caseData.case.id, topicName: zoomMeeting.topic, myId: userdata.username, myName: myInfo, audienceId: zoomData.caseData.Radiologist.username, audienceName: audienceInfo};
-			await doSendMessageCallback('ลิงค์สำหรับเข้าร่วมสนทนา', zoomData.caseData.Radiologist.username, userdata.username, contextData);
-			await doSendMessageCallback(zoomMeeting.join_url, zoomData.caseData.Radiologist.username, userdata.username, contextData);
-			await doSendMessageCallback('Password เข้าร่วมสนทนา', zoomData.caseData.Radiologist.username, userdata.username, contextData);
-			await doSendMessageCallback(zoomMeeting.password, zoomData.caseData.Radiologist.username, userdata.username, contextData);
-			await doSendMessageCallback('ชื่อหัวข้อสนทนา', zoomData.caseData.Radiologist.username, userdata.username, contextData);
-			await doSendMessageCallback(zoomMeeting.topic, zoomData.caseData.Radiologist.username, userdata.username, contextData);
+			let contextData = {topicId: zoomData.caseData.case.id, topicName: zoomMeeting.topic, myId: userdata.username, myName: myInfo, audienceId: zoomData.caseData.Radiologist.username, audienceName: audienceInfo, type: 'html'};
+			await doSendMessageCallback(blockMsgs, zoomData.caseData.Radiologist.username, userdata.username, contextData);
 
-			/*
-			chatHandle.sendMessage(linkMsg);
-			chatHandle.sendMessage(pwdMsg);
-			chatHandle.sendMessage(topicMsg);
-			*/
-
-			/*
-			let eventData = {msg: chatMsg, from: userdata.username, context: contextData};
+			let eventData = {msg: blockMsgs, from: userdata.username, context: contextData};
       $('#SimpleChatBox').trigger('messagedrive', [eventData]);
-			*/
 
+			/*
 			let messageBox = $('#SimpleChatBox').find('#MessageBoard');
 			$(messageBox).append($(chatMsg));
-
+			*/
 			window.open(zoomMeeting.start_url, '_blank');
 			$('body').loading('stop');
 		} else {
@@ -959,9 +945,10 @@ module.exports = function ( jq ) {
 					}
 				});
 			}
-
-			if (localHistory) {
-				if (cloudHistory) {
+			//console.log(localHistory);
+			//console.log(cloudHistory);
+			if ((localHistory) && (localHistory.length > 0)) {
+				if ((cloudHistory) && (cloudHistory.length > 0)) {
 					if (localHistory.length > 0) {
 						if (cloudHistory.length > 0) {
 							let localLastMsg = localHistory[localHistory.length-1];

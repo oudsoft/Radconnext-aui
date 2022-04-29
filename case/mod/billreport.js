@@ -35,34 +35,6 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doCallPriceChart = function(hospitalId, scanpartId){
-    return new Promise(async function(resolve, reject) {
-      const userdata = JSON.parse(localStorage.getItem('userdata'));
-      //let hospitalId = userdata.hospitalId;
-      let userId = userdata.id;
-      let rqParams = {userId: userId, hospitalId: hospitalId, scanpartId: scanpartId};
-      let apiUrl = '/api/pricechart/find';
-			/*
-      try {
-        let response = await common.doCallApi(apiUrl, rqParams);
-				if (response.status.code == 200) {
-        	resolve(response);
-				} else if (response.status.code == 210) {
-					reject({error: {code: 210, cause: 'Token Expired!'}});
-				} else {
-					let apiError = 'api error at /api/pricechart/find';
-					console.log(apiError);
-					reject({error: apiError});
-				}
-      } catch(e) {
-        reject(e);
-      }
-			*/
-			let response = await common.doGetApi(apiUrl, rqParams);
-			resolve(response);
-    });
-  }
-
 	const doCallDownloadPriceChart = function(hospitalId){
     return new Promise(async function(resolve, reject) {
       const userdata = JSON.parse(localStorage.getItem('userdata'));
@@ -139,25 +111,6 @@ module.exports = function ( jq ) {
 		}
     return hh + '.' + mn;
   }
-
-	const doCheckOutTime = function(d){
-		let date = new Date(d);
-		let hh = date.getHours();
-		let mn = date.getMinutes();
-		if (hh < 8) {
-			return true;
-		} else {
-			if (hh == 8) {
-				if (mn == 0) {
-					return true;
-				} else {
-					return false;
-				}
-			} else {
-				return false;
-			}
-		}
-	}
 
   function fmtReportNumber(x) {
     return x.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -562,17 +515,17 @@ module.exports = function ( jq ) {
 	          let itemRow = $(contentRow);
 						/*
 	          let fmtDate = fmtReportDate(item.createdAt);
-						let isOutTime = doCheckOutTime(item.createdAt);
+						let isOutTime = common.doCheckOutTime(item.createdAt);
 						*/
 						let fmtDate = fmtReportDate(item.casereport.createdAt);
 						let fmtTime = fmtReportTime(item.casereport.createdAt);
-						let isOutTime = doCheckOutTime(item.casereport.createdAt);
+						let isOutTime = common.doCheckOutTime(item.casereport.createdAt);
 						let fmtPrice = undefined;
 						if (scanParts[j].PR) {
 	          	fmtPrice = fmtReportNumber(Number(scanParts[j].PR));
 	          	priceTotal += Number(scanParts[j].PR);
 						} else {
-							let prRes = await doCallPriceChart(item.hospitalId, scanParts[j].id);
+							let prRes = await common.doCallPriceChart(item.hospitalId, scanParts[j].id);
 							fmtPrice = fmtReportNumber(Number(prRes.prdf.pr.normal));
 							priceTotal += Number(prRes.prdf.pr.normal);
 						}

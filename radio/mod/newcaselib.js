@@ -157,7 +157,7 @@ module.exports = function ( jq ) {
 					dicomzipsync.push(newDicomZipSync);
 				}
 				localStorage.setItem('dicomzipsync', JSON.stringify(dicomzipsync));
-				util.dicomZipSyncWorker.postMessage({studyID: newDicomZipSync.studyID, type: 'application/x-compressed'});
+				//util.dicomZipSyncWorker.postMessage({studyID: newDicomZipSync.studyID, type: 'application/x-compressed'});
 				$('#NewCaseCmd').click();
 			} else {
 				alert('เกิดข้อผิดพลาด ไม่สามารถตอบรับเคสได้ในขณะนี้');

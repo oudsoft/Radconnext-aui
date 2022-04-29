@@ -251,6 +251,17 @@ module.exports = function ( jq ) {
 		return formatDateTimeStr(d);
 	}
 
+	const formatFullDateStr = function(fullDateTimeStr){
+		let dtStrings = fullDateTimeStr.split('T');
+		return `${dtStrings[0]}`;;
+	}
+
+	const formatTimeHHMNStr = function(fullDateTimeStr){
+		let dtStrings = fullDateTimeStr.split('T');
+		let ts = dtStrings[1].split(':');
+		return `${ts[0]}:${ts[1]}`;;
+	}
+
 	const invokeGetDisplayMedia = function(success) {
 		if(navigator.mediaDevices.getDisplayMedia) {
 	    navigator.mediaDevices.getDisplayMedia(videoConstraints).then(success).catch(doGetScreenSignalError);
@@ -482,6 +493,7 @@ module.exports = function ( jq ) {
 		return $(myLogBox);
 	}
 
+	/*
 	const dicomZipSyncWorker = new Worker("../lib/dicomzip-sync-webworker.js");
 	dicomZipSyncWorker.addEventListener("message", async function(event) {
 	  let evtData = event.data;
@@ -498,7 +510,8 @@ module.exports = function ( jq ) {
 			$.notify("Your Sync Dicom in Background Error", "error");
 		}
 	});
-
+	*/
+	
 	return {
 		formatDateStr,
 		getTodayDevFormat,
@@ -518,6 +531,8 @@ module.exports = function ( jq ) {
 		formatDateDev,
 		formatDateTimeStr,
 		formatStartTimeStr,
+		formatFullDateStr,
+		formatTimeHHMNStr,
 		invokeGetDisplayMedia,
 		addStreamStopListener,
 		base64ToBlob,
@@ -533,7 +548,7 @@ module.exports = function ( jq ) {
 		XLSX_FILE_TYPE,
 		doCreateDownloadXLSX,
 		doShowLogWindow,
-		dicomZipSyncWorker,
+		//dicomZipSyncWorker,
 		/*  Web Socket Interface */
 		wsm
 	}

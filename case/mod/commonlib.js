@@ -103,7 +103,7 @@ module.exports = function ( jq ) {
 	}
 
 	const doCreateDicomFilterForm = function(execCallback){
-		let studyFromDateInput = $('<input type="text" value="*" id="StudyFromDateInput" style="width: 60px;"/>');
+		let studyFromDateInput = $('<input type="text" value="*" id="StudyFromDateInput" style="width: 50px;"/>');
 		$(studyFromDateInput).datepicker({ dateFormat: 'dd-mm-yy' });
 		$(studyFromDateInput).on('keypress',function(evt) {
 			if(evt.which == 13) {
@@ -111,7 +111,7 @@ module.exports = function ( jq ) {
 			};
 		});
 
-		let studyToDateInput = $('<input type="text" value="*" id="StudyToDateInput" style="width: 60px;"/>');
+		let studyToDateInput = $('<input type="text" value="*" id="StudyToDateInput" style="width: 50px;"/>');
 		$(studyToDateInput).datepicker({ dateFormat: 'dd-mm-yy' });
 		$(studyToDateInput).on('keypress',function(evt) {
 			if(evt.which == 13) {
@@ -827,6 +827,9 @@ module.exports = function ( jq ) {
 					} else {
 						joinText += item.Name;
 					}
+					if ((item.DF) && (item.DF !== '')) {
+						joinText += ' ' + item.DF + ' บ.';
+					}
 				}
 				$(scanPartBox).append($('<div>' + joinText + '</div>'));
 				setTimeout(()=>{
@@ -1048,6 +1051,37 @@ module.exports = function ( jq ) {
 		});
 	}
 
+	const doCheckOutTime = function(d){
+		let date = new Date(d);
+		let hh = date.getHours();
+		let mn = date.getMinutes();
+		if (hh < 8) {
+			return true;
+		} else {
+			if (hh == 8) {
+				if (mn == 0) {
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+	}
+
+	const doCallPriceChart = function(hospitalId, scanpartId){
+    return new Promise(async function(resolve, reject) {
+      const userdata = JSON.parse(localStorage.getItem('userdata'));
+      //let hospitalId = userdata.hospitalId;
+      let userId = userdata.id;
+      let rqParams = {userId: userId, hospitalId: hospitalId, scanpartId: scanpartId};
+      let apiUrl = '/api/pricechart/find';
+			let response = await doGetApi(apiUrl, rqParams);
+			resolve(response);
+    });
+  }
+
   return {
 		/* Constant share */
 		caseReadWaitStatus,
@@ -1110,6 +1144,8 @@ module.exports = function ( jq ) {
 		genUniqueID,
 		onSimpleEditorPaste,
 		doCallLoadStudyTags,
-		doReStructureDicom
+		doReStructureDicom,
+		doCheckOutTime,
+		doCallPriceChart
 	}
 }
