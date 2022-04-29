@@ -1418,7 +1418,7 @@ module.exports = function ( jq ) {
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
 		const hospitalId = userdata.hospitalId;
 		const userId = userdata.id
-		let newCaseData = doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId);
+		let newCaseData = await doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId);
 		if (newCaseData) {
 	    $('body').loading('start');
 	    try {
@@ -1507,7 +1507,7 @@ module.exports = function ( jq ) {
 				$('#NegativeStatusSubCmd').click();
 			}
 		}
-		let updateCaseData = doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId);
+		let updateCaseData = await doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId);
 
 		if (updateCaseData) {
 			$('body').loading('start');
