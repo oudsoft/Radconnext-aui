@@ -2,6 +2,8 @@
 module.exports = function ( jq, wsm ) {
 	const $ = jq;
 
+	const wrtcCommon = require('../../case/mod/wrtc-common.js')(jq);
+
   const onMessageRefer = function (msgEvt) {
     let data = JSON.parse(msgEvt.data);
     console.log(data);
@@ -43,34 +45,30 @@ module.exports = function ( jq, wsm ) {
       document.dispatchEvent(event);
 		} else if (data.type == 'ping') {
       console.log('Ping Data =>', data);
-      /*
-			let userdata = JSON.parse(localStorage.getItem('userdata'));
-			let minuteLockScreen = userdata.userprofiles[0].Profile.screen.lock;
-			let tryLockModTime = (Number(data.counterping) % Number(minuteLockScreen));
-			if (data.counterping == minuteLockScreen) {
-				let eventName = 'lockscreen';
-	      let evtData = {};
-	      let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
-	      document.dispatchEvent(event);
-			} else if (tryLockModTime == 0) {
-				let eventName = 'lockscreen';
-	      let evtData = {};
-	      let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
-	      document.dispatchEvent(event);
-			}
-        */
 		} else if (data.type == 'unlockscreen') {
-      /*
-			let eventName = 'unlockscreen';
-			let evtData = {};
-			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
-			document.dispatchEvent(event);
-      */
+
     } else if (data.type == 'message') {
       $.notify(data.from + ':: ส่งข้อความมาว่า:: ' + data.msg, "info");
 			doSaveMessageToLocal(data.msg ,data.from, data.context.topicId, 'new');
       let eventData = {msg: data.msg, from: data.from, context: data.context};
       $('#SimpleChatBox').trigger('messagedrive', [eventData]);
+		} else if (data.type == 'wrtc') {
+			switch(data.wrtc) {
+				//when somebody wants to call us
+				case "offer":
+					wrtcCommon.wsHandleOffer(wsm, data.offer);
+				break;
+				case "answer":
+					wrtcCommon.wsHandleAnswer(wsm, data.answer);
+				break;
+				//when a remote peer sends an ice candidate to us
+				case "candidate":
+					wrtcCommon.wsHandleCandidate(wsm, data.candidate);
+				break;
+				case "leave":
+					wrtcCommon.wsHandleLeave(wsm, data.leave);
+				break;
+			}
     }
   };
 

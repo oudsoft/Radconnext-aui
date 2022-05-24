@@ -193,6 +193,71 @@ module.exports = function ( jq ) {
 		}
   }
 
+	const onMisstakeCaseNotifyCmdClick = function(evt){
+		let misstakeCaseData = $(evt.currentTarget).data('misstakeCaseData');
+		console.log(misstakeCaseData);
+		let getUserInfoUrl = '/api/user/' + misstakeCaseData.userId;
+    common.doGetApi(getUserInfoUrl, {}).then(async(response)=>{
+      let ownerCaseInfo = response.Record.info;
+			console.log(ownerCaseInfo);
+			let ownerCaseInfoBox = $('<div></div>');
+			$(ownerCaseInfoBox).append($('<h4>ข้อมูลผู้ส่งเคส</h4>').css({'text-align': 'center', 'line-height': '14px'}));
+			$(ownerCaseInfoBox).append($('<p>ชื่อ ' + ownerCaseInfo.User_NameTH + ' ' + ownerCaseInfo.User_LastNameTH + '</p>').css({'line-height': '14px'}));
+			$(ownerCaseInfoBox).append($('<p>โทร. ' + ownerCaseInfo.User_Phone + '</p>').css({'line-height': '14px'}));
+			if (ownerCaseInfo.User_Mail) {
+				$(ownerCaseInfoBox).append($('<p>อีเมล์. ' + ownerCaseInfo.User_Mail + '</p>').css({'line-height': '14px'}));
+			}
+			let notifyMessageBox = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
+			let optionRow = $('<tr></tr>');
+			let optionNameCell = $('<td width="30%">สาเหตุ</td>').css({'padding': '5px'});
+			let optionValueCell = $('<td width="*"></td>').css({'padding': '5px'});
+			$(optionRow).append($(optionNameCell)).append($(optionValueCell));
+			let causeOption = $('<select></select>');
+			$(causeOption).append($('<option value="ประวัติไม่ชัดเจน/ขอประวัติเพิ่ม">ประวัติไม่ชัดเจน/ขอประวัติเพิ่ม</option>'));
+			$(causeOption).append($('<option value="ภาพไม่ครบ/ต้องการภาพเพิ่มเติม">ภาพไม่ครบ/ต้องการภาพเพิ่มเติม</option>'));
+			$(causeOption).append($('<option value="ประวัติ, ภาพ หรือผลผิดคน">ประวัติ, ภาพ หรือผลผิดคน</option>'));
+			$(causeOption).append($('<option value="รายการ DF ผิด">รายการ DF ผิด</option>'));
+			$(causeOption).append($('<option value="อื่นๆ">อื่นๆ</option>'));
+			$(optionValueCell).append($(causeOption));
+			$(notifyMessageBox).append($(optionRow));
+
+			let inputRow = $('<tr></tr>');
+			let inputNameCell = $('<td">เพิ่มเติม</td>').css({'padding': '5px'});
+			let inputValueCell = $('<td></td>').css({'padding': '5px'});
+			let inputValue = $('<input type="text" size="25"/>');
+			$(inputValueCell).append($(inputValue));
+			$(inputRow).append($(inputNameCell)).append($(inputValueCell));
+			$(notifyMessageBox).append($(inputRow));
+			let radAlertMsg = $('<div></div>');
+			$(radAlertMsg).append($(ownerCaseInfoBox)).append($(notifyMessageBox));
+
+			const radconfirmoption = {
+	      title: 'แจ้งเตสผิดพลาด',
+	      msg: $(radAlertMsg),
+	      width: '420px',
+	      onOk: function(evt) {
+					let causeValue = $(causeOption).val();
+					let otherValue = $(inputValue).val();
+					const userdata = JSON.parse(localStorage.getItem('userdata'));
+					let main = require('../main.js');
+					let myWsm = main.doGetWsm();
+					let sendto = ownerCaseInfo.username;
+					let userfullname = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
+					let from = {userId: userdata.id, username: userdata.username, userfullname: userfullname};
+					let msg = {cause: causeValue, other: otherValue, caseData: misstakeCaseData};
+					let msgSend = {type: 'casemisstake', msg: msg, sendto: sendto, from: from};
+			    myWsm.send(JSON.stringify(msgSend));
+					$.notify('ระบบฯ แจ้งข้อมูลความผิดพลาดของเคสไปยังผู้ส่งเคสสำร็จ', 'success');
+					radConfirmBox.closeAlert();
+	      },
+	      onCancel: function(evt) {
+	        radConfirmBox.closeAlert();
+	      }
+	    }
+	    let radConfirmBox = $('body').radalert(radconfirmoption);
+    });
+	}
+
   const onTemplateSelectorChange = async function(evt) {
 		$('body').loading('start');
 		let yourResponse = $('#SimpleEditor').val();
@@ -724,28 +789,36 @@ module.exports = function ( jq ) {
 
   const doRenderPatientHR = function(hrlinks, patientFullName, casedate) {
     return new Promise(async function(resolve, reject) {
-      let hrBox = $('<div style="position: width: 100%"></div>');
-			//$(hrBox).css({'display': 'inline-block', 'float': 'right'});
+      let hrBox = $('<div style="width: 100%; padding: 5px;"></div>');
+			let hrTable = $('<table width="100%" border="0" cellspacing="0" cellpadding="0"></table>');
+			$(hrBox).append($(hrTable));
 			if ((hrlinks) && (hrlinks.length > 0)){
 	      await hrlinks.forEach((item, i) => {
+					/*
 					let clipIcon = new Image();
 					clipIcon.src = '/images/clip-icon.png';
 					$(clipIcon).css({"position": "relative", "display": "inline-block", "width": "25px", "height": "auto", "margin-top": "2px"});
 					$(hrBox).append($(clipIcon));
-
-					let patientHRLink = $('<span style="position: relative; display: inline-block; top: -5px; text-decoration: underline; cursor: pointer; color: blue;"></span>');
+					*/
+					//let patientHRLink = $('<span style="position: relative; display: inline-block; text-decoration: underline; cursor: pointer; color: blue;"></span>');
 					let filePaths = item.link.split('/');
 					let fileNames = filePaths[filePaths.length-1];
 					let fileName = fileNames.split('.');
 					let fileExt = fileName[1];
 					let patientName = patientFullName.split(' ').join('_');
-					let linkText = patientName + '(' + (i+1) + ')' + '.' + fileExt;
-					$(patientHRLink).text(linkText);
+					patientName = patientName.substring(0, 14);
+					let linkText = patientName + ' (' + (i+1) + ')' + '.' + fileExt;
+					//$(patientHRLink).text(linkText);
+					let patientHRButton = $('<div class="action-btn" style="width: 100%; cursor: pointer; text-align: center;">' + linkText + '</div>');
 
-					$(patientHRLink).on("click", function(evt){
+					$(patientHRButton).on("click", function(evt){
 	          doOpenHR(item.link, patientFullName, casedate);
 	    		});
-					$(hrBox).append($(patientHRLink));
+					let hrRow = $('<tr></tr>');
+					let hrCell = $('<td width="100%" align="left"></td>');
+					$(hrRow).append($(hrCell))
+					$(hrCell).append($(patientHRButton));
+					$(hrTable).append($(hrRow));
 	      });
 			}
       resolve($(hrBox));
@@ -762,12 +835,14 @@ module.exports = function ( jq ) {
 			let downloadRes = await doDownloadDicom(orthancStudyID, hospitalId, casedate, casetime);
 			//$('body').loading('stop');
 		});
+		/*
 		let openViewerCmd = $('<span class="action-btn">Open</span>');
 		$(openViewerCmd).appendTo($(dicomCmdBox));
 		$(openViewerCmd).css(commandButtonStyle);
 		$(openViewerCmd).on('click', async (evt)=>{
 			common.doOpenStoneWebViewer(studyInstanceUID, hospitalId);
 		});
+		*/
 		return $(dicomCmdBox);
 	}
 
@@ -866,7 +941,7 @@ module.exports = function ( jq ) {
 			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">หมายเหตุ/อื่นๆ</span>'));
 			const promiseList = new Promise(async function(resolve2, reject2){
 				for (let i=0; i < backwards.length; i++) {
-					let backwardRow = $('<div style="display: table-row; width: 100%;"></div>');
+					let backwardRow = $('<div style="display: table-row; width: 100%;" class="case-row"></div>');
 					let backward = backwards[i];
 					let caseCreateAt = util.formatDateTimeStr(backward.createdAt);
 					//console.log(caseCreateAt);
@@ -896,7 +971,7 @@ module.exports = function ( jq ) {
 					$(backwardRow).append($('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">' + (i+1) + '</span>'));
 					$(backwardRow).append($('<span style="display: table-cell; text-align: left; padding: 4px; vertical-align: middle;">' + casedateDisplay + '</span>'));
 					$(backwardRow).append($('<span style="display: table-cell; text-align: left; vertical-align: middle;">' + backward.Case_BodyPart + '</span>'));
-					let dicomCmdCell = $('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></span>');
+					let dicomCmdCell = $('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle; width: 150px;"></span>');
 					$(dicomCmdCell).append($(dicomCmdBox));
 					$(backwardRow).append($(dicomCmdCell));
 					let hrBackwardCell = $('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></span>');
@@ -906,6 +981,11 @@ module.exports = function ( jq ) {
 					$(responseBackwardCell).append($(responseBackwardBox));
 					$(backwardRow).append($(responseBackwardCell));
 					$(backwardRow).append($('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">-</span>'));
+					$(backwardRow).css({'cursor': 'pointer'});
+					$(backwardRow).on('dblclick', (evt)=>{
+						common.doOpenStoneWebViewer(backward.Case_StudyInstanceUID, backward.hospitalId);
+						//$(backwardRow).click();
+			    });
 					$(backwardRow).appendTo($(backwardView));
 				}
 				setTimeout(()=> {
@@ -939,6 +1019,128 @@ module.exports = function ( jq ) {
 		});
 	}
 
+	const doCreateSummaryFirstLine = function(selectedCase, patientFullName){
+		let summaryFirstLine = $('<div></div>');
+		$(summaryFirstLine).append($('<span><b>HN:</b> </span>'));
+		$(summaryFirstLine).append($('<span style="margin-left: 4px; color: black;">' + selectedCase.case.patient.Patient_HN + '</span>'));
+		$(summaryFirstLine).append($('<span style="margin-left: 4px;"><b>Name:</b> </span>'));
+		$(summaryFirstLine).append($('<span style="margin-left: 4px; color: black;">' + patientFullName + '</span>'));
+		$(summaryFirstLine).append($('<span style="margin-left: 4px;"><b>Age/sex:</b> </span>'));
+		$(summaryFirstLine).append($('<span style="margin-left: 4px; color: black;">' + selectedCase.case.patient.Patient_Age + '/' + selectedCase.case.patient.Patient_Sex + '</span>'));
+		/*
+		$(summaryFirstLine).append($('<span style="margin-left: 4px;"><b>Body Part:</b> </span>'));
+		$(summaryFirstLine).append($('<span style="margin-left: 4px; color: black;">' + selectedCase.case.Case_BodyPart + '</span>'));
+		*/
+		$(summaryFirstLine).append($('<span style="margin-left: 4px;"><b>โรงพยาบาล:</b> </span>'));
+		$(summaryFirstLine).append($('<span style="margin-left: 4px; color: black;">' + selectedCase.case.hospital.Hos_Name + '</span>'));
+		$(summaryFirstLine).css(common.pageLineStyle);
+		return $(summaryFirstLine);
+	}
+
+	const doCreateSummaryDF = function(df){
+		let summaryDF = $('<div style="padding: 5px;"></div>');
+		let total = 0;
+		let summaryTable = $('<table width="100%" border="0" cellspacing="0" cellpadding="0"></table>');
+		let headerRow = $('<tr></tr>');
+		let headerCell = $('<td colspan="2" align="left"><b>Scan Part</b></td>');
+		$(headerRow).append($(headerCell));
+		$(summaryTable).append($(headerRow));
+		let i = undefined;
+		for (i=0; i < df.length; i++){
+			let row = $('<tr></tr>');
+			let dfName = undefined;
+			if (df[i].DF.type == 'night'){
+				dfName = df[i].Name + ' (เวรดึก)';
+			} else {
+				dfName = df[i].Name;
+			}
+			let nameCell = $('<td width="80%" align="left">' + dfName + '</td>');
+			let priceCell = $('<td width="20%" align="right" style="padding-right: 80px;">' + df[i].DF.value + '</td>');
+			total += Number(df[i].DF);
+			$(row).append($(nameCell)).append($(priceCell));
+			$(summaryTable).append($(row));
+		}
+		let totalRow = $('<tr></tr>');
+		if (i == 1){
+			$(totalRow).css({'height': '70px'});
+		} else if (i == 2) {
+			$(totalRow).css({'height': '30px'});
+		}
+		let totalNameCell = $('<td align="left" valign="bottom"><b>รวม</b></td>');
+		let totalPriceCell = $('<td align="right" valign="bottom" style="padding-right: 80px;"><b>' + total + '</b></td>');
+		$(totalRow).append($(totalNameCell)).append($(totalPriceCell))
+		$(summaryTable).append($(totalRow));
+		return $(summaryDF).append($(summaryTable));
+	}
+
+	const doCreateSummarySecondLine = function(selectedCase, patientFullName, casedate, casetime){
+		return new Promise(async function(resolve, reject) {
+			let summarySecondLine = $('<div></div>');
+			let summarySecondArea = $('<table width="100%" border="0" cellspacing="0" cellpadding="0"></table>');
+			let summarySecondAreaRow = $('<tr></tr>');
+			let summarySecondAreaLeft = $('<td width="36%" align="left" valign="top"></td>');
+			let summarySecondAreaMiddle1 = $('<td width="15%" align="left" valign="top"></td>');
+			let summarySecondAreaMiddle2 = $('<td width="25%" align="left" valign="top"></td>');
+			let summarySecondAreaRight = $('<td width="*" align="center" valign="bottom"></td>');
+			$(summarySecondAreaRow).append($(summarySecondAreaLeft)).append($(summarySecondAreaMiddle1)).append($(summarySecondAreaMiddle2)).append($(summarySecondAreaRight));
+			$(summarySecondArea).append($(summarySecondAreaRow));
+			$(summarySecondLine).append($(summarySecondArea));
+
+			let caseScanParts = selectedCase.case.Case_ScanPart;
+			let summaryDF = doCreateSummaryDF(caseScanParts);
+			$(summarySecondAreaLeft).append($(summaryDF));
+
+			let buttonCmdArea = $('<div style="padding: 5px;"></div>');
+			let buttonCmdTable = $('<table width="100%" border="0" cellspacing="0" cellpadding="0"></table>');
+			let buttonCmdRow1 = $('<tr></tr>');
+			let buttonCmdRow2 = $('<tr></tr>');
+			let buttonCmdRow3 = $('<tr></tr>');
+			let downloadCmdCell = $('<td width="30%" align="left"></td>');
+			let blankCell = $('<td align="left"><div style="wisth: 100%; min-height: 30px;"></div></td>');
+			let open3rdPartyCmdCell = $('<td align="left"></td>');
+			$(buttonCmdRow1).append($(downloadCmdCell));
+			$(buttonCmdRow2).append($(blankCell));
+			$(buttonCmdRow3).append($(open3rdPartyCmdCell));
+			$(buttonCmdTable).append($(buttonCmdRow1)).append($(buttonCmdRow2)).append($(buttonCmdRow3));
+			$(buttonCmdArea).append($(buttonCmdTable));
+			$(summarySecondAreaMiddle1).append($(buttonCmdArea));
+			let downloadCmd = $('<input type="button" value=" Download " class="action-btn" style="cursor: pointer;"/>');
+			let patientFullName = selectedCase.case.patient.Patient_NameEN + ' ' + selectedCase.case.patient.Patient_LastNameEN;
+			let patientHN = selectedCase.case.patient.Patient_HN;
+			let downloadData = {caseId: selectedCase.case.id, patientId: selectedCase.case.patient.id, studyID: selectedCase.case.Case_OrthancStudyID, casedate: casedate, casetime: casetime, hospitalId: selectedCase.case.hospitalId, dicomzipfilename: selectedCase.case.Case_DicomZipFilename, userId: selectedCase.case.userId};
+			downloadData.caseScanParts = caseScanParts;
+			downloadData.patientFullName = patientFullName;
+			downloadData.patientHN = patientHN;
+			$(downloadCmd).data('downloadData', downloadData);
+			$(downloadCmd).on('click', onDownloadCmdClick);
+			$(downloadCmd).appendTo($(downloadCmdCell));
+
+			/*
+			let openStoneWebViewerCmd = $('<input type="button" value=" Open " class="action-btn" style="cursor: pointer;"/>');
+			let openData = {studyInstanceUID: selectedCase.case.Case_StudyInstanceUID, hospitalId: selectedCase.case.hospitalId};
+			$(openStoneWebViewerCmd).data('openData', openData);
+			$(openStoneWebViewerCmd).on('click', onOpenStoneWebViewerCmdClick);
+			$(openStoneWebViewerCmd).appendTo($(downloadCmdCell));
+			*/
+
+			let openThirdPartyCmd = $('<input type="button" value=" Open (3rd Party) " class="action-btn" style="cursor: pointer;"/>');
+			$(openThirdPartyCmd).on('click', onOpenThirdPartyCmdClick);
+			$(openThirdPartyCmd).appendTo($(open3rdPartyCmdCell));
+
+			if ((selectedCase.case.Case_PatientHRLink) && (selectedCase.case.Case_PatientHRLink.length > 0)) {
+				let patientHRBox = await doRenderPatientHR(selectedCase.case.Case_PatientHRLink, patientFullName, casedate);
+				$(summarySecondAreaMiddle2).append($(patientHRBox));
+			}
+
+			let misstakeCaseNotifyCmd = $('<input type="button" value=" แจ้งเคสผิดพลาด " class="action-btn" style="cursor: pointer;"/>');
+			$(misstakeCaseNotifyCmd).data('misstakeCaseData', downloadData);
+			$(misstakeCaseNotifyCmd).on('click', onMisstakeCaseNotifyCmdClick);
+			$(misstakeCaseNotifyCmd).appendTo($(summarySecondAreaRight));
+
+			resolve($(summarySecondLine));
+		});
+	}
+
   const doCreateSummaryDetailCase = function(caseOpen){
     return new Promise(async function(resolve, reject) {
       let jqtePluginStyleUrl = '../../lib/jqte/jquery-te-1.4.0.css';
@@ -951,6 +1153,14 @@ module.exports = function ( jq ) {
 			caseHospitalId = selectedCase.case.hospitalId;
 			casePatientId = selectedCase.case.patientId;
 			caseId = selectedCase.case.id;
+
+			let caseCreateAt = util.formatDateTimeStr(selectedCase.case.createdAt);
+			let casedatetime = caseCreateAt.split('T');
+			let casedateSegment = casedatetime[0].split('-');
+			casedateSegment = casedateSegment.join('');
+			let casedate = casedateSegment;
+			casedateSegment = casedatetime[1].split(':');
+			let casetime = casedateSegment.join('');
 
       const userdata = JSON.parse(localStorage.getItem('userdata'));
 			const patientFullName = selectedCase.case.patient.Patient_NameEN + ' ' + selectedCase.case.patient.Patient_LastNameEN;
@@ -965,62 +1175,12 @@ module.exports = function ( jq ) {
 			}
 
       let summary = $('<div style="position: relative; width: 98%; margin-left: 2px;"></div>');
-      let summaryFirstLine = $('<div></div>');
-      $(summaryFirstLine).append($('<span><b>HN:</b> </span>'));
-      $(summaryFirstLine).append($('<span style="margin-left: 4px; color: black;">' + selectedCase.case.patient.Patient_HN + '</span>'));
-      $(summaryFirstLine).append($('<span style="margin-left: 4px;"><b>Name:</b> </span>'));
-      $(summaryFirstLine).append($('<span style="margin-left: 4px; color: black;">' + patientFullName + '</span>'));
-      $(summaryFirstLine).append($('<span style="margin-left: 4px;"><b>Age/sex:</b> </span>'));
-      $(summaryFirstLine).append($('<span style="margin-left: 4px; color: black;">' + selectedCase.case.patient.Patient_Age + '/' + selectedCase.case.patient.Patient_Sex + '</span>'));
-      $(summaryFirstLine).append($('<span style="margin-left: 4px;"><b>Body Part:</b> </span>'));
-      $(summaryFirstLine).append($('<span style="margin-left: 4px; color: black;">' + selectedCase.case.Case_BodyPart + '</span>'));
-      $(summaryFirstLine).append($('<span style="margin-left: 4px;"><b>โรงพยาบาล:</b> </span>'));
-      $(summaryFirstLine).append($('<span style="margin-left: 4px; color: black;">' + selectedCase.case.hospital.Hos_Name + '</span>'));
-      $(summaryFirstLine).css(common.pageLineStyle);
-      $(summaryFirstLine).appendTo($(summary));
+			let summaryFirstLine = doCreateSummaryFirstLine(selectedCase, patientFullName);
+      $(summary).append($(summaryFirstLine));
 
-      let summarySecondLine = $('<div></div>');
-			let summarySecondArea = $('<table width="100%" border="0" cellspacing="0" cellpadding="0"></table>');
-			let summarySecondAreaRow = $('<tr></tr>');
-			let summarySecondAreaLeft = $('<td width="50%" align="left"></td>');
-			let summarySecondAreaRight = $('<td width="*" align="left"></td>');
-			$(summarySecondAreaRow).append($(summarySecondAreaLeft)).append($(summarySecondAreaRight));
-			$(summarySecondArea).append($(summarySecondAreaRow));
-			$(summarySecondLine).append($(summarySecondArea));
-
-			console.log(caseOpen);
-      let downloadCmd = $('<input type="button" value=" Download " class="action-btn" style="cursor: pointer;"/>');
-
-			let caseCreateAt = util.formatDateTimeStr(selectedCase.case.createdAt);
-			let casedatetime = caseCreateAt.split('T');
-			let casedateSegment = casedatetime[0].split('-');
-			casedateSegment = casedateSegment.join('');
-			let casedate = casedateSegment;
-			casedateSegment = casedatetime[1].split(':');
-			let casetime = casedateSegment.join('');
-
-      let downloadData = {patientId: selectedCase.case.patient.id, studyID: selectedCase.case.Case_OrthancStudyID, casedate: casedate, casetime: casetime, hospitalId: selectedCase.case.hospitalId, dicomzipfilename: selectedCase.case.Case_DicomZipFilename};
-      $(downloadCmd).data('downloadData', downloadData);
-      $(downloadCmd).on('click', onDownloadCmdClick);
-      $(downloadCmd).appendTo($(summarySecondAreaLeft))
-
-      let openStoneWebViewerCmd = $('<input type="button" value=" Open " class="action-btn" style="margin-left: 10px; cursor: pointer;"/>');
-      let openData = {studyInstanceUID: selectedCase.case.Case_StudyInstanceUID, hospitalId: selectedCase.case.hospitalId};
-      $(openStoneWebViewerCmd).data('openData', openData);
-      $(openStoneWebViewerCmd).on('click', onOpenStoneWebViewerCmdClick);
-      $(openStoneWebViewerCmd).appendTo($(summarySecondAreaLeft));
-
-      let openThirdPartyCmd = $('<input type="button" value=" Open (3rd Party) " class="action-btn" style="margin-left: 10px; cursor: pointer;"/>');
-      $(openThirdPartyCmd).on('click', onOpenThirdPartyCmdClick);
-      $(openThirdPartyCmd).appendTo($(summarySecondAreaLeft));
-
-      if ((selectedCase.case.Case_PatientHRLink) && (selectedCase.case.Case_PatientHRLink.length > 0)) {
-        let patientHRBox = await doRenderPatientHR(selectedCase.case.Case_PatientHRLink, patientFullName, casedate);
-        $(summarySecondAreaRight).append($(patientHRBox));
-      }
-
+			let summarySecondLine = await doCreateSummarySecondLine(selectedCase, patientFullName, casedate, casetime);
       //$(summarySecondLine).css(common.pageLineStyle);
-      $(summarySecondLine).appendTo($(summary));
+      $(summary).append($(summarySecondLine));
 
 			let summaryThirdLine = $('<div></div>');
 			$(summaryThirdLine).append($(patientBackwardView));
@@ -1033,7 +1193,9 @@ module.exports = function ( jq ) {
 			$(contactToolsLine).append($(contactContainer));
 			$(contactToolsLine).css(common.pageLineStyle);
 			$(contactToolsLine).appendTo($(summary));
-
+			if (selectedCase.case.casestatusId != 14){
+				$(contactToolsLine).css('display', 'none');
+			}
 
       let summaryFourthLine = $('<div></div>');
       $(summaryFourthLine).append($('<span><b>Template:</b> </span>'));

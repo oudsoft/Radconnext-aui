@@ -144,6 +144,7 @@ function doLoadMainPage(){
   document.addEventListener("triggercasecounter", casecounter.onCaseChangeStatusTrigger);
   document.addEventListener("triggerconsultcounter", casecounter.onConsultChangeStatusTrigger);
   document.addEventListener("triggernewdicom", onNewDicomTransferTrigger);
+  document.addEventListener("triggercasemisstake", onCaseMisstakeNotifyTrigger);
   document.addEventListener("clientreconnecttrigger", onClientReconnectTrigger);
   document.addEventListener("clientresult", onClientResult);
 
@@ -206,7 +207,7 @@ function doLoadMainPage(){
 				let titleContent = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>เคสส่งอ่าน [เคสใหม่] -รอตอบรับจากรังสีแพทย์</h3></div>');
 				$(titleContent).appendTo($(titlePage));
 				$("#TitleContent").empty().append($(titlePage));
-				let rqParams = { hospitalId: userdata.hospitalId, userId: userdata.id, statusId: common.caseReadWaitStatus };
+				let rqParams = { hospitalId: userdata.hospitalId, /*userId: userdata.id,*/ statusId: common.caseReadWaitStatus };
 				cases.doLoadCases(rqParams).then(()=>{
           common.doScrollTopPage();
         }).catch(async (err)=>{
@@ -233,7 +234,7 @@ function doLoadMainPage(){
 				let titleResult = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>เคสส่งอ่าน [ตอบรับแล้ว] -รอผลอ่าน</h3></div>');
 				$(titleResult).appendTo($(resultTitle));
 				$("#TitleContent").empty().append($(resultTitle));
-				let rqParams = { hospitalId: userdata.hospitalId, userId: userdata.id, statusId: common.casePositiveStatus };
+				let rqParams = { hospitalId: userdata.hospitalId, /*userId: userdata.id,*/ statusId: common.casePositiveStatus };
 				cases.doLoadCases(rqParams).then(()=>{
           common.doScrollTopPage();
         });
@@ -246,7 +247,7 @@ function doLoadMainPage(){
 				let titleResult = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>เคสส่งอ่าน [ได้ผลอ่านแล้ว]</h3></div>');
 				$(titleResult).appendTo($(resultTitle));
 				$("#TitleContent").empty().append($(resultTitle));
-				let rqParams = { hospitalId: userdata.hospitalId, userId: userdata.id, statusId: common.caseReadSuccessStatus };
+				let rqParams = { hospitalId: userdata.hospitalId, /*userId: userdata.id,*/ statusId: common.caseReadSuccessStatus };
 				cases.doLoadCases(rqParams).then(()=>{
           common.doScrollTopPage();
         });
@@ -258,16 +259,16 @@ function doLoadMainPage(){
 				let titleResult = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>รายการเคสไม่สมบูรณ์/รอคำสั่ง</h3></div>');
 				$(titleResult).appendTo($(resultTitle));
 				$("#TitleContent").empty().append($(resultTitle));
-				let rqParams = { hospitalId: userdata.hospitalId, userId: userdata.id, statusId: common.caseNegativeStatus };
+				let rqParams = { hospitalId: userdata.hospitalId, /*userId: userdata.id,*/ statusId: common.caseNegativeStatus };
 				cases.doLoadCases(rqParams).then(()=>{
           common.doScrollTopPage();
         });
 			});
 			$(document).on('opensearchcase', async (evt, data)=>{
 				$('body').loading('start');
-				let toDayFormat = util.getTodayDevFormat();
-
-				let defaultSearchKey = {fromDateKeyValue: toDayFormat, patientNameENKeyValue: '*', patientHNKeyValue: '*', bodypartKeyValue: '*', caseStatusKeyValue: 0};
+        let yesterDayFormat = util.getYesterdayDevFormat();
+        let toDayFormat = util.getTodayDevFormat();
+				let defaultSearchKey = {fromDateKeyValue: yesterDayFormat, toDateKeyValue: toDayFormat, patientNameENKeyValue: '*', patientHNKeyValue: '*', bodypartKeyValue: '*', caseStatusKeyValue: 0};
 				let defaultSearchParam = {key: defaultSearchKey, hospitalId: userdata.hospitalId, userId: userdata.id, usertypeId: userdata.usertypeId};
 
 				let searchTitlePage = cases.doCreateSearchTitlePage();
@@ -484,6 +485,44 @@ const onNewDicomTransferTrigger = function(evt){
 
   let synmessageCmd = {type: 'save', dicom: dicom}
   webworker.postMessage(JSON.stringify(synmessageCmd));
+}
+
+const onCaseMisstakeNotifyTrigger = function(evt){
+  let trigerData = evt.detail.data;
+  let msg = trigerData.msg;
+  let from = trigerData.from;
+  let patientFullName = trigerData.caseData.patientFullName;
+  let patientHN = trigerData.caseData.patientHN;
+  let caseScanParts = trigerData.caseData.caseScanParts;
+  let caseScanPartsText = '';
+  caseScanParts.forEach((item, i) => {
+    if (i != (caseScanParts.length - 1)) {
+      caseScanPartsText  += item.Name + ' \ ';
+    } else {
+      caseScanPartsText  += item.Name;
+    }
+  });
+
+  let radAlertMsg = $('<div></div>');
+  let notifyFromromBox = $('<div></div>');
+  $(notifyFromromBox).append($('<p>ผ้ป่วย ชื่อ ' + patientFullName + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+  $(notifyFromromBox).append($('<p>HN ' + patientHN + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+  $(notifyFromromBox).append($('<p>ฆScan Part ' + caseScanPartsText + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+  $(notifyFromromBox).append($('<p>ผู้แจ้ง ' + from.userfullname + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+  $(notifyFromromBox).append($('<p>สาเหตุเคสผิดพลาด ' + msg.cause + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+  $(notifyFromromBox).append($('<p>ข้อความแจ้งเพิ่มเติม ' + msg.other + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+  $(radAlertMsg).append($(notifyFromromBox));
+
+  const radalertoption = {
+    title: 'ข้อความแจ้งเตือนเตสผิดพลาด',
+    msg: $(radAlertMsg),
+    width: '420px',
+    onOk: function(evt) {
+      radConfirmBox.closeAlert();
+    }
+  }
+  let radAlertBox = $('body').radalert(radalertoption);
+  $(radAlertBox.cancelCmd).hide();
 }
 
 const onClientReconnectTrigger = function(evt){

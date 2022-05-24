@@ -517,9 +517,9 @@ module.exports = function ( jq ) {
 	          let fmtDate = fmtReportDate(item.createdAt);
 						let isOutTime = common.doCheckOutTime(item.createdAt);
 						*/
-						let fmtDate = fmtReportDate(item.casereport.createdAt);
-						let fmtTime = fmtReportTime(item.casereport.createdAt);
-						let isOutTime = common.doCheckOutTime(item.casereport.createdAt);
+						let fmtDate = fmtReportDate(item.reportCreatedAt);
+						let fmtTime = fmtReportTime(item.reportCreatedAt);
+						let isOutTime = common.doCheckOutTime(item.reportCreatedAt);
 						let fmtPrice = undefined;
 						if (scanParts[j].PR) {
 	          	fmtPrice = fmtReportNumber(Number(scanParts[j].PR));

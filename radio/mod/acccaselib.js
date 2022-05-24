@@ -148,6 +148,18 @@ module.exports = function ( jq ) {
 	        let clockCountdownDiv = $('<div></div>');
 	        $(clockCountdownDiv).countdownclock({countToHH: hh, countToMN: mn});
 	        $(caseColumn).append($(clockCountdownDiv));
+					let totalMinus = (hh*60) + mn;
+					if (totalMinus < 30){
+						$(clockCountdownDiv).css({'background-color': '#8532EF', 'color': 'white'});
+					} else if (totalMinus < 60){
+						$(clockCountdownDiv).css({'background-color': '#EF3232', 'color': 'white'});
+					} else if (totalMinus < 240){
+						$(clockCountdownDiv).css({'background-color': '#FF5733', 'color': 'white'});
+					} else if (totalMinus < 1440){
+						$(clockCountdownDiv).css({'background-color': '#F79C06', 'color': 'white'});
+					} else {
+						$(clockCountdownDiv).css({'background-color': '#177102 ', 'color': 'white'});
+					}
 	      } else {
 	        //$(caseColumn).append($('<span>not found Task</span>'));
 					$(caseColumn).append($('<span style="color: red;">-</span>'));

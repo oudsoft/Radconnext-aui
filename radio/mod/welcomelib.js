@@ -5,6 +5,7 @@ module.exports = function ( jq ) {
 	const apiconnector = require('../../case/mod/apiconnect.js')($);
 	const common = require('../../case/mod/commonlib.js')($);
 	const caseCounter = require('./onrefreshtrigger.js')($);
+	const wrtcCommon = require('../../case/mod/wrtc-common.js')($);
 
 	let newstatusCases = [];
   let accstatusCases = [];
@@ -209,6 +210,120 @@ module.exports = function ( jq ) {
 		let radConfirmBox = $('body').radalert(radconfirmoption);
 	}
 
+	let dlgContent = undefined;
+
+	const doInterruptWebRTCCallEvt = function(evt){
+		$('body').loading('start');
+		const userdata = JSON.parse(localStorage.getItem('userdata'));
+		const main = require('../main.js');
+		const wsm = main.doGetWsm();
+		//wrtcCommon.doSetupWsm(wsm);
+
+		let callData = evt.detail.data;
+		//console.log(callData);
+
+		wrtcCommon.doCheckBrowser().then((stream)=>{
+			if (stream) {
+				wrtcCommon.userMediaStream = stream;
+				let userJoinOption = {joinType: 'callee', joinName: userdata.username, audienceName: callData.sender, userMediaStream: stream};
+				wrtcCommon.doSetupUserJoinOption(userJoinOption);
+
+				console.log(dlgContent);
+				if (!dlgContent) {
+					dlgContent = doCreateWebRCTDlgContent();
+					let radwebrctoption = {
+						title: 'Video Conference [' + callData.topic + ']',
+						msg: $(dlgContent),
+						width: '620px',
+						onOk: function(evt) {
+							webrtcBox.closeAlert();
+						}
+					}
+					let webrtcBox = $('body').radalert(radwebrctoption);
+					$(webrtcBox.cancelCmd).hide();
+				}
+				let myVideo = document.getElementById("MyVideo");
+				myVideo.srcObject = stream;
+				//if (!myVideo.srcObject) {
+					myVideo.srcObject = stream;
+				//}
+
+				let shareCmd = wrtcCommon.doCreateShareScreenCmd();
+				$(shareCmd).on('click', (evt)=>{
+					wrtcCommon.onShareCmdClickCallback( wsm, ()=>{
+						userJoinOption.joinType = 'caller'
+						wrtcCommon.doSetupUserJoinOption(userJoinOption);
+						$(dlgContent).find('#CommandBox').append($(shareCmd).hide());
+						$(dlgContent).find('#CommandBox').append($(startCmd).show());
+						$(dlgContent).find('#CommandBox').append($(endCmd).hide());
+					});
+				});
+				let startCmd = wrtcCommon.doCreateStartCallCmd();
+				$(startCmd).on('click', (evt)=>{
+					userJoinOption.joinType = 'caller'
+					wrtcCommon.doSetupUserJoinOption(userJoinOption);
+					$(dlgContent).find('#CommandBox').append($(shareCmd).hide());
+					$(dlgContent).find('#CommandBox').append($(startCmd).hide());
+					$(dlgContent).find('#CommandBox').append($(endCmd).show());
+					wrtcCommon.doCreateOffer(wsm);
+				})
+				let endCmd = wrtcCommon.doCreateEndCmd();
+				$(endCmd).on('click', async (evt)=>{
+					wrtcCommon.userMediaStream = await wrtcCommon.doCheckBrowser();
+					myVideo.srcObject = wrtcCommon.userMediaStream;
+					wrtcCommon.doEndCall(wsm);
+					wrtcCommon.doCreateLeave(wsm);
+					let myRemoteConn = wrtcCommon.doInitRTCPeer(wrtcCommon.userMediaStream, wsm);
+					wrtcCommon.doSetupRemoteConn(myRemoteConn);
+				});
+				$(dlgContent).find('#CommandBox').append($(shareCmd).hide());
+				$(dlgContent).find('#CommandBox').append($(startCmd).hide());
+				$(dlgContent).find('#CommandBox').append($(endCmd).hide());
+
+				let myRemoteConn = wrtcCommon.doInitRTCPeer(wrtcCommon.userMediaStream, wsm);
+				wrtcCommon.doSetupRemoteConn(myRemoteConn);
+
+				setTimeout(() => {
+					wrtcCommon.doCreateOffer(wsm);
+					$('body').loading('stop');
+				}, 2500);
+			} else {
+				$.notify('เว็บบราวเซอร์ของคุณไม่รองรับการใช้งานฟังก์ชั่นนี้', 'error');
+				$('body').loading('stop');
+			}
+		});
+	}
+
+	const doCreateWebRCTDlgContent = function(){
+		let wrapper = $('<div id="WebRCTBox" style="width: 100%"></div>');
+		let myVideoElem = $('<video id="MyVideo" width="620" height="350" autoplay/>')/*.css({'border': '1px solid blue'})*/;
+		let videoCmdBox = $('<div id="CommandBox" style="width: 100%; text-align: center;"></div>');
+		return $(wrapper).append($(myVideoElem)).append($(videoCmdBox));
+	}
+
+	const onDisplayMediaSuccess = function(stream){
+  	let vw, vh;
+	  let myVideo = document.getElementById("MyVideo");
+		stream.getTracks().forEach(function(track) {
+	    track.addEventListener('ended', function() {
+	      console.log('Stop Stream.');
+	    }, false);
+	  });
+
+	  wrtcCommon.displayMediaStream = stream;
+
+	  let streams = [wrtcCommon.displayMediaStream, wrtcCommon.userMediaStream];
+	  let myMerger = wrtcCommon.streamMerger.CallcenterMerger(streams, wrtcCommon.mergeOption);
+	  wrtcCommon.localMergedStream = myMerger.result
+	  myVideo.srcObject = wrtcCommon.localMergedStream;
+		myVideo.addEventListener( "loadedmetadata", function (e) {
+	    vw = this.videoWidth;
+	    vh = this.videoHeight;
+	    myVideo.width = vw;
+	    myVideo.height = vh;
+	  });
+	}
+
   return {
 		/*
 		newstatusCases,
@@ -217,6 +332,8 @@ module.exports = function ( jq ) {
 
 		doCreateHomeTitlePage,
 		onCaseChangeStatusTrigger,
-		doSetupCounter
+		doSetupCounter,
+		doInterruptZoomCallEvt,
+		doInterruptWebRTCCallEvt
 	}
 }

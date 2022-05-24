@@ -7,6 +7,7 @@ module.exports = function ( jq ) {
   const common = require('../../case/mod/commonlib.js')($);
 	const createnewcase = require('../../case/mod/createnewcase.js')($);
 	const ai = require('../../radio/mod/ai-lib.js')($);
+	const wrtcCommon = require('../../case/mod/wrtc-common.js')($);
 
 	const backwardCaseStatus = [1, 2, 5, 6, 10, 11, 12, 13, 14];
 	const pageFontStyle = {"font-family": "THSarabunNew", "font-size": "24px"};
@@ -557,10 +558,96 @@ module.exports = function ( jq ) {
     $(zoomIcon).attr('src', zoomIconUrl);
 		$(zoomBox).data('zoomData', {caseData: caseItem});
 		$(zoomBox).on('click', (evt)=>{
-			zoomCmdClick(evt, chatHandle);
+			//zoomCmdClick(evt, chatHandle);
+			callWebRCT(evt);
 		});
 		$(zoomIcon).appendTo($(zoomBox));
 		return $(zoomBox);
+	}
+
+	const callWebRCT = async function(evt) {
+		$('body').loading('start');
+		const main = require('../main.js');
+		const wsm = main.doGetWsm();
+		//wrtcCommon.doSetupWsm(wsm);
+
+		let zoomCmd = $(evt.currentTarget);
+		let zoomData = $(zoomCmd).data('zoomData');
+		let userdata = JSON.parse(localStorage.getItem('userdata'));
+		let hospitalName = userdata.hospital.Hos_Name;
+		let caseBodypart = zoomData.caseData.case.Case_BodyPart;
+		let radioId = zoomData.caseData.case.Case_RadiologistId;
+
+		let callSocketUrl = '/api/cases/radio/socket/' + radioId;
+		let radioSockets = await common.doCallApi(callSocketUrl, {});
+		if (radioSockets.length > 0) {
+			let radioUsername = radioSockets[0].id
+
+			wrtcCommon.doCheckBrowser().then((stream)=>{
+				if (stream) {
+					wrtcCommon.userMediaStream = stream;
+					let userJoinOption = {joinType: 'caller', joinName: userdata.username, audienceName: radioUsername, userMediaStream: stream};
+					wrtcCommon.doSetupUserJoinOption(userJoinOption);
+					let patientFullNameEN = zoomData.caseData.case.patient.Patient_NameEN + ' ' + zoomData.caseData.case.patient.Patient_LastNameEN;
+					let patientHN = zoomData.caseData.case.patient.Patient_HN;
+					let joinTopic = 'โรงพยาบาล' + hospitalName + '  ' + patientFullNameEN + '  HN: ' + patientHN;
+					let dlgContent = doCreateWebRCTDlgContent();
+					let radwebrctoption = {
+						title: 'Video Conference [' + joinTopic + ']',
+						msg: $(dlgContent),
+						width: '620px',
+						onOk: function(evt) {
+							webrtcBox.closeAlert();
+						}
+					}
+					let webrtcBox = $('body').radalert(radwebrctoption);
+					$(webrtcBox.cancelCmd).hide();
+
+					let myVideo = document.getElementById("MyVideo");
+					//myVideo.srcObject = stream;
+					myVideo.srcObject = wrtcCommon.userMediaStream;
+
+					let shareCmd = wrtcCommon.doCreateShareScreenCmd();
+					$(shareCmd).on('click', (evt)=>{
+						wrtcCommon.onShareCmdClickCallback( wsm, ()=>{
+							let myInfo = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
+							let callZoomMsg = {type: 'callzoom', sendTo: radioUsername, topic: joinTopic, sender: userdata.username, senderInfo: myInfo, bodyPart: caseBodypart, radioId: radioId};
+							wsm.send(JSON.stringify(callZoomMsg));
+							$.notify('ระบบฯได้ส่งคำขอแจ้งเปิด Viedo Conference ไปยังรังสีแพทย์สำเร็จ โปรดรอให้รังสีแพทย์เตรียมความพร้อม', 'succes');
+						});
+					});
+					let startCmd = wrtcCommon.doCreateStartCallCmd();
+					$(startCmd).on('click', (evt)=>{
+						wrtcCommon.doCreateOffer(wsm);
+					})
+					let endCmd = wrtcCommon.doCreateEndCmd();
+					$(endCmd).on('click', async (evt)=>{
+						wrtcCommon.userMediaStream = await wrtcCommon.doCheckBrowser();
+						myVideo.srcObject = wrtcCommon.userMediaStream;
+						wrtcCommon.doEndCall(wsm);
+						wrtcCommon.doCreateLeave(wsm);
+						let myRemoteConn = wrtcCommon.doInitRTCPeer(wrtcCommon.userMediaStream, wsm);
+						wrtcCommon.doSetupRemoteConn(myRemoteConn);						
+					})
+					$(dlgContent).find('#CommandBox').append($(shareCmd));
+					$(dlgContent).find('#CommandBox').append($(startCmd).hide());
+					$(dlgContent).find('#CommandBox').append($(endCmd).hide());
+					$('body').loading('stop');
+				} else {
+					$.notify('ขออภัย เว็บบราวเซอร์ของคุณไม่รองรับการใช้งานฟังก์ชั่นนี้', 'error');
+					$('body').loading('stop');
+				}
+			});
+		} else {
+			$('body').loading('stop');
+		}
+	}
+
+	const doCreateWebRCTDlgContent = function(){
+		let wrapper = $('<div  id="WebRCTBox" style="width: 100%"></div>');
+		let myVideoElem = $('<video id="MyVideo" width="620" height="350" autoplay/>')/*.css({'border': '1px solid blue'})*/;
+		let videoCmdBox = $('<div id="CommandBox" style="width: 100%; text-align: center;"></div>');
+		return $(wrapper).append($(myVideoElem)).append($(videoCmdBox));
 	}
 
 	const zoomCmdClick = async function(evt, chatHandle){

@@ -111,12 +111,13 @@ module.exports = function ( jq ) {
 			let scanPart = query.Query.ScanPart;
 
 
-			if (!dicomDBReadyState){
+			//if (!dicomDBReadyState){
 				/* call from api */
 				const userdata = JSON.parse(localStorage.getItem('userdata'));
 				const dicomUrl = '/api/dicomtransferlog/studies/list';
 				let rqParams = {hospitalId: userdata.hospitalId, modality: modality, studyFromDate: studyFromDate, studyToDate: studyToDate, patientName: patientName, patientID: patientID, scanPart: scanPart};
 				let dicomStudiesRes = await common.doCallApi(dicomUrl, rqParams);
+				console.log(dicomStudiesRes);
 				let studies = [];
 				if (dicomStudiesRes.orthancRes) {
 					let dicomSudies = dicomStudiesRes.orthancRes;
@@ -127,6 +128,7 @@ module.exports = function ( jq ) {
 					reject({error: {code: 210, cause: 'Token Expired!'}});
 				}
 				/* sync dicom to IndexedDB */
+				/*
 				var req = indexedDB.deleteDatabase('dicomdb');
 				req.onsuccess = function () {
 					console.log("Deleted database successfully");
@@ -152,10 +154,12 @@ module.exports = function ( jq ) {
 
 				let synmessageCmd = {type: 'sync', dicoms: studies}
 	      webworker.postMessage(JSON.stringify(synmessageCmd));
-
+				*/
 				resolve(studies);
+			/*
 			} else {
 				/* call from IndexedDB */
+				/*
 				let dicomQuery = query.Query;
 				let openRequest = indexedDB.open("dicomdb", 2);
 				openRequest.onsuccess = async function() {
@@ -180,6 +184,7 @@ module.exports = function ( jq ) {
 					}
 				}
 			}
+			*/
 		});
 	}
 
@@ -784,9 +789,9 @@ module.exports = function ( jq ) {
 				let patientTargetName = defualtValue.patient.name;
 				let allNewSeries = updateDicom.Series.length;
 				let allNewImageInstances = await doCallCountInstanceImage(updateDicom.Series, patientTargetName);
+				let allNewSum = allNewSeries + ' / ' + allNewImageInstances;
+				console.log(allNewSum);
 				if (allNewSum !== summarySeriesImages){
-					let allNewSum = allNewSeries + ' / ' + allNewImageInstances;
-					console.log(allNewSum);
 					$('#SumSeriesImages').text(allNewSum);
 					$.notify("ปรับปรุงจำนวนซีรีส์และภาพใหม่สำเร็จ", "success");
 				} else {
@@ -1376,18 +1381,19 @@ module.exports = function ( jq ) {
 						let thisScanPart = scanparts[i];
 						let dfRes = await common.doCallPriceChart(hospitalId, thisScanPart.id);
 						if (isOutTime) {
-							thisScanPart.DF = dfRes.prdf.df.night;
+							thisScanPart.DF = {value: dfRes.prdf.df.night, type: 'night'};
 						} else {
-							thisScanPart.DF = dfRes.prdf.df.normal;
+							thisScanPart.DF = {value: dfRes.prdf.df.normal, type: 'normal'};
 						}
 						scanpartItem.push(thisScanPart);
 					}
 					setTimeout(()=>{
 	          resolve2($(scanpartItem));
-	        }, 100);
+	        }, 500);
 				});
 				Promise.all([promiseList]).then((ob)=>{
-					scanpartItem = ob[0];
+					let scanpartItems = JSON.parse(JSON.stringify(ob[0]));
+					//let scanpartItems = scanparts;
 			    let studyID = defualtValue.studyID;
 			    let patientSex = $('.mainfull').find('#Sex').val();
 			    let patientAge = $('.mainfull').find('#Age').val();
@@ -1417,7 +1423,7 @@ module.exports = function ( jq ) {
 			    let studyInstanceUID = defualtValue.studyInstanceUID;
 			    let radioId = drReader;
 					let option = {scanpart: {save: wantSaveScanpart}}; //0 or 1
-			    let newCase = {patientNameTH, patientNameEN, patientHistory, scanpartItem, studyID, patientSex, patientAge, patientRights, patientCitizenID, price, hn, acc, department, drOwner, bodyPart, scanPart, drReader, urgenttypeId, detail, mdl, studyDesc, protocalName, manufacturer, stationName, studyInstanceUID, radioId, option: option};
+			    let newCase = {patientNameTH, patientNameEN, patientHistory, scanpartItems, studyID, patientSex, patientAge, patientRights, patientCitizenID, price, hn, acc, department, drOwner, bodyPart, scanPart, drReader, urgenttypeId, detail, mdl, studyDesc, protocalName, manufacturer, stationName, studyInstanceUID, radioId, option: option};
 			    resolve(newCase);
 				});
 			}
@@ -1429,7 +1435,6 @@ module.exports = function ( jq ) {
 		const hospitalId = userdata.hospitalId;
 		const userId = userdata.id
 		let newCaseData = await doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId);
-		console.log(newCaseData);
 		if (newCaseData) {
 	    $('body').loading('start');
 	    try {
@@ -1455,10 +1460,10 @@ module.exports = function ( jq ) {
 	      const urgenttypeId = newCaseData.urgenttypeId;
 	      const cliamerightId = newCaseData.patientRights
 	      let casedata = common.doPrepareCaseParams(newCaseData);
-				console.log(casedata);
 	      rqParams = {data: casedata, hospitalId: hospitalId, userId: userId, patientId: patientId, urgenttypeId: urgenttypeId, cliamerightId: cliamerightId, option: newCaseData.option};
+				console.log(rqParams);
 	      let caseRes = await common.doCallApi('/api/cases/add', rqParams);
-				console.log('caseRes=>', caseRes);				
+				console.log('caseRes=>', caseRes);
 	      if (caseRes.status.code === 200) {
 					console.log('caseActions=>', caseRes.actions);
 					//let advanceDicom = await apiconnector.doCrateDicomAdvance(defualtValue.studyID, hospitalId);

@@ -2,6 +2,8 @@
 module.exports = function ( jq, wsm) {
 	const $ = jq;
 
+	const wrtcCommon = require('../../case/mod/wrtc-common.js')(jq);
+
   const onMessageRadio = function (msgEvt) {
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
     let data = JSON.parse(msgEvt.data);
@@ -38,31 +40,33 @@ module.exports = function ( jq, wsm) {
       document.dispatchEvent(event);
 		} else if (data.type == 'ping') {
 			//let minuteLockScreen = userdata.userprofiles[0].Profile.screen.lock;
-			let minuteLockScreen = Number(userdata.userprofiles[0].Profile.lockState.autoLockScreen);
-			let minuteLogout = Number(userdata.userprofiles[0].Profile.offlineState.autoLogout);
-			let tryLockModTime = (Number(data.counterping) % Number(minuteLockScreen));
-			if (data.counterping == minuteLockScreen) {
-				let eventName = 'lockscreen';
-	      let evtData = {};
-	      let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
-	      document.dispatchEvent(event);
-			} else if (tryLockModTime == 0) {
-				let eventName = 'lockscreen';
-	      let evtData = {};
-	      let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
-	      document.dispatchEvent(event);
-			}
-			if (minuteLogout > 0){
-				if (data.counterping == minuteLogout) {
-					let eventName = 'autologout';
+			if ((userdata.userprofiles) && (userdata.userprofiles.length > 0)) {
+				let minuteLockScreen = Number(userdata.userprofiles[0].Profile.lockState.autoLockScreen);
+				let minuteLogout = Number(userdata.userprofiles[0].Profile.offlineState.autoLogout);
+				let tryLockModTime = (Number(data.counterping) % Number(minuteLockScreen));
+				if (data.counterping == minuteLockScreen) {
+					let eventName = 'lockscreen';
+		      let evtData = {};
+		      let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
+		      document.dispatchEvent(event);
+				} else if (tryLockModTime == 0) {
+					let eventName = 'lockscreen';
 		      let evtData = {};
 		      let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
 		      document.dispatchEvent(event);
 				}
-			}
-			let modPingCounter = Number(data.counterping) % 10;
-			if (modPingCounter == 0) {
-				wsm.send(JSON.stringify({type: 'pong', myconnection: (userdata.id + '/' + userdata.username + '/' + userdata.hospitalId)}));
+				if (minuteLogout > 0){
+					if (data.counterping == minuteLogout) {
+						let eventName = 'autologout';
+			      let evtData = {};
+			      let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
+			      document.dispatchEvent(event);
+					}
+				}
+				let modPingCounter = Number(data.counterping) % 10;
+				if (modPingCounter == 0) {
+					wsm.send(JSON.stringify({type: 'pong', myconnection: (userdata.id + '/' + userdata.username + '/' + userdata.hospitalId)}));
+				}
 			}
 		} else if (data.type == 'unlockscreen') {
 			let eventName = 'unlockscreen';
@@ -94,6 +98,23 @@ module.exports = function ( jq, wsm) {
 			let eventName = 'echoreturn';
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.message}});
 			document.dispatchEvent(event);
+		} else if (data.type == 'wrtc') {
+			switch(data.wrtc) {
+				//when somebody wants to call us
+				case "offer":
+					wrtcCommon.wsHandleOffer(wsm, data.offer);
+				break;
+				case "answer":
+					wrtcCommon.wsHandleAnswer(wsm, data.answer);
+				break;
+				//when a remote peer sends an ice candidate to us
+				case "candidate":
+					wrtcCommon.wsHandleCandidate(wsm, data.candidate);
+				break;
+				case "leave":
+					wrtcCommon.wsHandleLeave(wsm, data.leave);
+				break;
+			}
     }
   };
 

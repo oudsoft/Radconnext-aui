@@ -96,10 +96,10 @@ module.exports = function ( jq ) {
     }
   }
 
-  const doLoadCaseForSetupCounter = function(userId){
+  const doLoadCaseForSetupCounter = function(userId, hospitalId){
 		return new Promise(async function(resolve, reject) {
 			let loadUrl = '/api/cases/load/list/by/status/owner';
-			let rqParams = {userId: userId};
+			let rqParams = {userId: userId, hospitalId: hospitalId};
 			/*
 			rqParams.casestatusIds = [1];
 			let newList = await common.doCallApi(loadUrl, rqParams);
@@ -134,7 +134,8 @@ module.exports = function ( jq ) {
 			$('body').loading('start');
 			const userdata = JSON.parse(localStorage.getItem('userdata'));
 			let userId = userdata.id;
-			doLoadCaseForSetupCounter(userId).then(async (myList)=>{
+			let hospitalId = userdata.hospitalId;
+			doLoadCaseForSetupCounter(userId, hospitalId).then(async (myList)=>{
 
 				newstatusCases = [];
 			  accstatusCases = [];

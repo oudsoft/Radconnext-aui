@@ -222,6 +222,19 @@ module.exports = function ( jq ) {
 	      //} else {
 	        //$(caseColumn).append($('<span>not found Task</span>'));
 	  		//}
+				let totalMinus = (hh*60) + mn;
+				if (totalMinus < 30){
+					$(clockCountdownDiv).css({'background-color': '#8532EF', 'color': 'white'});
+				} else if (totalMinus < 60){
+					$(clockCountdownDiv).css({'background-color': '#EF3232', 'color': 'white'});
+				} else if (totalMinus < 240){
+					$(clockCountdownDiv).css({'background-color': '#FF5733', 'color': 'white'});
+				} else if (totalMinus < 1440){
+					$(clockCountdownDiv).css({'background-color': '#F79C06', 'color': 'white'});
+				} else {
+					$(clockCountdownDiv).css({'background-color': '#177102 ', 'color': 'white'});
+				}
+
 	  		$(caseColumn).appendTo($(caseRow));
 
 	      caseColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
@@ -685,8 +698,6 @@ module.exports = function ( jq ) {
 			Promise.all([promiseList]).then((ob)=>{
 				resolve(ob[0]);
 			});
-
-			resolve($(consultView))
 		});
 	}
 

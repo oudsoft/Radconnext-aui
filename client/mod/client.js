@@ -41,10 +41,10 @@ module.exports = function ( jq ) {
 		let dicomLogFileCmdCmd = $('<input type="button" value=" Dicom Log File " style="margin-left: 20px;"/>');
 		let restartServiceCmdCmd = $('<input type="button" value=" Restart Service " style="margin-left: 20px;"/>');
 		let backCmd = $('<input type="button" value=" Back " style="margin-left: 20px;"/>');
-		let reSendDicomCmd = $('<input type="button" value=" Re-Send Dicom " style="margin-left: 20px;"/>');
-    $(executeCmdValueCell).append($(executeCmdCmd)).append($(echoCmdCmd)).append($(logFileCmdCmd)).append($(reportLogFileCmdCmd)).append($(dicomLogFileCmdCmd)).append($(restartServiceCmdCmd)).append($(reSendDicomCmd));
+		let reSendDicomCmd = $('<input type="button" id="ReSendDicomCmd" value=" Re-Send Dicom " style="margin-left: 20px;"/>');
+		let compareDicomCmd = $('<input type="button" value=" Compare Dicom " style="margin-left: 20px;"/>');
+    $(executeCmdValueCell).append($(executeCmdCmd)).append($(echoCmdCmd)).append($(logFileCmdCmd)).append($(reportLogFileCmdCmd)).append($(dicomLogFileCmdCmd)).append($(restartServiceCmdCmd)).append($(reSendDicomCmd)).append($(compareDicomCmd));
     $(executeCmdBox).append($(executeCmdLabelCell)).append($(executeCmdValueCell));
-
 		// Clear command
 		// update command
 
@@ -135,11 +135,23 @@ module.exports = function ( jq ) {
 			wsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
 			setTimeout(()=>{
 				let studyId = $(commandsListInput).val();
-				let reSendStudyCommand = 'curl -v -X POST --user demo:demo http://localhost:8042/modalities/cloud/store -d ' + studyId;
-				lines = [reSendStudyCommand];
-				wsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
-				$.notify("ระบบกำลังจัดส่งภาพเข้าระบบด้วยเส้นทางใหม่ โปรดรอสักครู่", "info");
+				if (studyId !== '') {
+					let reSendStudyCommand = 'curl -v -X POST --user demo:demo http://localhost:8042/modalities/cloud/store -d ' + studyId;
+					lines = [reSendStudyCommand];
+					wsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
+					$.notify("ระบบกำลังจัดส่งภาพเข้าระบบด้วยเส้นทางใหม่ โปรดรอสักครู่", "info");
+				}
 			}, 5000);
+		});
+
+		$(compareDicomCmd).on('click', (evt)=>{
+			let todayStudy = util.getToday() + '-';
+			let loadModalityCommand = 'curl --user demo:demo -X POST http://localhost:8042/tools/find -d "{\\"Level\\" : \\"Study\\",  \\"Query\\" : {\\"StudyDate\\" : \\"' + todayStudy + '\\" }}"';
+			let lines = [loadModalityCommand];
+			let username = userdata.username;
+			let hospitalId = $(hospitalInput).val();
+			wsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
+			$.notify("ระบบกำลังสำรวจภาพจากในระบบกับ รพ. โปรดรอสักครู่", "info");
 		});
 
     let remoteRunBox = $('<div id ="RemoteRunBox" style="display: table; width: 100%; border-collapse: collapse;"></div>');
@@ -216,7 +228,35 @@ module.exports = function ( jq ) {
 				let hospitalId = $('#HospitalInput').val();
 	      wsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
 	      $('body').loading('stop');
-	    }
+	    } else {
+				if (clientDataObject[0]) {
+					let localStudiesToday = clientDataObject;
+					console.log(localStudiesToday);
+					let todayStudy = util.getToday() + '-';
+					let rqParams = {};
+					let apiUrl = '/api/orthancproxy/find?hospitalId=' + clientHospitalId + '&username=demo&method=POST&uri=/tools/find -d \'{"Level" : "Study",  "Query" : {"StudyDate" : "' + todayStudy + '" }}\'';
+					let cloudStudiesToday = await common.doGetApi(apiUrl, rqParams);
+					console.log(cloudStudiesToday);
+					let diffStudiesToday = localStudiesToday.filter(x => !cloudStudiesToday.includes(x));
+					console.log(diffStudiesToday);
+					if (diffStudiesToday.length > 0){
+						diffStudiesToday.forEach((study, i) => {
+							$('#CommandsListInput').empty().val(study);
+							$('#ReSendDicomCmd').click();
+							setTimeout(()=>{
+								//
+							}, 5000);
+						});
+					} else {
+						cloudStudiesToday.forEach((studyID, i) => {
+							let studyTags = await doCallLoadStudyTags(clientHospitalId, studyID);
+			        console.log(studyTags);
+			        let reStudyRes = await doReStructureDicom(clientHospitalId, studyID, studyTags);
+			        console.log(reStudyRes);
+						});
+					}
+				}
+			}
 		}
 	}
 
@@ -242,14 +282,27 @@ module.exports = function ( jq ) {
 		console.log('evt');
 	});
 
-	// $('#MonitorBox').removeResize(myFunc);
-	/*
-	var resizeElement = document.getElementById('MonitorBox');
-	var	resizeCallback = function() {
-				console.log('ok');
-		};
-		addResizeListener(resizeElement, resizeCallback);
-		*/
+	function doCallLoadStudyTags(hospitalId, studyId){
+    return new Promise(async function(resolve, reject) {
+      let rqBody = '{"Level": "Study", "Expand": true, "Query": {"PatientName":"TEST"}}';
+      let orthancUri = '/studies/' + studyId;
+	  	let params = {method: 'get', uri: orthancUri, body: rqBody, hospitalId: hospitalId};
+      let callLoadUrl = '/api/orthancproxy/find'
+      $.post(callLoadUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
+
+  function doReStructureDicom(hospitalId, studyId, dicom){
+    return new Promise(async function(resolve, reject) {
+      let params = {hospitalId: hospitalId, resourceId: studyId, resourceType: "study", dicom: dicom};
+      let restudyUrl = '/api/dicomtransferlog/add';
+      $.post(restudyUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
 
   return {
     doOpenRemoteRun,

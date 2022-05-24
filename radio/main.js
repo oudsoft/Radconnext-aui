@@ -157,7 +157,8 @@ function doLoadMainPage(){
 	});
 
   document.addEventListener("triggercounter", welcome.onCaseChangeStatusTrigger);
-  document.addEventListener("callzoominterrupt", welcome.doInterruptZoomCallEvt);
+  //document.addEventListener("callzoominterrupt", welcome.doInterruptZoomCallEvt);
+  document.addEventListener("callzoominterrupt", welcome.doInterruptWebRTCCallEvt);
   document.addEventListener("lockscreen", onLockScreenTrigger);
   document.addEventListener("unlockscreen", onUnLockScreenTrigger);
   document.addEventListener("autologout", onAutoLogoutTrigger);

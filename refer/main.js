@@ -47,7 +47,7 @@ $( document ).ready(function() {
                 $('body').append($(mySipPhoneIncomeBox));
              }
            } else {
-             $.notify('บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้ โปรด Login ใหม่เพื่อเปลี่ยนบัญชีใช้งาน', 'error');
+             alert('บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้ โปรด Login ใหม่เพื่อเปลี่ยนบัญชีใช้งาน');
              doLoadLogin();
            }
         } else {
