@@ -580,67 +580,142 @@ module.exports = function ( jq ) {
 
 		let callSocketUrl = '/api/cases/radio/socket/' + radioId;
 		let radioSockets = await common.doCallApi(callSocketUrl, {});
-		if (radioSockets.length > 0) {
-			let radioUsername = radioSockets[0].id
-
-			wrtcCommon.doCheckBrowser().then((stream)=>{
-				if (stream) {
-					wrtcCommon.userMediaStream = stream;
-					let userJoinOption = {joinType: 'caller', joinName: userdata.username, audienceName: radioUsername, userMediaStream: stream};
-					wrtcCommon.doSetupUserJoinOption(userJoinOption);
-					let patientFullNameEN = zoomData.caseData.case.patient.Patient_NameEN + ' ' + zoomData.caseData.case.patient.Patient_LastNameEN;
-					let patientHN = zoomData.caseData.case.patient.Patient_HN;
-					let joinTopic = 'โรงพยาบาล' + hospitalName + '  ' + patientFullNameEN + '  HN: ' + patientHN;
-					let dlgContent = doCreateWebRCTDlgContent();
-					let radwebrctoption = {
-						title: 'Video Conference [' + joinTopic + ']',
-						msg: $(dlgContent),
-						width: '620px',
-						onOk: function(evt) {
-							webrtcBox.closeAlert();
-						}
+		let radioUsername = zoomData.caseData.Radiologist.username;
+		wrtcCommon.doCheckBrowser().then((stream)=>{
+			if (stream) {
+				$('head').append('<script src="../lib/RecordRTC.min.js"></script>');
+				wrtcCommon.doSetupUserMediaStream(stream);
+				let userJoinOption = {joinType: 'caller', joinName: userdata.username, audienceName: radioUsername, userMediaStream: stream};
+				wrtcCommon.doSetupUserJoinOption(userJoinOption);
+				let patientFullNameEN = zoomData.caseData.case.patient.Patient_NameEN + ' ' + zoomData.caseData.case.patient.Patient_LastNameEN;
+				let patientHN = zoomData.caseData.case.patient.Patient_HN;
+				let joinTopic = 'โรงพยาบาล' + hospitalName + '  ' + patientFullNameEN + '  HN: ' + patientHN;
+				let dlgContent = doCreateWebRCTDlgContent();
+				let radwebrctoption = {
+					title: 'Video Conference [' + joinTopic + ']',
+					msg: $(dlgContent),
+					width: '620px',
+					onOk: function(evt) {
+						webrtcBox.closeAlert();
 					}
-					let webrtcBox = $('body').radalert(radwebrctoption);
-					$(webrtcBox.cancelCmd).hide();
-
-					let myVideo = document.getElementById("MyVideo");
-					//myVideo.srcObject = stream;
-					myVideo.srcObject = wrtcCommon.userMediaStream;
-
-					let shareCmd = wrtcCommon.doCreateShareScreenCmd();
-					$(shareCmd).on('click', (evt)=>{
-						wrtcCommon.onShareCmdClickCallback( wsm, ()=>{
-							let myInfo = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
-							let callZoomMsg = {type: 'callzoom', sendTo: radioUsername, topic: joinTopic, sender: userdata.username, senderInfo: myInfo, bodyPart: caseBodypart, radioId: radioId};
-							wsm.send(JSON.stringify(callZoomMsg));
-							$.notify('ระบบฯได้ส่งคำขอแจ้งเปิด Viedo Conference ไปยังรังสีแพทย์สำเร็จ โปรดรอให้รังสีแพทย์เตรียมความพร้อม', 'succes');
-						});
-					});
-					let startCmd = wrtcCommon.doCreateStartCallCmd();
-					$(startCmd).on('click', (evt)=>{
-						wrtcCommon.doCreateOffer(wsm);
-					})
-					let endCmd = wrtcCommon.doCreateEndCmd();
-					$(endCmd).on('click', async (evt)=>{
-						wrtcCommon.userMediaStream = await wrtcCommon.doCheckBrowser();
-						myVideo.srcObject = wrtcCommon.userMediaStream;
-						wrtcCommon.doEndCall(wsm);
-						wrtcCommon.doCreateLeave(wsm);
-						let myRemoteConn = wrtcCommon.doInitRTCPeer(wrtcCommon.userMediaStream, wsm);
-						wrtcCommon.doSetupRemoteConn(myRemoteConn);						
-					})
-					$(dlgContent).find('#CommandBox').append($(shareCmd));
-					$(dlgContent).find('#CommandBox').append($(startCmd).hide());
-					$(dlgContent).find('#CommandBox').append($(endCmd).hide());
-					$('body').loading('stop');
-				} else {
-					$.notify('ขออภัย เว็บบราวเซอร์ของคุณไม่รองรับการใช้งานฟังก์ชั่นนี้', 'error');
-					$('body').loading('stop');
 				}
-			});
-		} else {
-			$('body').loading('stop');
-		}
+				let webrtcBox = $('body').radalert(radwebrctoption);
+				$(webrtcBox.cancelCmd).hide();
+
+				let myVideo = document.getElementById("MyVideo");
+				//myVideo.srcObject = stream;
+				myVideo.srcObject = wrtcCommon.doGetUserMediaStream();
+
+				let shareCmd = wrtcCommon.doCreateShareScreenCmd();
+				$(shareCmd).on('click', (evt)=>{
+					wrtcCommon.onShareCmdClickCallback((myDisplayMediaStream)=>{
+						if (wrtcCommon.doGetDisplayMediaStream()){
+							wrtcCommon.doGetDisplayMediaStream().getTracks().forEach(function(track) {
+								track.stop();
+							});
+						}
+						wrtcCommon.doCreateInterChange(wsm);
+						wrtcCommon.doSetupDisplayMediaStream(myDisplayMediaStream);
+					  let streams = [wrtcCommon.doGetDisplayMediaStream(), wrtcCommon.doGetUserMediaStream()];
+						let localMergedStream = wrtcCommon.doMixStream(streams);
+						let lastStream = myVideo.srcObject;
+					  myVideo.srcObject = localMergedStream;
+						setTimeout(()=>{
+							let myRemoteConn = wrtcCommon.doGetRemoteConn();
+							if (myRemoteConn) {
+								myRemoteConn.removeStream(lastStream);
+								localMergedStream.getTracks().forEach((track) => {
+						      myRemoteConn.addTrack(track, localMergedStream);
+						    });
+								$(startCmd).click();
+							} else {
+						    myRemoteConn = wrtcCommon.doInitRTCPeer(localMergedStream, wsm);
+						    wrtcCommon.doSetupRemoteConn(myRemoteConn);
+								$(startCmd).click();
+								let myInfo = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
+								let callZoomMsg = {type: 'callzoom', sendTo: radioUsername, topic: joinTopic, sender: userdata.username, senderInfo: myInfo, bodyPart: caseBodypart, radioId: radioId};
+								wsm.send(JSON.stringify(callZoomMsg));
+								$.notify('ระบบฯได้ส่งคำขอแจ้งเปิด Viedo Conference ไปยังรังสีแพทย์สำเร็จ โปรดรอให้รังสีแพทย์เตรียมความพร้อม', 'succes');
+							}
+						}, 3500);
+						$(shareCmd).show();
+						$(startCmd).hide();
+						$(endCmd).show();
+					});
+				});
+				let startCmd = wrtcCommon.doCreateStartCallCmd();
+				$(startCmd).on('click', (evt)=>{
+					userJoinOption.joinType = 'caller'
+					wrtcCommon.doSetupUserJoinOption(userJoinOption);
+					wrtcCommon.doCreateOffer(wsm);
+					$(shareCmd).hide();
+					$(startCmd).hide();
+					$(endCmd).show();
+				})
+				let endCmd = wrtcCommon.doCreateEndCmd();
+				$(endCmd).on('click', async (evt)=>{
+					let shareCmdState = $('#CommandBox').find('#ShareWebRCTCmd').css('display');
+					if (shareCmdState !== 'none') {
+						if (wrtcCommon.doGetRecorder()) {
+							await wrtcCommon.doGetRecorder().stopRecording();
+							let blob = await wrtcCommon.doGetRecorder().getBlob();
+							invokeSaveAsDialog(blob);
+						}
+						if (wrtcCommon.doGetDisplayMediaStream()){
+							wrtcCommon.doGetDisplayMediaStream().getTracks().forEach(function(track) {
+	  						track.stop();
+							});
+						}
+						if (wrtcCommon.doGetUserMediaStream()){
+							wrtcCommon.doGetUserMediaStream().getTracks().forEach(function(track) {
+	  						track.stop();
+							});
+						}
+						if (wrtcCommon.doGetRemoteConn()) {
+							wrtcCommon.doGetRemoteConn().close();
+						}
+						wrtcCommon.doCreateLeave(wsm);
+						webrtcBox.closeAlert();
+					} else {
+						if (wrtcCommon.doGetDisplayMediaStream()) {
+							wrtcCommon.doGetDisplayMediaStream().getTracks().forEach((track) => {
+					      track.stop();
+					    });
+						}
+						let lastStream = myVideo.srcObject;
+						let remoteConn = wrtcCommon.doGetRemoteConn();
+						remoteConn.removeStream(lastStream);
+						wrtcCommon.userMediaStream.getTracks().forEach((track) => {
+				      remoteConn.addTrack(track, wrtcCommon.userMediaStream);
+				    });
+
+						//wrtcCommon.doCreateInterChange(wsm);
+						$(startCmd).click();
+
+						let myUserMediaStream = wrtcCommon.doGetUserMediaStream();
+						let newStream = new MediaStream();
+						wrtcCommon.doGetRemoteTracks().forEach((track) => {
+							newStream.addTrack(track)
+				    });
+
+						myVideo.srcObject = wrtcCommon.doMixStream([newStream, myUserMediaStream]);
+
+						$(shareCmd).show();
+						$(startCmd).hide();
+						$(endCmd).show();
+					}
+				});
+
+				$(dlgContent).find('#CommandBox').append($(shareCmd).show());
+				$(dlgContent).find('#CommandBox').append($(startCmd).hide());
+				$(dlgContent).find('#CommandBox').append($(endCmd).hide());
+
+				$('body').loading('stop');
+			} else {
+				$.notify('ขออภัย เว็บบราวเซอร์ของคุณไม่รองรับการใช้งานฟังก์ชั่นนี้', 'error');
+				$('body').loading('stop');
+			}
+		});
 	}
 
 	const doCreateWebRCTDlgContent = function(){

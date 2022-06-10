@@ -111,6 +111,9 @@ module.exports = function ( jq, wsm) {
 				case "candidate":
 					wrtcCommon.wsHandleCandidate(wsm, data.candidate);
 				break;
+				case "interchange":
+					wrtcCommon.wsHandleInterchange(wsm, data.interchange);
+				break;				
 				case "leave":
 					wrtcCommon.wsHandleLeave(wsm, data.leave);
 				break;

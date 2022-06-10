@@ -145,7 +145,7 @@ module.exports = function ( jq ) {
 	        let diffTime = Math.abs(caseTriggerAt - new Date());
 	        let hh = parseInt(diffTime/(1000*60*60));
 	        let mn = parseInt((diffTime - (hh*1000*60*60))/(1000*60));
-	        let clockCountdownDiv = $('<div></div>');
+	        let clockCountdownDiv = $('<div></div>').css({'width': '100%', 'text-align': 'center'});
 	        $(clockCountdownDiv).countdownclock({countToHH: hh, countToMN: mn});
 	        $(caseColumn).append($(clockCountdownDiv));
 					let totalMinus = (hh*60) + mn;

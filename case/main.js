@@ -558,12 +558,14 @@ const onClientResult = async function(evt){
   } else {
     clientDataObject = {};
   }
+
+  let studyID = clientDataObject.ParentResources[0];
+  let clientHospitalId = evt.detail.hospitalId;
+
   let parentResources = clientDataObject.hasOwnProperty('ParentResources');
   let failedInstancesCount = clientDataObject.hasOwnProperty('FailedInstancesCount');
   let instancesCount = clientDataObject.hasOwnProperty('InstancesCount');
   if ((parentResources) && (failedInstancesCount) && (instancesCount)){
-    let studyID = clientDataObject.ParentResources[0];
-    let clientHospitalId = evt.detail.hospitalId;
     let studyTags = await common.doCallLoadStudyTags(clientHospitalId, studyID);
     console.log(studyTags);
     let reStudyRes = await common.doReStructureDicom(clientHospitalId, studyID, studyTags);
@@ -583,8 +585,10 @@ const onClientResult = async function(evt){
     $(radAlertBox.cancelCmd).hide();
     $('body').loading('stop');
   } else {
+    /*
     let cloudModality = clientDataObject.hasOwnProperty('cloud');
     if (cloudModality) {
+      /*
       let cloudHost = clientDataObject.cloud.Host;
       let newCloudHost = undefined;
       if (cloudHost == '150.95.26.106'){
@@ -595,10 +599,35 @@ const onClientResult = async function(evt){
       let cloudAET = clientDataObject.cloud.AET;
       let cloudPort = clientDataObject.cloud.Port;
       let changeCloudCommand = 'curl -v --user demo:demo -X PUT http://localhost:8042/modalities/cloud -d "{\\"AET\\" : \\"' + cloudAET + '\\", \\"Host\\": \\"' + newCloudHost +'\\", \\"Port\\": ' + cloudPort + '}"';
+      */
+      /*
+      let changeCloudCommand = 'curl -v --user demo:demo -X POST http://localhost:8042/tools/reset';
       let lines = [changeCloudCommand];
       wsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
+      setTimeout(()=>{
+        setTimeout(async()=>{
+          if (studyID) {
+            let changeCloudCommand = 'curl -v --user demo:demo -X POST http://localhost:8042/modalities/cloud/store -d ' + studyID;
+            let lines = [changeCloudCommand];
+            wsm.send(JSON.stringify({type: 'clientrun', hospitalId: hospitalId, commands: lines, sender: username, sendto: 'orthanc'}));
+            setTimeout(async()=>{
+              let studyTags = await common.doCallLoadStudyTags(clientHospitalId, studyID);
+              console.log(studyTags);
+              let reStudyRes = await common.doReStructureDicom(clientHospitalId, studyID, studyTags);
+              console.log(reStudyRes);
+            }, 30000);
+          } else {
+            let studyTags = await common.doCallLoadStudyTags(clientHospitalId, studyID);
+            console.log(studyTags);
+            let reStudyRes = await common.doReStructureDicom(clientHospitalId, studyID, studyTags);
+            console.log(reStudyRes);
+          }
+        }, 8500)
+      }, 8500)
       $('body').loading('stop');
     }
+
+    */
   }
 
 }

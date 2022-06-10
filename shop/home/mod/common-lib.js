@@ -90,6 +90,9 @@ module.exports = function ( jq ) {
     return $(textCmd)
   }
 
+	const delay = function(ms) {
+  	return new Promise(resolve => setTimeout(resolve, ms));
+	}
 
   return {
     doCallApi,
@@ -99,6 +102,7 @@ module.exports = function ( jq ) {
 		doFormatDateStr,
 		doFormatTimeStr,
 		doCreateImageCmd,
-		doCreateTextCmd
+		doCreateTextCmd,
+		delay
 	}
 }

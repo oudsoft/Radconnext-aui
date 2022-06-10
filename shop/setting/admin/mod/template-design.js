@@ -1,38 +1,37 @@
 module.exports = function ( jq ) {
 	const $ = jq;
 
-	//const welcome = require('./welcome.js')($);
-	//const login = require('./login.js')($);
   const common = require('../../../home/mod/common-lib.js')($);
+	const constant = require('../../../home/mod/constant-lib.js');
   const elementProperty = require('./element-property-lib.js')($);
   let activeType, activeElement;
 
-  const A4Width = 1004;
-  const A4Height = 1410;
-
-  const templateTypes = [
-    {id: 1, NameEN: 'Invoice', NameTH: 'ใบแจ้งหนี้'},
-    {id: 2, NameEN: 'Bill', NameTH: 'บิลเงินสด/ใบเสร็จรับเงิน'},
-    {id: 3, NameEN: 'Tax-Invoice', NameTH: 'ใบกำกับภาษี'}
-  ];
-
-	const paperSizes = [
-		{id: 1, NameEN: 'A4', NameTH: 'A4'},
-		{id: 1, NameEN: 'Slip', NameTH: 'Slip'}
-	];
-
-  const doCalRatio = function(){
+  const doCalRatio = function(paperSize){
     let containerWidth = $('#report-container').width();
-    return containerWidth/A4Width;
+		if (paperSize == 1) {
+    	return containerWidth/constant.A4Width;
+		} else if (paperSize == 2) {
+			return containerWidth/constant.SlipWidth;
+		}
   }
 
-  const resetContainer = function(){
-    let newRatio = doCalRatio();
-    let newHeight = A4Height * newRatio;
-    $('#report-container').css('height', newHeight);
-    $('#report-container').css('max-height', newHeight);
-    /*
-    doCollectElement().then((reportElements)=>{
+  const resetContainer = function(paperSize){
+    let newRatio = doCalRatio(paperSize);
+    let newHeight = undefined;
+		if (paperSize == 1){
+			newHeight = constant.A4Height * newRatio;
+			$('#report-container').css({'width': constant.A4Width, 'margin-left': '0px'});
+		} else if (paperSize == 2){
+			newHeight = constant.SlipHeight * newRatio;
+			let parentWidth = $('#report-container').parent().width();
+			let adjustLeft = (parentWidth - constant.SlipWidth) / 2;
+			$('#report-container').css({'width': constant.SlipWidth, 'margin-left': adjustLeft+'px'});
+		}
+    $('#report-container').css('height', newHeight + 'px');
+    $('#report-container').css('max-height', newHeight + 'px');
+
+    doCollectElement(paperSize).then((reportElements)=>{
+			//console.log(reportElements);
       if (reportElements.length > 0) {
         let wrapper = $('#report-container');
         $(wrapper).empty();
@@ -41,45 +40,33 @@ module.exports = function ( jq ) {
           await Object.getOwnPropertyNames(item).forEach((tag) => {
             reportElem[tag] = item[tag];
           });
-          doCreateElement(wrapper, item.elementType, item);
+          let element = elementProperty.doCreateElement(wrapper, item.elementType, reportElem);
+					$(element).click();
         });
       }
     });
-    */
   }
 
-  const doCreateTemplateTypeSelector = function(shopData, workAreaBox, onChangeCallBack){
+  const doCreateTemplateTypeSelector = function(){
     let selector = $('<select></select>');
-    templateTypes.forEach((item, i) => {
+    constant.templateTypes.forEach((item, i) => {
       $(selector).append($('<option value="' + item.id + '">' + item.NameTH + '</option>'));
-    });
-    $(selector).on('change', (evt)=>{
-      let selectValue = $(selector).val();
-      onChangeCallBack(evt, selectValue, shopData, workAreaBox);
     });
     return $(selector);
   }
 
-  const doCreateShopTemplateSelector = function(templates, shopData, workAreaBox, onChangeCallBack){
+  const doCreateShopTemplateSelector = function(templates){
     let selector = $('<select></select>');
     templates.forEach((item, i) => {
       $(selector).append($('<option value="' + item.id + '">' + item.Name + '</option>'));
     });
-    $(selector).on('change', (evt)=>{
-      let selectValue = $(selector).val();
-      onChangeCallBack(evt, selectValue, shopData, workAreaBox);
-    });
     return $(selector);
   }
 
-	const doCreatePaperSizeSelector = function(shopData, workAreaBox, onChangeCallBack){
+	const doCreatePaperSizeSelector = function(){
 		let selector = $('<select></select>');
-		paperSizes.forEach((item, i) => {
+		constant.paperSizes.forEach((item, i) => {
       $(selector).append($('<option value="' + item.id + '">' + item.NameTH + '</option>'));
-    });
-    $(selector).on('change', (evt)=>{
-      let selectValue = $(selector).val();
-      onChangeCallBack(evt, selectValue, shopData, workAreaBox);
     });
     return $(selector);
 	}
@@ -89,12 +76,19 @@ module.exports = function ( jq ) {
     let columnSideBox = $('<div class="column side"></div>');
     let reportItemBox = $('<div id="report-item"></div>');
     let selectableBox = $('<ol id="selectable"></ol>');
-    $(selectableBox).append('<li class="ui-widget-content" id="text-element"><img src="/images/text-icon.png" class="icon-element"/><span class="text-element">กล่องข้อความ</span></li>');
-    $(selectableBox).append('<li class="ui-widget-content" id="hr-element"><img src="/images/hr-line-icon.png" class="icon-element"/><span class="text-element">เส้นแนวนอน</span></li>');
-    $(selectableBox).append('<li class="ui-widget-content" id="image-element"><img src="/images/image-icon.png" class="icon-element"/><span class="text-element">กล่องรูปภาพ</span></li>');
+		let addTextElementCmd = $('<li class="ui-widget-content" id="text-element-cmd"><img src="/images/text-icon.png" class="icon-element"/><span class="text-element">กล่องข้อความ</span></li>');
+		let addHrElementCmd = $('<li class="ui-widget-content" id="hr-element-cmd"><img src="/images/hr-line-icon.png" class="icon-element"/><span class="text-element">เส้นแนวนอน</span></li>');
+		let addImageElementCmd = $('<li class="ui-widget-content" id="image-element-cmd"><img src="/images/image-icon.png" class="icon-element"/><span class="text-element">กล่องรูปภาพ</span></li>');
+    $(selectableBox).append($(addTextElementCmd));
+    $(selectableBox).append($(addHrElementCmd));
+    $(selectableBox).append($(addImageElementCmd));
 		var tableTypeLength = $(".tableElement").length;
 		if (tableTypeLength == 0) {
-			$(selectableBox).append('<li class="ui-widget-content" id="table-element"><img src="/images/item-list-icon.png" class="icon-element"/><span class="text-element">ตารางออร์เดอร์</span></li>');
+			let addTableElementCmd = $('<li class="ui-widget-content" id="table-element-cmd"><img src="/images/item-list-icon.png" class="icon-element"/><span class="text-element">ตารางออร์เดอร์</span></li>');
+			$(selectableBox).append($(addTableElementCmd));
+			$(addTableElementCmd).on('click', (evt)=>{
+				elementProperty.doCreateElement(reportcontainerBox, 'table');
+			});
 		}
     let reportItemCmdBox = $('<div id="report-item-cmd" style="padding:5px; text-align: center; margin-top: 20px;"></div>');
     let addElementCmd = $('<input type="button" id="add-item-cmd" value=" เพิ่ม "/>');
@@ -109,17 +103,30 @@ module.exports = function ( jq ) {
     let reportcontainerBox = $('<div id="report-container"></div>');
     $(columnMiddleBox).append($(reportcontainerBox));
 
+		$(addTextElementCmd).on('click', (evt)=>{
+			let newElement = elementProperty.doCreateElement(reportcontainerBox, 'text');
+		});
+		$(addHrElementCmd).on('click', (evt)=>{
+			elementProperty.doCreateElement(reportcontainerBox, 'hr');
+		});
+		$(addImageElementCmd).on('click', (evt)=>{
+			elementProperty.doCreateElement(reportcontainerBox, 'image');
+		});
+
     return $(wrapper).append($(columnSideBox)).append($(columnMiddleBox))
   }
 
 	const doLoadCommandAction = function(){
     $("#add-item-cmd").prop('disabled', true);
     $("#remove-item-cmd").prop('disabled', true);
-    $("#text-element").data({type: "text"});
-    $("#hr-element").data({type: "hr"});
-    $("#image-element").data({type: "image"});
-		$("#table-element").data({type: "table"});
-		$("#tr-element").data({type: "tr"});
+    $("#text-element-cmd").data({type: "text"});
+    $("#hr-element-cmd").data({type: "hr"});
+    $("#image-element-cmd").data({type: "image"});
+		$("#table-element-cmd").data({type: "table"});
+		$("#tr-element-cmd").data({type: "tr"});
+		$("#td-element-cmd").data({type: "td"});
+		let activeType = undefined;
+		/*
     $("#selectable").selectable({
       stop: function() {
         $( ".ui-selected", this ).each(function() {
@@ -131,6 +138,7 @@ module.exports = function ( jq ) {
         $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected");
       }
     });
+		*/
     $("#report-container").droppable({
       accept: ".reportElement",
       drop: function( event, ui ) {
@@ -150,186 +158,314 @@ module.exports = function ( jq ) {
       let elemType = activeType.type;
       let wrapper = $("#report-container");
 			if (elemType == 'tr') {
-				wrapper = $(wrapper).find('table');
+				wrapper = $(wrapper).find('.tableElement');
+			} else if (elemType == 'td') {
+				let myTable = $(wrapper).find('.tableElement');
+				//console.log($(myTable).data());
+				let activeRow = $(myTable).find('.elementActive');
+				//console.log($(activeRow).data());
+				wrapper = $(activeRow)
 			}
-      doCreateElement(wrapper, elemType);
+      elementProperty.doCreateElement(wrapper, elemType);
     });
-
     $("#remove-item-cmd").click((event) => {
-      $(".reportElement").each((index, elem)=>{
-        let isActive = $(elem).hasClass("elementActive");
-        if (isActive) {
-          $(elem).remove();
-          $("#remove-item-cmd").prop('disabled', true);
-          $("#report-property").empty();
-        }
+			elementProperty.removeActiveElement()
+    });
+  }
+
+	const doReadTableData = function(){
+		let tableBox = $("#report-container").find('.tableElement');
+		let tableWidth = $(tableBox).width();
+		let rowWidth = tableWidth * 0.94;
+		//console.log(tableWidth);
+		//console.log(rowWidth);
+		let tableData = $(tableBox).data().customTableelement.options;
+		//console.log(tableData);
+		//console.log(tableData.customTableelement.options);
+		let tableDesignData = {elementType: 'table', id: tableData.id, x: tableData.x, y: tableData.y, cols: tableData.cols, rows: []};
+		let trs = $(tableBox).find('.trElement');
+		$(trs).each((i, tr)=>{
+			let trData = $(tr).data().customTrelement.options;
+			//console.log(trData);
+			let trDesignData = {elementType: 'tr', id: trData.id, backgroundColor: trData.backgroundColor, fields: []};
+			let tds  = $(tr).find('.tdElement');
+			//console.log(tds);
+			$(tds).each((i, td)=>{
+				let tdData = $(td).data().customTdelement.options;
+				let fieldData = {elementType: 'td', id: tdData.id, height: tdData.height, cellData: tdData.cellData, fontweight: tdData.fontweight, fontalign: tdData.fontalign, fontsize: tdData.fontsize, fontstyle: tdData.fontstyle};
+				let percentWidth = ((tdData.width / rowWidth) * 100).toFixed(2);
+				fieldData.width = percentWidth;
+				trDesignData.fields.push(fieldData);
+			});
+			tableDesignData.rows.push(trDesignData);
+		});
+		return tableDesignData;
+	}
+
+	const doCollectElement = function(paperSize) {
+    return new Promise(function(resolve, reject){
+      let newRatio = doCalRatio(paperSize);
+      let htmlElements = $("#report-container").children();
+      let reportElements = [];
+      var promiseList = new Promise(function(resolve, reject){
+        htmlElements.each(async (index, elem) => {
+          let elemData = $(elem).data();
+          let data;
+          if (elemData.customTextelement) {
+            data = elemData.customTextelement.options;
+          } else if (elemData.customHrelement) {
+            data = elemData.customHrelement.options;
+          } else if (elemData.customImageelement) {
+            data = elemData.customImageelement.options;
+					} else if (elemData.customTableelement) {
+						data = doReadTableData();
+          } else {
+            data = {};
+          }
+
+          let reportElem = {};
+          await Object.getOwnPropertyNames(data).forEach((tag) => {
+            reportElem[tag] = data[tag];
+          });
+          reportElements.push(reportElem);
+        });
+        setTimeout(()=> {
+          resolve(reportElements);
+        }, 500);
+      });
+      Promise.all([promiseList]).then((ob)=>{
+        resolve(ob[0]);
       });
     });
   }
 
-  const doCreateElement = function(wrapper, elemType, prop){
-		console.log(elemType);
-    let defHeight = 50;
-    switch (elemType) {
-      case "text":
-        var textTypeLength = $(".textElement").length;
-        var oProp;
-        if (prop) {
-          oProp = {
-            x: prop.x, y: prop.y, width: prop.width, height: prop.height, id: prop.id, type: prop.type, title: prop.title,
-            fontsize: prop.fontsize,
-            fontweight: prop.fontweight,
-            fontstyle: prop.fontstyle,
-            fontalign: prop.fontalign
-          };
-        } else {
-          defHeight = 50;
-          oProp = {x:0, y: (defHeight * textTypeLength),
-            width: '150', height: defHeight,
-            id: 'text-element-' + (textTypeLength + 1),
-            title: 'Text Element ' + (textTypeLength + 1)
-          }
-        }
-        oProp.elementselect = elementProperty.textElementSelect;
-        oProp.elementdrop = elementProperty.textElementDrop;
-        oProp.elementresizestop = elementProperty.textResizeStop;
-        var textbox = $( "<div></div>" );
-        $(textbox).textelement( oProp );
-        $(wrapper).append($(textbox));
-      break;
-      case "hr":
-        var hrTypeLength = $(".hrElement").length;
-        var oProp;
-        if (prop) {
-          oProp = {x: prop.x, y: prop.y, width: prop.width, height: prop.height, id: prop.id};
-        } else {
-          defHeight = 20;
-          oProp = {x:0, y: (defHeight * hrTypeLength),
-            width: '100%', height: defHeight,
-            id: 'hr-element-' + (hrTypeLength + 1)
-          }
-        }
-        oProp.elementselect = elementProperty.hrElementSelect;
-        oProp.elementdrop = elementProperty.hrElementDrop;
-        oProp.elementresizestop = elementProperty.hrResizeStop;
-        var hrbox = $( "<div><hr/></div>" );
-        $(hrbox).hrelement( oProp );
-        $(wrapper).append($(hrbox));
-      break;
-      case "image":
-        var imageTypeLength = $(".imageElement").length;
-        var oProp;
-        if (prop) {
-          oProp = {x: prop.x, y: prop.y, width: prop.width, height: prop.height, id: prop.id, url: prop.url};
-        } else {
-          defHeight = 60;
-          oProp = {x:0, y: (defHeight * imageTypeLength),
-            width: '100', height: defHeight,
-            id: 'image-element-' + (imageTypeLength + 1),
-            url: '../../icon.png'
-          }
-        }
-        oProp.elementselect = elementProperty.imageElementSelect;
-        oProp.elementdrop = elementProperty.imageElementDrop;
-        oProp.elementresizestop = elementProperty.imageResizeStop;
-        var imagebox = $( "<div></div>" )
-        $(imagebox).imageelement( oProp );
-        $(wrapper).append($(imagebox));
-      break;
-			case "table":
-				var imageTypeLength = $(".tableElement").length;
-				//console.log(imageTypeLength);
-				if (imageTypeLength == 0) {
-					var oProp;
-					if (prop) {
-						oProp = {x: prop.x, y: prop.y, width: prop.width, height: prop.height, id: prop.id, cols: prop.cols};
+	const doRenderElement = function(shopData, wrapper, reportElements, ratio){
+		let newRatio = 1;
+		if (ratio) {
+			newRatio = ratio;
+		}
+		let wrapperWidth = $(wrapper).width();
+    reportElements.forEach((elem, i) => {
+      let element;
+      switch (elem.elementType) {
+        case "text":
+          element = $("<div></div>").css({'position': 'absolute'});
+          //$(element).addClass("reportElement");
+          $(element).css({"left": Number(elem.x)*newRatio + "px", "top": Number(elem.y)*newRatio + "px", "width": wrapperWidth + "px", "height": Number(elem.height)*newRatio + "px"});
+          $(element).css({"font-size": Number(elem.fontsize)*newRatio + "px"});
+          $(element).css({"font-weight": elem.fontweight});
+          $(element).css({"font-style": elem.fontstyle});
+          $(element).css({"text-align": elem.fontalign});
+					let field = elem.title.substring(1);
+					if (field == 'shop_name') {
+						$(element).text(shopData.Shop_Name);
+					} else if (field == 'shop_address') {
+						$(element).text(shopData.Shop_Address);
 					} else {
-						defHeight = 60;
-						oProp = {x:0, y: (defHeight * imageTypeLength),
-							width: '100%', height: defHeight,
-							id: 'table-element-' + (imageTypeLength + 1),
-							cols: 5
-						}
+						$(element).text(elem.title);
 					}
-					oProp.elementselect = elementProperty.tableElementSelect;
-					oProp.elementdrop = elementProperty.tableElementDrop;
-					oProp.elementresizestop = elementProperty.tableResizeStop;
-					var tablebox = $( "<div></div>" )
-					$(tablebox).tableelement( oProp );
-					$(wrapper).append($(tablebox));
-				}
-			break;
-			case "tr":
-				var trLength = $(".trElement").length;
-				console.log(trLength);
-				var oProp;
-				if (prop) {
-					//oProp = {x: prop.x, y: prop.y, width: prop.width, height: prop.height, id: prop.id, cols: prop.cols};
-					oProp = {'border': prop.border, 'background-color': prop.backgroundColor};
-				} else {
-					//defHeight = 60;
-					oProp = {/*x:0, y: (defHeight * imageTypeLength),
-						width: '100%', height: defHeight,
-						*/
-						'border': '1px solid black',
-						'background-color': '#ddd',
-						id: 'tr-element-' + (imageTypeLength + 1)
-					}
-				}
-				//}
-				oProp.elementselect = elementProperty.trElementSelect;
-				oProp.elementdrop = elementProperty.trElementDrop;
-				oProp.elementresizestop = elementProperty.trResizeStop;
-				var trbox = $('<tr><td width="100%">Simply</td></tr>');
-				$(trbox).trelement( oProp );
-				console.log(trbox);
-				$(wrapper).append($(trbox));
-			break;
-    }
+        break;
+        case "hr":
+          element = $("<div><hr/></div>").css({'position': 'absolute'});
+          //$(element).addClass("reportElement");
+          $(element).css({"left": Number(elem.x)*newRatio + "px", "top": Number(elem.y)*newRatio + "px", "width": Number(elem.width)*newRatio + "px", "height": Number(elem.height)*newRatio + "px"});
+          $(element > "hr").css({"border": elem.border});
+        break;
+        case "image":
+          element = $("<div></div>").css({'position': 'absolute'});
+          //$(element).addClass("reportElement");
+          let newImage = new Image();
+          newImage.src = elem.url;
+          newImage.setAttribute("width", Number(elem.width)*newRatio);
+          $(element).append(newImage);
+          $(element).css({"left": Number(elem.x)*newRatio + "px", "top": Number(elem.y)*newRatio + "px", "width": Number(elem.width)*newRatio + "px", "height": "auto"});
+        break;
+				case "table":
+					//doCreateTable(wrapper, elem.rows);
+					doRenderTable(wrapper, elem.rows, elem.x, elem.y, newRatio);
+				break;
+      }
+			if (element) {
+      	$(wrapper).append($(element));
+			}
+    });
+    return $(wrapper);
   }
+
+	const doRenderTable = function(wrapper, tableRows, left, top, ratio){
+		let table = $('<table cellpadding="0" cellspacing="0" width="100%" border="1"></tble>');
+		for (let i=0; i < tableRows.length; i++){
+			let row = $('<tr></tr>');
+			if (tableRows[i].backgroundColor) {
+				$(row).css({'background-color': tableRows[i].backgroundColor})
+			}
+			$(table).append($(row));
+			for (let j=0; j < tableRows[i].fields.length; j++) {
+				let cell = $('<td></td>');
+				if (tableRows[i].fields.length == 2) {
+					$(cell).attr("colspan", (tableRows[0].fields.length - 1).toString());
+				}
+				$(cell).attr({'align': tableRows[i].fields[j].fontalign, 'width': (Number(tableRows[i].fields[j].width.replace(/px$/, ''))*ratio)/* + 'px'*/});
+				$(cell).css({'font-size': Number(tableRows[i].fields[j].fontsize)*ratio + "px", 'font-weight': tableRows[i].fields[j].fontweight, 'font-style': tableRows[i].fields[j].fontstyle});
+				$(cell).text(tableRows[i].fields[j].cellData);
+				$(row).append($(cell));
+			}
+		}
+		$(wrapper).append($(table).css({'position': 'absolute', 'left': Number(left)*ratio+'px', 'top': Number(top)*ratio+'px'}));
+		return $(wrapper);
+	}
 
   const doShowTemplateDesign = function(shopData, workAreaBox){
     return new Promise(async function(resolve, reject) {
+			let billFieldOptions = await common.doGetApi('/api/shop/template/billFieldOptions', {});
+			localStorage.setItem('billFieldOptions', JSON.stringify(billFieldOptions));
       $(workAreaBox).empty();
 
+      let controlTemplateForm = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
+      let controlRow = $('<tr></tr>').css({'background-color': '#ddd', 'border': '2px solid grey'});
+      $(controlTemplateForm).append($(controlRow));
+      let templatTypeSelector = doCreateTemplateTypeSelector();
 
-      let templateRes = await common.doCallApi('/api/shop/template/list/by/shop/' + shopData.id, {});
+			let paperSizeSelector = doCreatePaperSizeSelector();
+
+      let templateNameInput = $('<input type="text"/>').css({'width': '260px'});
+			let previewTemplateCmd = $('<input type="button" value=" ดูตัวอย่าง "/>');
+      let saveNewTemplateCmd = $('<input type="button" value=" บันทึก "/>');
+      $(controlRow).append($('<td width="10%" align="left"><b>ประเภทเอกสาร</b></td>'));
+      $(controlRow).append($('<td width="15%" align="left"></td>').append($(templatTypeSelector)));
+      $(controlRow).append($('<td width="10%" align="left"><b>ชื่อเอกสารใหม่</b></td>'));
+      $(controlRow).append($('<td width="25%" align="left"></td>').append($(templateNameInput)));
+			$(controlRow).append($('<td width="8%" align="left"><b>ขนาดกระดาษ</b></td>'));
+      $(controlRow).append($('<td width="10%" align="center"></td>').append($(paperSizeSelector)));
+			$(controlRow).append($('<td width="*" align="center"></td>').append($(previewTemplateCmd)).append($(saveNewTemplateCmd).css({'margin-left': '10px'})));
+      $(workAreaBox).empty().append($(controlTemplateForm));
+      let designAreaBox = doCreateTemplateDesignArea();
+      $(workAreaBox).append($(designAreaBox));
+			let paperSizeValue = $(paperSizeSelector).val();
+
+      doLoadCommandAction();
+
+			let wrapper = $(designAreaBox).find('#report-container');
+
+			$(templatTypeSelector).on('change', (evt)=>{
+				let selectValue = $(templatTypeSelector).val();
+				onTemplateTypeChange(evt, selectValue, shopData, templateNameInput, paperSizeSelector, wrapper);
+			});
+
+			$(paperSizeSelector).on('change', (evt)=>{
+				let paperSize = $(paperSizeSelector).val();
+				onPaperSizeChange(evt, paperSize, shopData, wrapper)
+			});
+
+			$(previewTemplateCmd).on('click', async (evt)=>{
+				let paperSize = $(paperSizeSelector).val();
+				let reportWrapperWidth = $("#report-container").width();
+				let templateDesignElements = await doCollectElement(paperSize);
+				let wrapperBoxWidth = 760;
+		    let newHeight = undefined;
+				let renderRatio = undefined;
+				let newRatio = doCalRatio(paperSize);
+
+				let wrapperBox = $("<div></div>");
+		    $(wrapperBox).css({"position": "relative", "height": "100vh"});
+				if (paperSize == 1){
+					renderRatio = wrapperBoxWidth / reportWrapperWidth;
+					newHeight = constant.A4Height * newRatio;
+					$(wrapperBox).css({'margin-left': '0px', 'width': '100%'});
+				}  else if (paperSize == 2){
+					renderRatio = reportWrapperWidth / wrapperBoxWidth;
+					newHeight = constant.SlipHeight * newRatio;
+					let adjustLeft = (wrapperBoxWidth - constant.SlipWidth) / 2;
+					$(wrapperBox).css({'margin-left': adjustLeft+'px', 'width': reportWrapperWidth+'px'});
+				}
+				$(wrapperBox).css({'height': newHeight+'px', 'max-height': newHeight + 'px'});
+
+				doRenderElement(shopData, wrapperBox, templateDesignElements, renderRatio);
+				const radalertoption = {
+		      title: 'ตัวอย่างเอกสาร',
+		      msg: $(wrapperBox),
+		      width: wrapperBoxWidth + 'px',
+		      onOk: function(evt) {
+	          radAlertBox.closeAlert();
+		      }
+		    }
+				let radAlertBox = $('body').radalert(radalertoption);
+		    $(radAlertBox.cancelCmd).hide();
+
+				$(radAlertBox.handle).draggable({
+					containment: "parent"
+				});
+			});
+			$(saveNewTemplateCmd).on('click', async(evt)=>{
+				let paperSize = $(paperSizeSelector).val();
+				let templateDesignElements = await doCollectElement(paperSize);
+				let templateName = $(templateNameInput).val();
+				let templatType = $(templatTypeSelector).val();
+				let params = {data: {Name: templateName, TypeId: templatType, Content: templateDesignElements, PaperSize: paperSize}, shopId: shopData.id};
+				let templateRes = await common.doCallApi('/api/shop/template/save', params);
+        if (templateRes.status.code == 200) {
+          $.notify("บันทึกรูปแบบเอกสารสำเร็จ", "success");
+        } else if (templateRes.status.code == 201) {
+          $.notify("ไม่สามารถบันทึกรูปแบบเอกสารได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
+        } else {
+          $.notify("เกิดข้อผิดพลาด ไม่สามารถบันทึกรูปแบบเอกสารได้", "error");
+        }
+			});
+
+			let templateRes = await common.doCallApi('/api/shop/template/list/by/shop/' + shopData.id, {});
       let templateItems = templateRes.Records;
-      if (templateItems.lenght > 0) {
-
+			let typeSelect = $(templatTypeSelector).val();
+      if (templateItems.length > 0) {
+				doShowTemplateLoaded(shopData, templateItems, typeSelect, templateNameInput, paperSizeSelector, wrapper);
       } else {
-        let controlNewTemplateForm = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
-        let controlRow = $('<tr></tr>').css({'background-color': '#ddd', 'border': '2px solid grey'});
-        $(controlNewTemplateForm).append($(controlRow));
-        let templatTypeSelector = doCreateTemplateTypeSelector(shopData, workAreaBox, onTemplateTypeChange);
-				let paperSizeSelector = doCreatePaperSizeSelector(shopData, workAreaBox, onPaperSizeChange);
-        let templateNameInput = $('<input type="text"/>').css({'width': '220px'});
-        let saveNewTemplateCmd = $('<input type="button" value=" บันทึก "/>');
-        $(controlRow).append($('<td width="10%" align="left"><b>ประเภทเอกสาร</b></td>'));
-        $(controlRow).append($('<td width="20%" align="left"></td>').append($(templatTypeSelector)));
-        $(controlRow).append($('<td width="10%" align="left"><b>ชื่อเอกสารใหม่</b></td>'));
-        $(controlRow).append($('<td width="30%" align="left"></td>').append($(templateNameInput)));
-				$(controlRow).append($('<td width="10%" align="left"><b>ขนาดกระดาษ</b></td>'));
-        $(controlRow).append($('<td width="15%" align="center"></td>').append($(paperSizeSelector)));
-				$(controlRow).append($('<td width="*" align="center"></td>').append($(saveNewTemplateCmd)));
-        $(workAreaBox).empty().append($(controlNewTemplateForm));
-        let designAreaBox = doCreateTemplateDesignArea();
-        $(workAreaBox).append($(designAreaBox));
-        resetContainer();
-        doLoadCommandAction();
-
+				templateRes = await common.doCallApi('/api/shop/template/select/1', {});
+				templateItems = templateRes.Records;
+				doShowTemplateLoaded(shopData, templateItems, typeSelect, templateNameInput, paperSizeSelector, wrapper);
       }
       resolve();
     });
   }
 
-  const onTemplateTypeChange = function(evt, typeValue, shopData, workAreaBox){
+	const doShowTemplateLoaded = async function(shopData, templateItems, typeSelect, templateNameInput, paperSizeSelector, wrapper) {
+		let typeFilters = await templateItems.filter((template)=>{
+			if (typeSelect == template.TypeId) {
+				return template;
+			}
+		});
+		if (typeFilters.length > 0) {
+			let elements = typeFilters[0].Content;
+			$(templateNameInput).val(typeFilters[0].Name);
+			const promiseList = new Promise(async function(resolve2, reject2){
+				for (let i=0; i < elements.length; i++){
+					let element = elements[i];
+					let elementType = element.elementType;
+					let elementCreated = elementProperty.doCreateElement(wrapper, elementType, element);
+				}
+				common.delay(900).then(()=>resolve2());
+			});
+			Promise.all([promiseList]).then((ob)=>{
+				$(paperSizeSelector).val(typeFilters[0].PaperSize).change();
+			});
+		}
+	}
 
+  const onTemplateTypeChange = async function(evt, typeValue, shopData, templateNameInput, paperSizeSelector, wrapper){
+		let templateRes = await common.doCallApi('/api/shop/template/list/by/shop/' + shopData.id, {});
+		let templateItems = templateRes.Records;
+		if (templateItems.length > 0) {
+			doShowTemplateLoaded(shopData, templateItems, typeValue, templateNameInput, paperSizeSelector, wrapper)
+		} else {
+			//doCreateDefualTemplate
+			templateRes = await common.doCallApi('/api/shop/template/select/1', {});
+			templateItems = templateRes.Records;
+			doShowTemplateLoaded(shopData, templateItems, typeValue, templateNameInput, wrapper);
+		}
   }
 
-	const onPaperSizeChange = function(evt, typeValue, shopData, workAreaBox){
-
+	const onPaperSizeChange = function(evt, paperSize, shopData, wrapper){
+		resetContainer(paperSize);
 	}
+
   return {
     doShowTemplateDesign
 	}

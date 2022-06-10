@@ -1056,7 +1056,7 @@ module.exports = function ( jq ) {
 			}
 			let nameCell = $('<td width="80%" align="left">' + dfName + '</td>');
 			let priceCell = $('<td width="20%" align="right" style="padding-right: 80px;">' + df[i].DF.value + '</td>');
-			total += Number(df[i].DF);
+			total += Number(df[i].DF.value);
 			$(row).append($(nameCell)).append($(priceCell));
 			$(summaryTable).append($(row));
 		}

@@ -6,7 +6,7 @@ module.exports = function ( jq ) {
   const common = require('../../../home/mod/common-lib.js')($);
   const customerdlg = require('./customer-dlg.js')($);
   const gooditemdlg = require('./gooditem-dlg.js')($);
-	const invoicedlg = require('./invoice-dlg.js')($);
+	const closeorderdlg = require('./closeorder-dlg.js')($);
 
   const doShowOrderList = function(shopData, workAreaBox){
     return new Promise(async function(resolve, reject) {
@@ -93,11 +93,11 @@ module.exports = function ( jq ) {
       dlgHandle = await doOpenGoodItemMngDlg(shopData, gooditemSelectedCallback);
     });
 
-		let callCreateInvoiceCmd = common.doCreateTextCmd('คิดเงิน', 'orange', 'white');
-		$(callCreateInvoiceCmd).on('click', async (evt)=>{
+		let callCreateCloseOrderCmd = common.doCreateTextCmd('คิดเงิน', 'orange', 'white');
+		$(callCreateCloseOrderCmd).on('click', async (evt)=>{
 			let total = await doCalOrderTotal(orderObj.gooditems);
 			if (total > 0) {
-      	dlgHandle = await doOpenCreateInvoiceDlg(shopData, total, orderObj.id, invoiceCallback);
+      	dlgHandle = await doOpenCreateCloseOrderDlg(shopData, total, orderObj.id, invoiceCallback, billCallback, taxinvoiceCallback);
 			} else {
 				$.notify("ออร์เดอร์ยังไม่สมบูรณ์โปรดเพิ่มรายการสินค้าก่อน", "error");
 			}
@@ -108,7 +108,7 @@ module.exports = function ( jq ) {
 			let lastCell = $(goodItemTable).children(":first").children(":last");
 			$(lastCell).append($(addNewGoodItemCmd));
 			lastCell = $(goodItemTable).children(":last").children(":last");
-			$(lastCell).append($(callCreateInvoiceCmd));
+			$(lastCell).append($(callCreateCloseOrderCmd));
       $(itemlistWorkingBox).append($(goodItemTable));
     }
 
@@ -164,7 +164,7 @@ module.exports = function ( jq ) {
 			let lastCell = $(goodItemTable).children(":first").children(":last");
 			$(lastCell).append($(addNewGoodItemCmd));
 			lastCell = $(goodItemTable).children(":last").children(":last");
-			$(lastCell).append($(callCreateInvoiceCmd));
+			$(lastCell).append($(callCreateCloseOrderCmd));
       $(itemlistWorkingBox).empty().append($(goodItemTable));
       if (dlgHandle) {
         dlgHandle.closeAlert();
@@ -172,6 +172,85 @@ module.exports = function ( jq ) {
     }
 
 		const invoiceCallback = async function(newInvoiceData){
+			let userdata = JSON.parse(localStorage.getItem('userdata'));
+			let userId = userdata.id;
+			let userinfoId = userdata.userinfoId;
+			/*
+			newInvoiceData.shopId = shopData.id;
+			newInvoiceData.orderId = orderData.id;
+			newInvoiceData.userId = userId;
+			newInvoiceData.userinfoId = userinfoId;
+			*/
+			console.log(newInvoiceData);
+			let invoiceParams = {data: newInvoiceData, shopId: shopData.id, orderId: orderData.id, userId: userId, userinfoId: userinfoId};
+			let invoiceRes = await common.doCallApi('/api/shop/invoice/add', invoiceParams);
+
+			if (invoiceRes.status.code == 200) {
+				let invoiceId = invoiceRes.Record.id;
+				let docParams = {orderId: orderData.id, shopId: shopData.id, filename: newInvoiceData.Filename, No: newInvoiceData.No};
+				let docRes = await common.doCallApi('/api/shop/invoice/create/report', docParams);
+				console.log(docRes);
+				window.open(docRes.result.link, '_blank');
+				$.notify("ออกใบแจ้งหนี้่สำเร็จ", "sucess");
+			} else {
+				$.notify("บันทึกใบแจ้งหนี้ไม่สำเร็จ", "error");
+			}
+
+			if (dlgHandle) {
+        dlgHandle.closeAlert();
+      }
+		}
+
+		const billCallback = async function(newBillData, paymentData){
+			let userdata = JSON.parse(localStorage.getItem('userdata'));
+			let userId = userdata.id;
+			let userinfoId = userdata.userinfoId;
+
+			let billParams = {data: newBillData, shopId: shopData.id, orderId: orderData.id, userId: userId, userinfoId: userinfoId};
+			let billRes = await common.doCallApi('/api/shop/bill/add', billParams);
+
+			if (billRes.status.code == 200) {
+				let billId = billRes.Record.id;
+				let paymentParams = {data: paymentData, shopId: shopData.id, orderId: orderId, userId: userId, userinfoId: userinfoId};
+				let paymentRes = await common.doCallApi('/api/shop/payment/add', paymentParams);
+				if (paymentRes.status.code == 200) {
+					let docParams = {orderId: orderData.id, shopId: shopData.id, filename: newInvoiceData.Filename};
+					let docRes = await common.doCallApi('/api/shop/bill/create/report', docParams);
+					console.log(docRes);
+				} else {
+					$.notify("บันทึกข้อมูลการชำระเงินไม่สำเร็จ", "error");
+				}
+			} else {
+				$.notify("บันทึกบิลไม่สำเร็จ", "error");
+			}
+
+			if (dlgHandle) {
+        dlgHandle.closeAlert();
+      }
+		}
+
+		const taxinvoiceCallback = async function(newTaxInvoiceData, paymentData){
+			let userdata = JSON.parse(localStorage.getItem('userdata'));
+			let userId = userdata.id;
+			let userinfoId = userdata.userinfoId;
+
+			let taxinvoiceParams = {data: newTaxInvoiceData, shopId: shopData.id, orderId: orderData.id, userId: userId, userinfoId: userinfoId};
+			let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/add', invoiceParams);
+
+			if (taxinvoiceRes.status.code == 200) {
+				let taxinvoiceId = taxinvoiceRes.Record.id;
+				let paymentParams = {data: paymentData, shopId: shopData.id, orderId: orderId, userId: userId, userinfoId: userinfoId};
+				let paymentRes = await common.doCallApi('/api/shop/payment/add', paymentParams);
+				if (paymentRes.status.code == 200) {
+					let docParams = {orderId: orderData.id, shopId: shopData.id, filename: newInvoiceData.Filename};
+					let docRes = await common.doCallApi('/api/shop/taxinvoice/create/report', docParams);
+					console.log(docRes);
+				} else {
+					$.notify("บันทึกข้อมูลการชำระเงินไม่สำเร็จ", "error");
+				}
+			} else {
+				$.notify("บันทึกใบกำกับภาษีไม่สำเร็จ", "error");
+			}
 
 			if (dlgHandle) {
         dlgHandle.closeAlert();
@@ -221,24 +300,24 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doOpenCreateInvoiceDlg = function(shopData, orderTotal, orderId, callback) {
+	const doOpenCreateCloseOrderDlg = function(shopData, orderTotal, orderId, invoiceCallback, billCallback, taxinvoiceCallback) {
 		return new Promise(async function(resolve, reject) {
-      const invoiceDlgContent = await invoicedlg.doCreateFormDlg(shopData, orderTotal, orderId, callback);
-      $(invoiceDlgContent).css({'margin-top': '10px'});
-      const invoiceformoption = {
-  			title: 'ป้อนข้อมูลเพื่อออกใบแจ้งหนี้',
-  			msg: $(invoiceDlgContent),
+      const closeOrderDlgContent = await closeorderdlg.doCreateFormDlg(shopData, orderTotal, orderId, invoiceCallback, billCallback, taxinvoiceCallback);
+      $(closeOrderDlgContent).css({'margin-top': '10px'});
+      const closeOrderformoption = {
+  			title: 'ป้อนข้อมูลเพื่อเตรียมออกใบแจ้งหนี้',
+  			msg: $(closeOrderDlgContent),
   			width: '420px',
   			onOk: async function(evt) {
-          invoiceFormBoxHandle.closeAlert();
+          closeOrderFormBoxHandle.closeAlert();
   			},
   			onCancel: function(evt){
-  				invoiceFormBoxHandle.closeAlert();
+  				closeOrderFormBoxHandle.closeAlert();
   			}
   		}
-  		let invoiceFormBoxHandle = $('body').radalert(invoiceformoption);
-      $(invoiceFormBoxHandle.okCmd).hide();
-      resolve(invoiceFormBoxHandle)
+  		let closeOrderFormBoxHandle = $('body').radalert(closeOrderformoption);
+      $(closeOrderFormBoxHandle.okCmd).hide();
+      resolve(closeOrderFormBoxHandle)
     });
 	}
 

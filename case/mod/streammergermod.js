@@ -18,16 +18,18 @@ const CallcenterMerger = function(streams, mergOption) {
 	var xmepos = this.merger.width * 0.24;
 	var ymepos = this.merger.height * 0.25;
 
-	this.merger.addStream(streams[1], {
-		index: 1,
-		x: this.merger.width - xmepos,
-		y: this.merger.height - ymepos,
-		width: xmepos,
-		height: ymepos,
-		fps: 30,
-		clearRect: true,
-		mute: false
-	});
+	if (streams[1]) {
+		this.merger.addStream(streams[1], {
+			index: 1,
+			x: this.merger.width - xmepos,
+			y: this.merger.height - ymepos,
+			width: xmepos,
+			height: ymepos,
+			fps: 30,
+			clearRect: true,
+			mute: false
+		});
+	}
 
 	/*
 	var staticTextStream = createStaticTextStream('สด');
