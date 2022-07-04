@@ -1,6 +1,8 @@
 module.exports = function ( jq ) {
 	const $ = jq;
 
+  const fileUploadMaxSize = 10000000;
+
   const doCallApi = function(apiUrl, rqParams) {
     return new Promise(function(resolve, reject) {
       $('body').loading('start');
@@ -68,25 +70,41 @@ module.exports = function ( jq ) {
 		return td;
 	}
 
-	const doCreateImageCmd = function(imageUrl) {
+	const doCreateImageCmd = function(imageUrl, title) {
     let imgCmd = $('<img src="' + imageUrl + '"/>').css({'width': '35px', 'height': 'auto', 'cursor': 'pointer', 'border': '2px solid #ddd'});
     $(imgCmd).hover(()=>{
 			$(imgCmd).css({'border': '2px solid grey'});
 		},()=>{
 			$(imgCmd).css({'border': '2px solid #ddd'});
 		});
+		if (title) {
+			$(imgCmd).attr('title', title);
+		}
     return $(imgCmd)
   }
 
-	const doCreateTextCmd = function(text, bgcolor, textcolor) {
-    let textCmd = $('<span></span>').css({'min-height': '35px', 'line-height': '30px', 'cursor': 'pointer', 'border': '2px solid #ddd', 'border-radius': '4px', 'padding': '4px'});
+	const doCreateTextCmd = function(text, bgcolor, textcolor, bordercolor, hovercolor) {
+    let textCmd = $('<span></span>').css({'min-height': '35px', 'line-height': '30px', 'cursor': 'pointer', 'border-radius': '4px', 'padding': '4px'});
 		$(textCmd).text(text);
 		$(textCmd).css({'background-color': bgcolor, 'color': textcolor});
-    $(textCmd).hover(()=>{
-			$(textCmd).css({'border': '2px solid grey'});
-		},()=>{
+		if (bordercolor){
+			$(textCmd).css({'border': '2px solid ' + bordercolor});
+		} else {
 			$(textCmd).css({'border': '2px solid #ddd'});
-		});
+		}
+		if ((bordercolor) && (hovercolor)) {
+			$(textCmd).hover(()=>{
+				$(textCmd).css({'border': '2px solid ' + hovercolor});
+			},()=>{
+				$(textCmd).css({'border': '2px solid ' + bordercolor});
+			});
+		} else {
+    	$(textCmd).hover(()=>{
+				$(textCmd).css({'border': '2px solid grey'});
+			},()=>{
+				$(textCmd).css({'border': '2px solid #ddd'});
+			});
+		}
     return $(textCmd)
   }
 
@@ -94,7 +112,14 @@ module.exports = function ( jq ) {
   	return new Promise(resolve => setTimeout(resolve, ms));
 	}
 
+	const calendarOptions = {
+		lang:"th",
+		years:"2020-2030",
+		sundayFirst:false,
+	};
+
   return {
+		fileUploadMaxSize,
     doCallApi,
     doGetApi,
 		doUserLogout,
@@ -103,6 +128,7 @@ module.exports = function ( jq ) {
 		doFormatTimeStr,
 		doCreateImageCmd,
 		doCreateTextCmd,
-		delay
+		delay,
+		calendarOptions
 	}
 }

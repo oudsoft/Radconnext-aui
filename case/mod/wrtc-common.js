@@ -64,8 +64,16 @@ const doGetRemoteTracks = function(){
 }
 
 const doMixStream = function(streams){
-  streammerger = streammergerlib.CallcenterMerger(streams, mergeOption);
-  return streammerger.result
+  if (streams.length > 0) {
+    if ((streams[0].getVideoTracks()) && (streams[1].getVideoTracks())) {
+      streammerger = streammergerlib.CallcenterMerger(streams, mergeOption);
+      return streammerger.result;
+    } else {
+      return;
+    }
+  } else {
+    return;
+  }
 }
 
 const doSetupUserMediaStream = function(stream){
@@ -100,15 +108,6 @@ const doInitRTCPeer = function(stream, wsm) {
 	remoteConn.oniceconnectionstatechange = function(event) {
 		const peerConnection = event.target;
 		console.log('ICE state change event: ', event);
-    /*
-    if (userJoinOption.joinType === 'callee') {
-      if (userMediaStream) {
-        userMediaStream.getTracks().forEach((track) => {
-          peerConnection.addTrack(track, userMediaStream);
-        });
-      }
-    }
-    */
 		remoteConn = peerConnection;
 	};
 
@@ -125,6 +124,12 @@ const doInitRTCPeer = function(stream, wsm) {
 		}
 	};
 
+  if ((trackSenders) && (trackSenders.length > 0)) {
+    trackSenders.forEach((sender, i) => {
+      remoteConn.removeTrack(sender);
+    });
+  }
+
   trackSenders = [];
 	stream.getTracks().forEach((track) => {
 		let sender = remoteConn.addTrack(track, stream);
@@ -138,14 +143,17 @@ const doInitRTCPeer = function(stream, wsm) {
 
 const remoteConnOnTrackEvent = function(event) {
   if (event.streams[0]) {
+    /*
     if (recorder) {
       recorder.stopRecording().then(async()=>{
         let blob = await recorder.getBlob();
-        invokeSaveAsDialog(blob);
-        recorder = undefined;
+        if ((blob) && (blob.size > 0)) {
+          invokeSaveAsDialog(blob);
+          recorder = undefined;
+        }
       });
     }
-
+    */
     let myVideo = document.getElementById("MyVideo");
 
     let remoteStream = event.streams[0];
@@ -156,36 +164,42 @@ const remoteConnOnTrackEvent = function(event) {
       remoteTracks.push(track);
     });
 
-    let shareCmdState = $('#CommandBox').find('#ShareWebRCTCmd').css('display');
-    let endCmdState = $('#CommandBox').find('#EndWebRCTCmd').css('display');
+    console.log(remoteTracks.length);
 
     let remoteMergedStream = undefined;
-    if ((shareCmdState !== 'none') && (endCmdState !== 'none')) {
-      if (userJoinOption.joinType === 'caller') {
+    /*
+    if (userJoinOption.joinType === 'caller') {
+      if (displayMediaStream) {
         let streams = [displayMediaStream, remoteStream];
         remoteMergedStream = doMixStream(streams);
-      } else if (userJoinOption.joinType === 'callee') {
+      } else {
+        let streams = [remoteStream, userMediaStream];
+        remoteMergedStream = doMixStream(streams);
+      }
+    } else if (userJoinOption.joinType === 'callee') {
+      if((userJoinOption.joinMode) && (userJoinOption.joinMode == 'face')) {
+        let streams = [remoteStream, userMediaStream];
+        remoteMergedStream = doMixStream(streams);
+      } else {
+        //share screen mode
         remoteMergedStream = remoteStream;
       }
-      myVideo.srcObject = remoteMergedStream;
-    } else {
-      let streams = [remoteStream, userMediaStream];
-      remoteMergedStream = doMixStream(streams);
-      myVideo.srcObject = remoteMergedStream;
     }
+    */
+    if (userJoinOption.joinMode == 'share') {
+      remoteMergedStream = remoteStream;
+    } else if (userJoinOption.joinMode == 'face') {
+      let streams = [remoteStream, userMediaStream];
+      remoteMergedStream = doMixStream(streams);      
+    }
+    myVideo.srcObject = remoteMergedStream;
     $('#CommandBox').find('#ShareWebRCTCmd').show();
     $('#CommandBox').find('#EndWebRCTCmd').show();
-
-    if (remoteMergedStream) {
-      recorder = new RecordRTCPromisesHandler(remoteMergedStream, {type: 'video'	});
-      recorder.startRecording();
-    }
   }
 }
 
 const doCreateOffer = function(wsm) {
   if (remoteConn){
-    //console.log(remoteConn);
     remoteConn.createOffer(function (offer) {
     	remoteConn.setLocalDescription(offer);
       console.log(offer);
@@ -197,6 +211,7 @@ const doCreateOffer = function(wsm) {
         sendto: userJoinOption.audienceName
     	};
       wsm.send(JSON.stringify(sendData));
+      userJoinOption.joinType = 'caller';
     }, function (error) {
   		console.log(error);
   	});
@@ -213,6 +228,7 @@ const doCreateInterChange = function(wsm) {
     sendto: userJoinOption.audienceName
 	};
   wsm.send(JSON.stringify(sendData));
+  userJoinOption.joinMode = 'face';
 }
 
 const doCreateLeave = function(wsm) {
@@ -227,21 +243,23 @@ const doCreateLeave = function(wsm) {
 }
 
 const wsHandleOffer = function(wsm, offer) {
-  remoteConn.setRemoteDescription(new RTCSessionDescription(offer));
-  remoteConn.createAnswer(function (answer) {
-    remoteConn.setLocalDescription(answer);
-    let sendData = {
-      type: "wrtc",
-      wrtc: "answer",
-      answer: answer,
-      sender: userJoinOption.joinName,
-      sendto: userJoinOption.audienceName
-    };
-    wsm.send(JSON.stringify(sendData));
-    userJoinOption.joinType = 'callee';
-  }, function (error) {
-    console.log(error);
-  });
+  if (remoteConn) {
+    remoteConn.setRemoteDescription(new RTCSessionDescription(offer));
+    remoteConn.createAnswer(function (answer) {
+      remoteConn.setLocalDescription(answer);
+      let sendData = {
+        type: "wrtc",
+        wrtc: "answer",
+        answer: answer,
+        sender: userJoinOption.joinName,
+        sendto: userJoinOption.audienceName
+      };
+      wsm.send(JSON.stringify(sendData));
+      userJoinOption.joinType = 'callee';
+    }, function (error) {
+      console.log(error);
+    });
+  }
 }
 
 const wsHandleAnswer = function(wsm, answer) {
@@ -250,13 +268,17 @@ const wsHandleAnswer = function(wsm, answer) {
       function() {
         console.log('remoteConn setRemoteDescription on wsHandleAnswer success.');
         if (userJoinOption.joinType === 'caller') {
-          let newStream = new MediaStream();
-          doGetRemoteTracks().forEach((track) => {
-            newStream.addTrack(track)
-          });
-          let myVideo = document.getElementById("MyVideo");
-          let streams = [displayMediaStream, newStream];
-          myVideo.srcObject = doMixStream(streams);
+          if (displayMediaStream) {
+            let newStream = new MediaStream();
+            doGetRemoteTracks().forEach((track) => {
+              newStream.addTrack(track)
+            });
+            let myVideo = document.getElementById("MyVideo");
+            let streams = [displayMediaStream, newStream];
+            myVideo.srcObject = doMixStream(streams);
+          } else {
+            console.log('Your displayMediaStream is undefined!!');
+          }
         } else if (userJoinOption.joinType === 'callee') {
           console.log('The callee request get share screen, Please wait and go on.');
         }
@@ -279,15 +301,18 @@ const wsHandleCandidate = function(wsm, candidate) {
 const wsHandleInterchange = function(wsm, interchange) {
   //มีปัญหาเรื่อง
   //bundle.js:8846 Uncaught DOMException: Failed to execute 'addTrack' on 'RTCPeerConnection': A sender already exists for the track.
+  userJoinOption.joinMode = 'face';
   if ((trackSenders) && (trackSenders.length > 0)) {
     trackSenders.forEach((sender, i) => {
       remoteConn.removeTrack(sender);
     });
   }
-  userMediaStream.getTracks().forEach((track) => {
-    remoteConn.addTrack(track, userMediaStream);
-  });
-  doCreateOffer(wsm);
+  if (userMediaStream) {
+    userMediaStream.getTracks().forEach((track) => {
+      remoteConn.addTrack(track, userMediaStream);
+    });
+    doCreateOffer(wsm);
+  }
 }
 
 const wsHandleLeave = function(wsm, leave) {
@@ -389,7 +414,6 @@ const doCreateStartCallCmd = function(){
   return $(callCmd)
 }
 
-//  $(shareScreenCmd).on("click", async function(evt){
 const onShareCmdClickCallback = async function(callback){
   let captureStream = await doGetDisplayMedia();
   onDisplayMediaSuccess(captureStream, (stream)=>{
@@ -463,14 +487,16 @@ const doCreateEndCmd = function(){
 }
 
 const doEndCall = async function(wsm){
+  /*
   if (recorder) {
     await recorder.stopRecording();
     let blob = await recorder.getBlob();
-    if (blob) {
+    if ((blob) && (blob.size > 0)) {
       invokeSaveAsDialog(blob);
+      recorder = undefined;
     }
   }
-
+  */
   let myVideo = document.getElementById("MyVideo");
 
   if (myVideo) {

@@ -11,25 +11,41 @@ module.exports = function ( jq ) {
 	const order = require('./order-mng.js')($);
 	const template = require('./template-design.js')($);
 
-  const doCreateTitlePage = function(shopData){
+  const doCreateTitlePage = function(shopData, uploadLogCallback, editShopCallback){
+		let userdata = JSON.parse(localStorage.getItem('userdata'));
     let shopLogoIcon = new Image();
     if (shopData['Shop_LogoFilename'] !== ''){
     	shopLogoIcon.src = shopData['Shop_LogoFilename'];
     } else {
     	shopLogoIcon.src = '/shop/favicon.ico'
     }
-    $(shopLogoIcon).css({"width": "140px", "height": "auto", "padding": "2px", "border": "2px solid #ddd"});
+		$(shopLogoIcon).css({"width": "140px", "height": "auto", "padding": "2px", "display": "block", "z-index": "9", "cursor": "pointer"});
+		$(shopLogoIcon).on('click', (evt)=>{
+			evt.stopPropagation();
+			window.open(shopLogoIcon.src, '_blank');
+		});
+		let shopLogoIconBox = $('<div></div>').css({"position": "relative", "border": "2px solid #ddd"});
+    $(shopLogoIconBox).append($(shopLogoIcon));
+		let editShopLogoCmd = $('<img src="../../images/tools-icon-wh.png"/>').css({'position': 'absolute', 'width': '25px', 'height': 'auto', 'cursor': 'pointer', 'right': '2px', 'bottom': '2px', 'display': 'none', 'z-index': '21'});
+		$(shopLogoIconBox).append($(editShopLogoCmd));
+		$(shopLogoIconBox).hover(()=>{
+			$(editShopLogoCmd).show();
+		},()=>{
+			$(editShopLogoCmd).hide();
+		});
+		$(editShopLogoCmd).on('click', (evt)=>{
+			evt.stopPropagation();
+			uploadLogCallback(evt, shopLogoIconBox, shopData.id, (successData)=>{
+				//console.log(successData);
+				shopLogoIcon.src = successData.link;
+			});
+		});
+
     let shopName = $('<h2>' + shopData['Shop_Name'] + '</h2>').css({'line-height': '20px'});
     let shopAddress = $('<p>' + shopData['Shop_Address'] + '</p>').css({'line-height': '11px'});
     let shopTel = $('<p>โทร. ' + shopData['Shop_Tel'] + '</p>').css({'line-height': '11px'});
     let shopMail = $('<p>อีเมล์ ' + shopData['Shop_Mail'] + '</p>').css({'line-height': '11px'});
     let shopVatNo = $('<p>หมายเลขผู้เสียภาษี ' + shopData['Shop_VatNo'] + '</p>').css({'line-height': '11px'});
-
-    let backCmd = $('<input type="button" value=" Back " class="action-btn"/>');
-    $(backCmd).on('click', (evt)=>{
-      const main = require('../main.js');
-      main.doShowShopItems();
-    });
 
     let titlePageBox = $('<div style="padding: 4px;"></viv>').css({'width': '99.1%', 'text-align': 'center', 'font-size': '18px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
     let layoutPage = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
@@ -37,9 +53,29 @@ module.exports = function ( jq ) {
     let letfSideCell = $('<td width="15%" align="center" valign="middle"></td>');
     let middleCell = $('<td width="70%" align="left" valign="middle"></td>');
     let rightSideCell = $('<td width="*" align="center" valign="middle"></td>');
-    $(letfSideCell).append($(shopLogoIcon));
+    $(letfSideCell).append($(shopLogoIconBox));
     $(middleCell).append($(shopName)).append($(shopAddress)).append($(shopTel)).append($(shopMail)).append($(shopVatNo));
-    $(rightSideCell).append($(backCmd));
+		if (userdata.usertypeId == 1) {
+			let backCmd = $('<input type="button" value=" Back " class="action-btn"/>');
+	    $(backCmd).on('click', (evt)=>{
+	      const main = require('../main.js');
+	      main.doShowShopItems();
+	    });
+    	$(rightSideCell).append($(backCmd));
+		} else {
+			let shopConfigCmd = $('<img src="../../images/tools-icon-wh.png"/>').css({'width': '45px', 'height': 'auto', 'cursor': 'pointer'});
+			$(rightSideCell).append($(shopConfigCmd));
+			$(shopConfigCmd).on('click', (evt)=>{
+				editShopCallback(shopData, (newShopData)=>{
+					$(shopName).text(newShopData['Shop_Name']);
+					$(shopAddress).text(newShopData['Shop_Address']);
+					$(shopTel).text(newShopData['Shop_Tel']);
+					$(shopMail).text(newShopData['Shop_Mail']);
+					$(shopVatNo).text(newShopData['Shop_VatNo']);
+				});
+				$('#Shop_BillQuota').attr('readOnly', true);
+			});
+		}
     $(layoutRow).append($(letfSideCell)).append($(middleCell)).append($(rightSideCell));
     $(layoutPage).append($(layoutRow));
     return $(titlePageBox).append($(layoutPage));
@@ -74,11 +110,17 @@ module.exports = function ( jq ) {
       doTemplateMngClickCallBack(evt, shopData);
     });
 
-    return $(commandsBox).append($(orderMngCmd)).append($(menuitemMngCmd)).append($(menugroupMngCmd)).append($(customerMngCmd)).append($(userMngCmd)).append($(templateMngCmd));
+		let logoutCmd = $('<span>ออกจากระบบ</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin-right': '5px', 'margin-top': '1px', 'padding': '4px', 'font-size': '14px', 'float': 'right'});
+		$(logoutCmd).on('click', (evt)=>{
+			common.doUserLogout();
+		});
+		//$(titlePageBox).append($(logoutCmd));
+
+    return $(commandsBox).append($(orderMngCmd)).append($(menuitemMngCmd)).append($(menugroupMngCmd)).append($(customerMngCmd)).append($(userMngCmd)).append($(templateMngCmd)).append($(logoutCmd));
   }
 
-  const doShowShopMhg = function(shopData){
-    let titlePage = doCreateTitlePage(shopData);
+  const doShowShopMhg = function(shopData, uploadLogCallback, editShopCallback){
+    let titlePage = doCreateTitlePage(shopData, uploadLogCallback, editShopCallback);
     $('#App').empty().append($(titlePage));
     let shopCmdControl = doCreateContolShopCmds(shopData);
 		let workingAreaBox = $('<div id="WorkingAreaBox" style="padding: 4px;"></viv>').css({'width': '99.1%', 'font-size': '14px' /*, 'border': '2px solid black', 'border-radius': '0px'*/});

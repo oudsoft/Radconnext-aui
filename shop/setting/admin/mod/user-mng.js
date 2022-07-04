@@ -169,8 +169,8 @@ module.exports = function ( jq ) {
 			let labelField = $('<td width="40%" align="left">' + userinfoTableFields[i].displayName + (userinfoTableFields[i].verify?' <span style="color: red;">*</span>':'') + '</td>').css({'padding': '5px'});
 			let inputField = $('<td width="*" align="left"></td>').css({'padding': '5px'});
 			let inputValue = $('<input type="text" id="' + userinfoTableFields[i].fieldName + '" size="' + userinfoTableFields[i].inputSize + '"/>');
-			if ((userData) && (userData[userinfoTableFields[i].fieldName])) {
-				$(inputValue).val(userData[userinfoTableFields[i].fieldName]);
+			if ((userData) && (userData.userinfo[userinfoTableFields[i].fieldName])) {
+				$(inputValue).val(userData.userinfo[userinfoTableFields[i].fieldName]);
 			}
 			$(inputField).append($(inputValue));
 			$(fieldRow).append($(labelField));
@@ -178,15 +178,15 @@ module.exports = function ( jq ) {
 			$(regFormTable).append($(fieldRow));
 		}
 		let fieldRow = $('<tr></tr>');
-		let labelField = $('<td width="40%" align="left">ประภทผู้ใช้งาน <span style="color: red;">*</span></td>').css({'padding': '5px'});
+		let labelField = $('<td width="40%" align="left">ประเภทผู้ใช้งาน <span style="color: red;">*</span></td>').css({'padding': '5px'});
 		let inputField = $('<td width="*" align="left"></td>').css({'padding': '5px'});
 		let inputValue = $('<select id="UsertypeId"></select>');
 		let usertypes = JSON.parse(localStorage.getItem('usertypes'));
-		console.log(usertypes);
+		//console.log(usertypes);
 		usertypes.forEach((item, i) => {
-			console.log(item);
 			$(inputValue).append($('<option value="' + item.Value + '">' + item.DisplayText + '<option>'))
 		});
+		$(inputValue).val(userData.usertypeId);
 		$(inputField).append($(inputValue));
 		$(fieldRow).append($(labelField));
 		$(fieldRow).append($(inputField));

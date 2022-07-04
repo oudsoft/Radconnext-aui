@@ -334,12 +334,19 @@ module.exports = function ( jq ) {
 
 	const doConnectWebsocketMaster = function(username, usertype, hospitalId, connecttype){
 	  const hostname = window.location.hostname;
+		const protocol = window.location.protocol;
 	  const port = window.location.port;
 	  const paths = window.location.pathname.split('/');
 	  const rootname = paths[1];
 
+		console.log(protocol);
+
+		let wsProtocol = 'ws://';
+		if (protocol == 'https') {
+			wsProtocol = 'wss://';
+		}
 	  //const wsUrl = 'wss://' + hostname + ':' + port + '/' + rootname + '/' + username + '/' + hospitalId + '?type=' + type;
-		const wsUrl = 'wss://' + hostname + ':' + port + '/' + username + '/' + hospitalId + '?type=' + connecttype;
+		const wsUrl = wsProtocol + hostname + ':' + port + '/' + username + '/' + hospitalId + '?type=' + connecttype;
 	  wsm = new WebSocket(wsUrl);
 		wsm.onopen = function () {
 			//console.log('Master Websocket is connected to the signaling server')
@@ -511,7 +518,7 @@ module.exports = function ( jq ) {
 		}
 	});
 	*/
-	
+
 	return {
 		formatDateStr,
 		getTodayDevFormat,

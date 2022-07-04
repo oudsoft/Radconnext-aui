@@ -182,7 +182,7 @@ module.exports = function ( jq ) {
 		let tableData = $(tableBox).data().customTableelement.options;
 		//console.log(tableData);
 		//console.log(tableData.customTableelement.options);
-		let tableDesignData = {elementType: 'table', id: tableData.id, x: tableData.x, y: tableData.y, cols: tableData.cols, rows: []};
+		let tableDesignData = {elementType: 'table', id: tableData.id, x: tableData.x, y: tableData.y, width: tableData.width, height: tableData.height, cols: tableData.cols, rows: []};
 		let trs = $(tableBox).find('.trElement');
 		$(trs).each((i, tr)=>{
 			let trData = $(tr).data().customTrelement.options;
@@ -239,19 +239,19 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doRenderElement = function(shopData, wrapper, reportElements, ratio){
+	const doRenderElement = function(shopData, wrapper, reportElements, ratio, paperSize){
 		let newRatio = 1;
 		if (ratio) {
 			newRatio = ratio;
 		}
-		let wrapperWidth = $(wrapper).width();
+		console.log(newRatio);
     reportElements.forEach((elem, i) => {
       let element;
       switch (elem.elementType) {
         case "text":
           element = $("<div></div>").css({'position': 'absolute'});
           //$(element).addClass("reportElement");
-          $(element).css({"left": Number(elem.x)*newRatio + "px", "top": Number(elem.y)*newRatio + "px", "width": wrapperWidth + "px", "height": Number(elem.height)*newRatio + "px"});
+          $(element).css({"left": Number(elem.x)*newRatio + "px", "top": Number(elem.y)*newRatio + "px", "width": Number(elem.width)*newRatio + "px", "height": Number(elem.height)*newRatio + "px"});
           $(element).css({"font-size": Number(elem.fontsize)*newRatio + "px"});
           $(element).css({"font-weight": elem.fontweight});
           $(element).css({"font-style": elem.fontstyle});
@@ -380,7 +380,7 @@ module.exports = function ( jq ) {
 				}
 				$(wrapperBox).css({'height': newHeight+'px', 'max-height': newHeight + 'px'});
 
-				doRenderElement(shopData, wrapperBox, templateDesignElements, renderRatio);
+				doRenderElement(shopData, wrapperBox, templateDesignElements, renderRatio, paperSize);
 				const radalertoption = {
 		      title: 'ตัวอย่างเอกสาร',
 		      msg: $(wrapperBox),

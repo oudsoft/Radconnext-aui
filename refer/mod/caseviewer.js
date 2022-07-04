@@ -145,8 +145,11 @@ module.exports = function ( jq ) {
 
 			let softPhoneCmd = doCreateSoftPhoneCallCmd(caseItem);
 			let zoomCmd = doCreateZoomCallCmd(caseItem, simpleChatBoxHandle);
+
+			let radioSateCmd = doCreateRadioSateCmd();
+
 			let externalToolsBox = $('<div style="position: relative; display: inline-block; bottom: -14px;"></div>');
-			$(externalToolsBox).append($(softPhoneCmd)).append($(zoomCmd))
+			$(externalToolsBox).append($(radioSateCmd)).append($(softPhoneCmd)).append($(zoomCmd))
 
 			$(simpleChatBox).find('#ChatSendBox').prepend($(externalToolsBox));
 			resolve($(simpleChatBox));
@@ -585,7 +588,7 @@ module.exports = function ( jq ) {
 			if (stream) {
 				$('head').append('<script src="../lib/RecordRTC.min.js"></script>');
 				wrtcCommon.doSetupUserMediaStream(stream);
-				let userJoinOption = {joinType: 'caller', joinName: userdata.username, audienceName: radioUsername, userMediaStream: stream};
+				let userJoinOption = {joinType: 'caller', joinMode: 'share', joinName: userdata.username, audienceName: radioUsername, userMediaStream: stream};
 				wrtcCommon.doSetupUserJoinOption(userJoinOption);
 				let patientFullNameEN = zoomData.caseData.case.patient.Patient_NameEN + ' ' + zoomData.caseData.case.patient.Patient_LastNameEN;
 				let patientHN = zoomData.caseData.case.patient.Patient_HN;
@@ -596,6 +599,29 @@ module.exports = function ( jq ) {
 					msg: $(dlgContent),
 					width: '620px',
 					onOk: function(evt) {
+						/*
+						if (wrtcCommon.doGetRecorder()) {
+							await wrtcCommon.doGetRecorder().stopRecording();
+							let blob = await wrtcCommon.doGetRecorder().getBlob();
+							if ((blob) && (blob.size > 0)) {
+			          invokeSaveAsDialog(blob);
+			        }
+						}
+						*/
+						if (wrtcCommon.doGetDisplayMediaStream()){
+							wrtcCommon.doGetDisplayMediaStream().getTracks().forEach(function(track) {
+	  						track.stop();
+							});
+						}
+						if (wrtcCommon.doGetUserMediaStream()){
+							wrtcCommon.doGetUserMediaStream().getTracks().forEach(function(track) {
+	  						track.stop();
+							});
+						}
+						if (wrtcCommon.doGetRemoteConn()) {
+							wrtcCommon.doGetRemoteConn().close();
+						}
+						wrtcCommon.doCreateLeave(wsm);
 						webrtcBox.closeAlert();
 					}
 				}
@@ -603,7 +629,7 @@ module.exports = function ( jq ) {
 				$(webrtcBox.cancelCmd).hide();
 
 				let myVideo = document.getElementById("MyVideo");
-				//myVideo.srcObject = stream;
+
 				myVideo.srcObject = wrtcCommon.doGetUserMediaStream();
 
 				let shareCmd = wrtcCommon.doCreateShareScreenCmd();
@@ -614,7 +640,7 @@ module.exports = function ( jq ) {
 								track.stop();
 							});
 						}
-						wrtcCommon.doCreateInterChange(wsm);
+						//wrtcCommon.doCreateInterChange(wsm);
 						wrtcCommon.doSetupDisplayMediaStream(myDisplayMediaStream);
 					  let streams = [wrtcCommon.doGetDisplayMediaStream(), wrtcCommon.doGetUserMediaStream()];
 						let localMergedStream = wrtcCommon.doMixStream(streams);
@@ -648,62 +674,43 @@ module.exports = function ( jq ) {
 					userJoinOption.joinType = 'caller'
 					wrtcCommon.doSetupUserJoinOption(userJoinOption);
 					wrtcCommon.doCreateOffer(wsm);
-					$(shareCmd).hide();
+					$(shareCmd).show();
 					$(startCmd).hide();
 					$(endCmd).show();
 				})
 				let endCmd = wrtcCommon.doCreateEndCmd();
 				$(endCmd).on('click', async (evt)=>{
-					let shareCmdState = $('#CommandBox').find('#ShareWebRCTCmd').css('display');
-					if (shareCmdState !== 'none') {
-						if (wrtcCommon.doGetRecorder()) {
-							await wrtcCommon.doGetRecorder().stopRecording();
-							let blob = await wrtcCommon.doGetRecorder().getBlob();
-							invokeSaveAsDialog(blob);
-						}
-						if (wrtcCommon.doGetDisplayMediaStream()){
-							wrtcCommon.doGetDisplayMediaStream().getTracks().forEach(function(track) {
-	  						track.stop();
-							});
-						}
-						if (wrtcCommon.doGetUserMediaStream()){
-							wrtcCommon.doGetUserMediaStream().getTracks().forEach(function(track) {
-	  						track.stop();
-							});
-						}
-						if (wrtcCommon.doGetRemoteConn()) {
-							wrtcCommon.doGetRemoteConn().close();
-						}
-						wrtcCommon.doCreateLeave(wsm);
-						webrtcBox.closeAlert();
-					} else {
-						if (wrtcCommon.doGetDisplayMediaStream()) {
-							wrtcCommon.doGetDisplayMediaStream().getTracks().forEach((track) => {
-					      track.stop();
-					    });
-						}
-						let lastStream = myVideo.srcObject;
-						let remoteConn = wrtcCommon.doGetRemoteConn();
-						remoteConn.removeStream(lastStream);
-						wrtcCommon.userMediaStream.getTracks().forEach((track) => {
-				      remoteConn.addTrack(track, wrtcCommon.userMediaStream);
+					if (wrtcCommon.doGetDisplayMediaStream()) {
+						wrtcCommon.doGetDisplayMediaStream().getTracks().forEach((track) => {
+				      track.stop();
+				    });
+					}
+					let lastStream = myVideo.srcObject;
+					let remoteConn = wrtcCommon.doGetRemoteConn();
+					remoteConn.removeStream(lastStream);
+					let myUserMediaStream = wrtcCommon.doGetUserMediaStream();
+
+					if (myUserMediaStream) {
+						myUserMediaStream.getTracks().forEach((track) => {
+				      remoteConn.addTrack(track, myUserMediaStream);
 				    });
 
-						//wrtcCommon.doCreateInterChange(wsm);
-						$(startCmd).click();
-
-						let myUserMediaStream = wrtcCommon.doGetUserMediaStream();
 						let newStream = new MediaStream();
 						wrtcCommon.doGetRemoteTracks().forEach((track) => {
+							console.log(track);
 							newStream.addTrack(track)
 				    });
-
+						console.log(newStream);
 						myVideo.srcObject = wrtcCommon.doMixStream([newStream, myUserMediaStream]);
 
 						$(shareCmd).show();
 						$(startCmd).hide();
 						$(endCmd).show();
+
+						wrtcCommon.doCreateInterChange(wsm);
+						//$(startCmd).click();
 					}
+
 				});
 
 				$(dlgContent).find('#CommandBox').append($(shareCmd).show());
@@ -1167,6 +1174,92 @@ module.exports = function ( jq ) {
 		$(circle).css('background-color', bkColor);
 		return $(circle);
 	}
+
+
+	const doCreateRadioSateCmd = function(){
+		const stateIconUrl = '/images/doctor-icon-wh.png';
+		let stateBox = $('<div style="position: relative; display: inline-block; text-align: center; margin-right: 20px; bottom: 10px;"></div>');
+    let stateIcon = $('<img style="postion: absolute; width: 30px; height: auto; cursor: pointer;"/>');
+    $(stateIcon).attr('src', stateIconUrl);
+		$(stateBox).on('click', async (evt)=>{
+			let stateBox = await doCreateFakeRadioStateBox();
+			$(stateBox).css({'height': ' 220px', 'overflow': 'scroll'})
+			const radalertoption = {
+				title: 'สภานะรังสีแพทย์',
+				msg: $(stateBox),
+				width: '360px',
+				onOk: function(evt) {
+					radAlertBox.closeAlert();
+				}
+			}
+			let radAlertBox = $('body').radalert(radalertoption);
+			$(radAlertBox.cancelCmd).hide();
+		});
+		console.log(stateBox);
+		return $(stateBox).append($(stateIcon));
+	}
+
+	const doCreateCircleBox = function(bkColor) {
+    let circle = $('<span style="height: 25px; width: 25px; border: 1px solid #ccc; border-radius: 50%; display: inline-block; margin-left: 5px;"></span>');
+    $(circle).css('background-color', bkColor);
+    return $(circle);
+	}
+
+	const doCreateRadioState = function(name, state) {
+		let bkColor = undefined;
+		if (state == 1) {
+			bkColor = 'green';
+		} else if (state == 2) {
+			bkColor = 'yellow';
+		} else if (state == 3) {
+			bkColor = 'red';
+		}
+		let stateBox = $('<div></div>').css({'postion': 'relative', 'padding': '4px', 'line-height': '28px'});
+		let circleBox = doCreateCircleBox(bkColor);
+		let nameBox = $('<span></span>').text(name).css({'text-decoration': 'underline', 'text-decoration-color': bkColor, 'text-decoration-thickness': '10px'});
+		return $(stateBox).append($(nameBox)).append($(circleBox));
+	}
+
+	const radioList = [
+		{name: 'พ.ธีรวัฒน์ ปิยพสุนทรา', state: 1},
+		{name: 'พ.สินีนาถ วารี', state: 1},
+		{name: 'พ.นรินทร อู่ทรัพย์', state: 2},
+		{name: 'พ.สิริพร ตันติมูรธา', state: 2},
+		{name: 'พ.ธนัท ทับเที่ยง', state: 1},
+		{name: 'พ.วุฒิชัย สีมาพล', state: 2},
+		{name: 'พ.ชารัตน์ ชูเกียรติ', state: 3},
+		{name: 'พ.ณัฏฐยา ปราอาภรณ์', state: 1},
+		{name: 'พ.ธิติ ทองส่งโสม', state: 1},
+		{name: 'พ.สกันยา โกยทรัพย์สิน', state: 1},
+		{name: 'พ.ปวีณา สุวรรณเทพ', state: 3},
+		{name: 'พ.เบญจวรรณ ไชยขันธ์', state: 3},
+		{name: 'พ.วรรณิดา กิจรานันทน์', state: 1},
+		{name: 'พ.นันท์นภัส เหล่าไทย', state: 1},
+		{name: 'พ.ณัฐสร นิยะมานนท์', state: 2},
+		{name: 'พ.ธนุส บุญยะลีพรรณ', state: 3},
+		{name: 'พ.สรสิช ศุภธีรสกุล', state: 1},
+		{name: 'พ.กุศลิน พิลาแดง', state: 1},
+		{name: 'พ.ศศิภากร จิตรสำเริง', state: 1}
+	];
+
+	const doCreateFakeRadioStateBox = function(){
+		return new Promise(async function(resolve, reject) {
+			let radioBox = $('<div></div>').css({'postion': 'relative', 'width': '100%'});
+			const promiseList = new Promise(async function(resolve2, reject2){
+				for (let i=0; i < radioList.length; i++) {
+					let statBox = doCreateRadioState(radioList[i].name, radioList[i].state);
+					$(radioBox).append($(statBox));
+				}
+				setTimeout(()=> {
+					resolve2($(radioBox));
+				}, 500);
+			});
+			Promise.all([promiseList]).then((ob)=>{
+				resolve(ob[0]);
+			});
+		});
+	}
+
 
   return {
     doOpenCaseView

@@ -226,7 +226,7 @@ module.exports = function ( jq ) {
 			if (stream) {
 				$('head').append('<script src="../lib/RecordRTC.min.js"></script>');
 				wrtcCommon.doSetupUserMediaStream(stream);
-				let userJoinOption = {joinType: 'callee', joinName: userdata.username, audienceName: callData.sender, userMediaStream: stream};
+				let userJoinOption = {joinType: 'callee', joinMode: 'share', joinName: userdata.username, audienceName: callData.sender, userMediaStream: stream};
 				wrtcCommon.doSetupUserJoinOption(userJoinOption);
 
 				let webrtcBox = undefined;
@@ -238,6 +238,29 @@ module.exports = function ( jq ) {
 						msg: $(dlgContent),
 						width: '620px',
 						onOk: function(evt) {
+							/*
+							if (wrtcCommon.doGetRecorder()) {
+								await wrtcCommon.doGetRecorder().stopRecording();
+								let blob = await wrtcCommon.doGetRecorder().getBlob();
+								if ((blob) && (blob.size > 0)) {
+				          invokeSaveAsDialog(blob);
+				        }
+							}
+							*/
+							if (wrtcCommon.doGetDisplayMediaStream()){
+								wrtcCommon.doGetDisplayMediaStream().getTracks().forEach(function(track) {
+		  						track.stop();
+								});
+							}
+							if (wrtcCommon.doGetUserMediaStream()){
+								wrtcCommon.doGetUserMediaStream().getTracks().forEach(function(track) {
+		  						track.stop();
+								});
+							}
+							if (wrtcCommon.doGetRemoteConn()) {
+								wrtcCommon.doGetRemoteConn().close();
+							}
+							wrtcCommon.doCreateLeave(wsm);
 							webrtcBox.closeAlert();
 						}
 					}
@@ -278,7 +301,7 @@ module.exports = function ( jq ) {
 						    wrtcCommon.doSetupRemoteConn(myRemoteConn);
 								$(startCmd).click();
 							}
-						}, 3500);
+						}, 500);
 						$(shareCmd).show();
 						$(startCmd).hide();
 						$(endCmd).show();
@@ -295,56 +318,34 @@ module.exports = function ( jq ) {
 				});
 				let endCmd = wrtcCommon.doCreateEndCmd();
 				$(endCmd).on('click', async (evt)=>{
-					let shareCmdState = $('#CommandBox').find('#ShareWebRCTCmd').css('display');
-					if (shareCmdState !== 'none') {
-						if (wrtcCommon.doGetRecorder()) {
-							await wrtcCommon.doGetRecorder().stopRecording();
-							let blob = await wrtcCommon.doGetRecorder().getBlob();
-							invokeSaveAsDialog(blob);
-						}
-						if (wrtcCommon.doGetDisplayMediaStream()){
-							wrtcCommon.doGetDisplayMediaStream().getTracks().forEach(function(track) {
-	  						track.stop();
-							});
-						}
-						if (wrtcCommon.doGetUserMediaStream()){
-							wrtcCommon.doGetUserMediaStream().getTracks().forEach(function(track) {
-	  						track.stop();
-							});
-						}
-						if (wrtcCommon.doGetRemoteConn()) {
-							wrtcCommon.doGetRemoteConn().close();
-						}
-						wrtcCommon.doCreateLeave(wsm);
-						webrtcBox.closeAlert();
-					} else {
-						if (wrtcCommon.displayMediaStream) {
-							wrtcCommon.displayMediaStream.getTracks().forEach((track) => {
-					      track.stop();
-					    });
-						}
-						let lastStream = myVideo.srcObject;
-						let remoteConn = wrtcCommon.doGetRemoteConn();
-						remoteConn.removeStream(lastStream);
-						wrtcCommon.userMediaStream.getTracks().forEach((track) => {
-				      remoteConn.addTrack(track, wrtcCommon.userMediaStream);
+					if (wrtcCommon.doGetDisplayMediaStream()) {
+						wrtcCommon.doGetDisplayMediaStream().getTracks().forEach((track) => {
+				      track.stop();
 				    });
-
-						//wrtcCommon.doCreateInterChange(wsm);
-						$(startCmd).click();
-
-						let myUserMediaStream = wrtcCommon.doGetUserMediaStream();
-						let newStream = new MediaStream();
-						wrtcCommon.doGetRemoteTracks().forEach((track) => {
-							newStream.addTrack(track)
-				    });
-
-						myVideo.srcObject = wrtcCommon.doMixStream([newStream, myUserMediaStream]);
-
-						$(shareCmd).show();
-						$(startCmd).hide();
-						$(endCmd).show();
 					}
+					let lastStream = myVideo.srcObject;
+					let remoteConn = wrtcCommon.doGetRemoteConn();
+					remoteConn.removeStream(lastStream);
+					let myUserMediaStream = wrtcCommon.doGetUserMediaStream();
+					if (myUserMediaStream) {
+						myUserMediaStream.getTracks().forEach((track) => {
+				      remoteConn.addTrack(track, myUserMediaStream);
+				    });
+					}
+					wrtcCommon.doCreateInterChange(wsm);
+					//$(startCmd).click();
+
+					let myRemoteTracks = wrtcCommon.doGetRemoteTracks();
+					let newStream = new MediaStream();
+					myRemoteTracks.forEach((track) => {
+						newStream.addTrack(track)
+			    });
+
+					myVideo.srcObject = wrtcCommon.doMixStream([newStream, myUserMediaStream]);
+
+					$(shareCmd).show();
+					$(startCmd).hide();
+					$(endCmd).show();
 				});
 
 				$(dlgContent).find('#CommandBox').append($(shareCmd).hide());
@@ -357,7 +358,7 @@ module.exports = function ( jq ) {
 				setTimeout(() => {
 					wrtcCommon.doCreateOffer(wsm);
 					$('body').loading('stop');
-				}, 2500);
+				}, 7500);
 			} else {
 				$.notify('เว็บบราวเซอร์ของคุณไม่รองรับการใช้งานฟังก์ชั่นนี้', 'error');
 				$('body').loading('stop');

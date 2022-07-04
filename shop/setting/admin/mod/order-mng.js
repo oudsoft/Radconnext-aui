@@ -7,8 +7,9 @@ module.exports = function ( jq ) {
   const customerdlg = require('./customer-dlg.js')($);
   const gooditemdlg = require('./gooditem-dlg.js')($);
 	const closeorderdlg = require('./closeorder-dlg.js')($);
+	const calendardlg = require('./calendar-dlg.js')($);
 
-  const doShowOrderList = function(shopData, workAreaBox){
+  const doShowOrderList = function(shopData, workAreaBox, orderDate){
     return new Promise(async function(resolve, reject) {
       let customerRes = await common.doCallApi('/api/shop/customer/list/by/shop/' + shopData.id, {});
       let menugroupRes = await common.doCallApi('/api/shop/menugroup/list/by/shop/' + shopData.id, {});
@@ -22,7 +23,27 @@ module.exports = function ( jq ) {
 
       $(workAreaBox).empty();
 
-      let titlePageBox = $('<div style="padding: 4px;">รายการออร์เดอร์ของร้าน</viv>').css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
+			let selectDate = undefined;
+			if (orderDate) {
+				selectDate = common.doFormatDateStr(new Date(orderDate));
+			} else {
+				selectDate = common.doFormatDateStr(new Date());
+			}
+      let titlePageBox = $('<div style="padding: 4px;"></viv>').css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
+			let titleTextBox = $('<div></div>').text('รายการออร์เดอร์ของร้าน');
+			let orderDateBox = $('<div></div>').text(selectDate).css({'width': 'fit-content', 'display': 'inline-block', 'background-color': 'white', 'color': 'black', 'padding': '4px', 'cursor': 'pointer', 'font-size': '16px'});
+			$(orderDateBox).on('click', (evt)=>{
+				common.calendarOptions.onClick = async function(date){
+					calendarHandle.closeAlert();
+					selectDate = common.doFormatDateStr(new Date(date));
+					$(orderDateBox).text(selectDate);
+					$(workAreaBox).empty().append($(titlePageBox)).append($(newOrderCmdBox));
+					await doCreateOrderList(shopData, workAreaBox, selectDate);
+				}
+				let calendarHandle = doShowCalendarDlg(common.calendarOptions);
+			});
+			$(titlePageBox).append($(titleTextBox)).append($(orderDateBox));
+
 			$(workAreaBox).append($(titlePageBox));
 			let newOrderCmdBox = $('<div style="padding: 4px;"></div>').css({'width': '99.5%', 'text-align': 'right'});
 			//let newOrderCmd = $('<input type="button" value=" เปิดออร์เดอร์ใหม่ " class="action-btn"/>');
@@ -33,7 +54,7 @@ module.exports = function ( jq ) {
 			$(newOrderCmdBox).append($(newOrderCmd))
 			$(workAreaBox).append($(newOrderCmdBox));
 
-      await doCreateOrderList(shopData, workAreaBox);
+      await doCreateOrderList(shopData, workAreaBox, selectDate);
       /*
         order list of today
       */
@@ -41,14 +62,39 @@ module.exports = function ( jq ) {
     });
   }
 
-  const doOpenOrderForm = async function(shopData, workAreaBox, orderData){
+	const doShowCalendarDlg = function(calendarOptions) {
+		let calendarContent = calendardlg.doCreateCalendar(calendarOptions);
+		const calendarDlgOption = {
+			title: 'เลือกวันที่บนปฎิทิน',
+			msg: $(calendarContent),
+			width: '220px',
+			onOk: function(evt) {
+				calendarDlgHandle.closeAlert();
+			},
+			onCancel: function(evt){
+				calendarDlgHandle.closeAlert();
+			}
+		}
+		let calendarDlgHandle = $('body').radalert(calendarDlgOption);
+		$(calendarDlgHandle.okCmd).hide();
+		return calendarDlgHandle;
+	}
+
+  const doOpenOrderForm = async function(shopData, workAreaBox, orderData, selectDate){
+		let userdata = JSON.parse(localStorage.getItem('userdata'));
+		let userId = userdata.id;
+		let userinfoId = userdata.userinfoId;
+
     let orderObj = {};
     $(workAreaBox).empty();
     let titleText = 'เปิดออร์เดอร์ใหม่';
     if (orderData) {
       titleText = 'แก้ไขออร์เดอร์';
 			orderObj.id = orderData.id;
-    }
+			orderObj.Status = orderData.Status
+    } else {
+			orderObj.Status = 1;
+		}
     let titlePageBox = $('<div style="padding: 4px;"></viv>').text(titleText).css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
     let customerWokingBox = $('<div id="OrderCustomer" style="padding: 4px; width: 99.1%;"></viv>');
     let itemlistWorkingBox = $('<div id="OrderItemList" style="padding: 4px; width: 99.1%;"></viv>');
@@ -82,25 +128,48 @@ module.exports = function ( jq ) {
       orderObj.gooditems = [];
     }
 
+		console.log(orderObj);
+
+		//if ((!orderObj.Status) || ())
     $(customerControlCmd).append($(editCustomerCmd));
     let dlgHandle = undefined;
     $(editCustomerCmd).on('click', async (evt)=>{
       dlgHandle = await doOpenCustomerMngDlg(shopData, customerSelectedCallback);
     });
 
-		let addNewGoodItemCmd = common.doCreateTextCmd('เพิ่มสินค้า', 'green', 'white');
+		let addNewGoodItemCmd = common.doCreateTextCmd('เพิ่มรายการ', 'green', 'white');
     $(addNewGoodItemCmd).on('click', async (evt)=>{
       dlgHandle = await doOpenGoodItemMngDlg(shopData, gooditemSelectedCallback);
     });
 
-		let callCreateCloseOrderCmd = common.doCreateTextCmd('คิดเงิน', 'orange', 'white');
-		$(callCreateCloseOrderCmd).on('click', async (evt)=>{
+		let doShowCloseOrderDlg = async function() {
 			let total = await doCalOrderTotal(orderObj.gooditems);
 			if (total > 0) {
-      	dlgHandle = await doOpenCreateCloseOrderDlg(shopData, total, orderObj.id, invoiceCallback, billCallback, taxinvoiceCallback);
+				dlgHandle = await doOpenCreateCloseOrderDlg(shopData, total, orderObj, invoiceCallback, billCallback, taxinvoiceCallback);
 			} else {
 				$.notify("ออร์เดอร์ยังไม่สมบูรณ์โปรดเพิ่มรายการสินค้าก่อน", "error");
 			}
+		}
+
+		let callCreateCloseOrderCmd = common.doCreateTextCmd(' คิดเงิน ', '#F5500E', 'white', '#5D6D7E', '#FF5733');
+		$(callCreateCloseOrderCmd).on('click', async (evt)=>{
+			if (orderObj.customer) {
+				if (!orderData) {
+					let params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopData.id, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
+          let orderRes = await common.doCallApi('/api/shop/order/add', params);
+          if (orderRes.status.code == 200) {
+            $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
+						orderObj.id = orderRes.Records[0].id;
+						doShowCloseOrderDlg();
+          } else {
+            $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+          }
+				} else {
+					doShowCloseOrderDlg();
+				}
+			} else {
+        $.notify("โปรดระบุข้อมูลลูกค้าก่อนบันทึกออร์เดอร์", "error");
+      }
     });
 
     if ((orderObj) && (orderObj.gooditems)){
@@ -112,16 +181,13 @@ module.exports = function ( jq ) {
       $(itemlistWorkingBox).append($(goodItemTable));
     }
 
-    let cancelCmd = $('<input type="button" value=" ยกเลิก "/>').css({'margin-left': '10px'});
+    let cancelCmd = $('<input type="button" value=" กลับ "/>').css({'margin-left': '10px'});
     $(cancelCmd).on('click', async(evt)=>{
-      await doShowOrderList(shopData, workAreaBox);
+      await doShowOrderList(shopData, workAreaBox, selectDate);
     });
     let saveNewOrderCmd = $('<input type="button" value=" บันทึก " class="action-btn"/>');
     $(saveNewOrderCmd).on('click', async(evt)=>{
       if (orderObj.customer) {
-        let userdata = JSON.parse(localStorage.getItem('userdata'));
-        let userId = userdata.id;
-        let userinfoId = userdata.userinfoId;
         let params = undefined;
         let orderRes = undefined;
         if (orderData) {
@@ -129,7 +195,7 @@ module.exports = function ( jq ) {
           orderRes = await common.doCallApi('/api/shop/order/update', params);
           if (orderRes.status.code == 200) {
             $.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
-            await doShowOrderList(shopData, workAreaBox);
+            await doShowOrderList(shopData, workAreaBox, selectDate);
           } else {
             $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
           }
@@ -138,7 +204,7 @@ module.exports = function ( jq ) {
           orderRes = await common.doCallApi('/api/shop/order/add', params);
           if (orderRes.status.code == 200) {
             $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
-            await doShowOrderList(shopData, workAreaBox);
+            await doShowOrderList(shopData, workAreaBox, selectDate);
           } else {
             $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
           }
@@ -172,22 +238,12 @@ module.exports = function ( jq ) {
     }
 
 		const invoiceCallback = async function(newInvoiceData){
-			let userdata = JSON.parse(localStorage.getItem('userdata'));
-			let userId = userdata.id;
-			let userinfoId = userdata.userinfoId;
-			/*
-			newInvoiceData.shopId = shopData.id;
-			newInvoiceData.orderId = orderData.id;
-			newInvoiceData.userId = userId;
-			newInvoiceData.userinfoId = userinfoId;
-			*/
-			console.log(newInvoiceData);
-			let invoiceParams = {data: newInvoiceData, shopId: shopData.id, orderId: orderData.id, userId: userId, userinfoId: userinfoId};
+			let invoiceParams = {data: newInvoiceData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 			let invoiceRes = await common.doCallApi('/api/shop/invoice/add', invoiceParams);
 
 			if (invoiceRes.status.code == 200) {
 				let invoiceId = invoiceRes.Record.id;
-				let docParams = {orderId: orderData.id, shopId: shopData.id, filename: newInvoiceData.Filename, No: newInvoiceData.No};
+				let docParams = {orderId: orderObj.id, shopId: shopData.id/*, filename: newInvoiceData.Filename, No: newInvoiceData.No*/};
 				let docRes = await common.doCallApi('/api/shop/invoice/create/report', docParams);
 				console.log(docRes);
 				window.open(docRes.result.link, '_blank');
@@ -202,21 +258,19 @@ module.exports = function ( jq ) {
 		}
 
 		const billCallback = async function(newBillData, paymentData){
-			let userdata = JSON.parse(localStorage.getItem('userdata'));
-			let userId = userdata.id;
-			let userinfoId = userdata.userinfoId;
-
-			let billParams = {data: newBillData, shopId: shopData.id, orderId: orderData.id, userId: userId, userinfoId: userinfoId};
+			let billParams = {data: newBillData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 			let billRes = await common.doCallApi('/api/shop/bill/add', billParams);
 
 			if (billRes.status.code == 200) {
 				let billId = billRes.Record.id;
-				let paymentParams = {data: paymentData, shopId: shopData.id, orderId: orderId, userId: userId, userinfoId: userinfoId};
+				let paymentParams = {data: paymentData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 				let paymentRes = await common.doCallApi('/api/shop/payment/add', paymentParams);
 				if (paymentRes.status.code == 200) {
-					let docParams = {orderId: orderData.id, shopId: shopData.id, filename: newInvoiceData.Filename};
+					let docParams = {orderId: orderObj.id, shopId: shopData.id/*, filename: newBillData.Filename, No: newBillData.No*/};
 					let docRes = await common.doCallApi('/api/shop/bill/create/report', docParams);
 					console.log(docRes);
+					window.open(docRes.result.link, '_blank');
+					$.notify("ออกบิลเงินสด/ใบเสร็จรับเงินสำเร็จ", "sucess");
 				} else {
 					$.notify("บันทึกข้อมูลการชำระเงินไม่สำเร็จ", "error");
 				}
@@ -230,21 +284,19 @@ module.exports = function ( jq ) {
 		}
 
 		const taxinvoiceCallback = async function(newTaxInvoiceData, paymentData){
-			let userdata = JSON.parse(localStorage.getItem('userdata'));
-			let userId = userdata.id;
-			let userinfoId = userdata.userinfoId;
-
-			let taxinvoiceParams = {data: newTaxInvoiceData, shopId: shopData.id, orderId: orderData.id, userId: userId, userinfoId: userinfoId};
-			let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/add', invoiceParams);
+			let taxinvoiceParams = {data: newTaxInvoiceData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
+			let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/add', taxinvoiceParams);
 
 			if (taxinvoiceRes.status.code == 200) {
 				let taxinvoiceId = taxinvoiceRes.Record.id;
-				let paymentParams = {data: paymentData, shopId: shopData.id, orderId: orderId, userId: userId, userinfoId: userinfoId};
+				let paymentParams = {data: paymentData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 				let paymentRes = await common.doCallApi('/api/shop/payment/add', paymentParams);
 				if (paymentRes.status.code == 200) {
-					let docParams = {orderId: orderData.id, shopId: shopData.id, filename: newInvoiceData.Filename};
+					let docParams = {orderId: orderObj.id, shopId: shopData.id/*, filename: newInvoiceData.Filename, No: newInvoiceData.No*/};
 					let docRes = await common.doCallApi('/api/shop/taxinvoice/create/report', docParams);
 					console.log(docRes);
+					window.open(docRes.result.link, '_blank');
+					$.notify("ออกใบกำกับภาษีสำเร็จ", "sucess");
 				} else {
 					$.notify("บันทึกข้อมูลการชำระเงินไม่สำเร็จ", "error");
 				}
@@ -284,7 +336,7 @@ module.exports = function ( jq ) {
       const gooditemDlgContent = await gooditemdlg.doCreateFormDlg(shopData, callback);
       $(gooditemDlgContent).css({'margin-top': '10px'});
       const gooditemformoption = {
-  			title: 'เลือกรายการสินต้า',
+  			title: 'เลือกรายการสินค้า',
   			msg: $(gooditemDlgContent),
   			width: '720px',
   			onOk: async function(evt) {
@@ -300,12 +352,12 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doOpenCreateCloseOrderDlg = function(shopData, orderTotal, orderId, invoiceCallback, billCallback, taxinvoiceCallback) {
+	const doOpenCreateCloseOrderDlg = function(shopData, orderTotal, orderObj, invoiceCallback, billCallback, taxinvoiceCallback) {
 		return new Promise(async function(resolve, reject) {
-      const closeOrderDlgContent = await closeorderdlg.doCreateFormDlg(shopData, orderTotal, orderId, invoiceCallback, billCallback, taxinvoiceCallback);
+      const closeOrderDlgContent = await closeorderdlg.doCreateFormDlg(shopData, orderTotal, orderObj, invoiceCallback, billCallback, taxinvoiceCallback);
       $(closeOrderDlgContent).css({'margin-top': '10px'});
       const closeOrderformoption = {
-  			title: 'ป้อนข้อมูลเพื่อเตรียมออกใบแจ้งหนี้',
+  			title: 'ป้อนข้อมูลเพื่อเตรียมออกใบแจ้งหนี้ หรือ เก็บเงิน',
   			msg: $(closeOrderDlgContent),
   			width: '420px',
   			onOk: async function(evt) {
@@ -379,7 +431,7 @@ module.exports = function ( jq ) {
             let commandCell = $('<td align="center"></td>');
             $(goodItemRow).append($(commandCell));
 
-            let increaseBtnCmd = common.doCreateImageCmd('../../images/plus-sign-icon.png');
+            let increaseBtnCmd = common.doCreateImageCmd('../../images/plus-sign-icon.png', 'เพิ่มจำนวน');
             $(increaseBtnCmd).on('click', async(evt)=>{
               let oldQty = $(goodItemQtyCell).text();
               oldQty = Number(oldQty);
@@ -391,7 +443,7 @@ module.exports = function ( jq ) {
               let total = await doCalOrderTotal(orderData.gooditems);
               $(totalValueCell).empty().append($('<span><b>' + common.doFormatNumber(total) + '</b></span>').css({'margin-right': '4px'}));
             });
-            let decreaseBtnCmd = common.doCreateImageCmd('../../images/minus-sign-icon.png');
+            let decreaseBtnCmd = common.doCreateImageCmd('../../images/minus-sign-icon.png', 'ลดจำนวน');
             $(decreaseBtnCmd).on('click', async(evt)=>{
               let oldQty = $(goodItemQtyCell).text();
               oldQty = Number(oldQty);
@@ -408,7 +460,7 @@ module.exports = function ( jq ) {
               }
             });
 
-            let deleteGoodItemCmd = common.doCreateImageCmd('../../images/cross-red-icon.png');
+            let deleteGoodItemCmd = common.doCreateImageCmd('../../images/cross-red-icon.png', 'ลบรายการ');
             $(deleteGoodItemCmd).on('click', async (evt)=>{
 							$(goodItemRow).remove();
               let newGoodItems = await doDeleteGoodItem(i, orderData);
@@ -459,9 +511,13 @@ module.exports = function ( jq ) {
     });
   }
 
-  const doCreateOrderList = function(shopData, workAreaBox){
+  const doCreateOrderList = function(shopData, workAreaBox, orderDate){
     return new Promise(async function(resolve, reject) {
-      let orderRes = await common.doCallApi('/api/shop/order/list/by/shop/' + shopData.id, {});
+			let orderReqParams = {};
+			if (orderDate) {
+				orderReqParams = {orderDate: orderDate};
+			}
+      let orderRes = await common.doCallApi('/api/shop/order/list/by/shop/' + shopData.id, orderReqParams);
       let orders = orderRes.Records;
       console.log(orders);
       //localStorage.setItem('orders', JSON.stringify(orders));
@@ -476,15 +532,49 @@ module.exports = function ( jq ) {
             let fmtTime = common.doFormatTimeStr(orderDate);
             let ownerOrderFullName = orders[i].userinfo.User_NameTH + ' ' + orders[i].userinfo.User_LastNameTH;
             let orderBox = $('<div></div>').css({'width': '125px', 'position': 'relative', 'min-height': '150px', 'border': '2px solid black', 'border-radius': '5px', 'float': 'left', 'cursor': 'pointer', 'padding': '5px', 'margin-left': '8px', 'margin-top': '10px'});
-            $(orderBox).css({'background-color': 'yellow'});
             $(orderBox).append($('<div><b>ลูกค้า :</b> ' + orders[i].customer.Name + '</div>').css({'width': '100%'}));
             $(orderBox).append($('<div><b>ผู้รับออร์เดอร์ :</b> ' + ownerOrderFullName + '</div>').css({'width': '100%'}));
             $(orderBox).append($('<div><b>ยอดรวม :</b> ' + common.doFormatNumber(total) + '</div>').css({'width': '100%'}));
             $(orderBox).append($('<div><b>วันที่-เวลา :</b> ' + fmtDate + ':' + fmtTime + '</div>').css({'width': '100%'}));
+						if (orders[i].Status == 1) {
+							$(orderBox).css({'background-color': 'yellow'});
+						} else if (orders[i].Status == 2) {
+							$(orderBox).css({'background-color': 'orange'});
+							let invoiceBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210'});
+							$(invoiceBox).append($('<span>' + orders[i].invoice.No + '</span>').css({'font-weight': 'bold'}));
+							$(invoiceBox).on('click', (evt)=>{
+								evt.stopPropagation();
+								window.open('/shop/img/usr/pdf/' + orders[i].invoice.Filename, '_blank');
+							});
+							$(orderBox).append($(invoiceBox));
+						} else if ((orders[i].Status == 3) || (orders[i].Status == 4)) {
+							$(orderBox).css({'background-color': 'green'});
+							if (orders[i].bill){
+								let billBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210'});
+								$(billBox).append($('<span>' + orders[i].bill.No + '</span>').css({'font-weight': 'bold'}));
+								$(billBox).on('click', (evt)=>{
+									evt.stopPropagation();
+									window.open('/shop/img/usr/pdf/' + orders[i].bill.Filename, '_blank');
+								});
+								$(orderBox).append($(billBox));
+							}
+							if (orders[i].taxinvoice){
+								let taxinvoiceBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210'});
+								$(taxinvoiceBox).append($('<span>' + orders[i].taxinvoice.No + '</span>').css({'font-weight': 'bold'}));
+								$(taxinvoiceBox).on('click', (evt)=>{
+									evt.stopPropagation();
+									window.open('/shop/img/usr/pdf/' + orders[i].taxinvoice.Filename, '_blank');
+								});
+								$(orderBox).append($(taxinvoiceBox));
+							}
+						} else if (orders[i].Status == 0) {
+							$(orderBox).css({'background-color': 'grey'});
+						}
             $(orderBox).on('click', (evt)=>{
-              let orderData = {customer: orders[i].customer, gooditems: orders[i].Items, id: orders[i].id, status: orders[i].Status};
+							evt.stopPropagation();
+              let orderData = {customer: orders[i].customer, gooditems: orders[i].Items, id: orders[i].id, Status: orders[i].Status};
               $(orderListBox).remove();
-              doOpenOrderForm(shopData, workAreaBox, orderData);
+              doOpenOrderForm(shopData, workAreaBox, orderData, orderDate);
             });
             $(orderListBox).append($(orderBox));
           }
@@ -497,6 +587,7 @@ module.exports = function ( jq ) {
           resolve(ob[0]);
         });
       } else {
+				$(workAreaBox).append($('<div>ไม่พบรายการออร์เดอร์ของวันที่ ' + orderDate + '</div>'));
         resolve();
       }
     });

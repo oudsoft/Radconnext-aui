@@ -27,6 +27,12 @@ module.exports = function ( jq ) {
 			}
 			let shopItems = shopRes.Records;
 			let titlePageBox = $('<div style="padding: 4px;">รายการร้านค้าในระบบ</viv>').css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
+			let logoutCmd = $('<span>ออกจากระบบ</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'absolute', 'right': '5px', 'top': '8px', 'padding': '4px', 'font-size': '14px'});
+			$(logoutCmd).on('click', (evt)=>{
+				common.doUserLogout();
+			});
+			$(titlePageBox).append($(logoutCmd));
+
 			$('#App').append($(titlePageBox));
 			let newShopCmdBox = $('<div style="padding: 4px;"></div>').css({'width': '99.5%', 'text-align': 'right'});
 			let newShopCmd = $('<input type="button" value=" + New Shop " class="action-btn"/>');
@@ -70,7 +76,7 @@ module.exports = function ( jq ) {
 							$(field).append($(shopLogoIcon));
 							let updateShopLogoCmd = $('<input type="button" value=" เปลี่ยนรูป " class="action-btn"/>');
 							$(updateShopLogoCmd).on('click', (evt)=>{
-								doStartUploadPicture(evt, shopLogoIcon, field, item.id);
+								doStartUploadPicture(evt, field, item.id);
 							});
 							$(field).append($(updateShopLogoCmd));
 							$(itemRow).append($(field));
@@ -149,40 +155,43 @@ module.exports = function ( jq ) {
 		return shopDataForm;
 	}
 
-	const doStartUploadPicture = function(evt, shopLogoIcon, imageBox, shopId){
+	const doStartUploadPicture = function(evt, imageBox, shopId, callback){
 		let fileBrowser = $('<input type="file"/>');
     $(fileBrowser).attr("name", 'shoplogo');
     $(fileBrowser).attr("multiple", true);
     $(fileBrowser).css('display', 'none');
     $(fileBrowser).on('change', function(e) {
-      const defSize = 10000000;
       var fileSize = e.currentTarget.files[0].size;
       var fileType = e.currentTarget.files[0].type;
-      if (fileSize <= defSize) {
-        doUploadImage(fileBrowser, shopLogoIcon, fileType, shopId);
+      if (fileSize <= common.fileUploadMaxSize) {
+        doUploadImage(fileBrowser, shopId, callback);
       } else {
-        $(imageBox).append($('<span>' + 'File not excess ' + defSize + ' Byte.' + '</span>'));
+        $(imageBox).append($('<span>' + 'File not excess ' + common.fileUploadMaxSize + ' Byte.' + '</span>'));
       }
     });
     $(fileBrowser).appendTo($(imageBox));
     $(fileBrowser).click();
 	}
 
-	const doUploadImage = function(fileBrowser, shopLogoIcon, fileType, shopId){
+	const doUploadImage = function(fileBrowser, shopId, callback){
 		var uploadUrl = '/api/shop/upload/shoplogo';
     $(fileBrowser).simpleUpload(uploadUrl, {
       success: async function(data){
         $(fileBrowser).remove();
 				let shopRes = await common.doCallApi('/api/shop/shop/change/logo', {data: {Shop_LogoFilename: data.link}, id: shopId});
-        setTimeout(async() => {
-					/*
-					$(shopLogoIcon).attr('src', data.link);
-					$(shopLogoIcon).on('click', (evt)=>{
-						window.open(data.link, '_blank');
-					});
-					*/
-					await doShowShopItem();
-        }, 400);
+				if (callback) {
+					callback(data);
+				} else {
+					setTimeout(async() => {
+						/*
+						$(shopLogoIcon).attr('src', data.link);
+						$(shopLogoIcon).on('click', (evt)=>{
+							window.open(data.link, '_blank');
+						});
+						*/
+						await doShowShopItem();
+      		}, 400);
+				}
       },
     });
 	}
@@ -228,7 +237,7 @@ module.exports = function ( jq ) {
 		let newShopFormBox = $('body').radalert(newshopformoption);
 	}
 
-	const doOpenEditShopForm = function(shopData){
+	const doOpenEditShopForm = function(shopData, successCallback){
 		let shopEditForm = doCreateShopForm(shopData);
 		let radEditShopFormBox = $('<div></div>');
 		$(radEditShopFormBox).append($(shopEditForm));
@@ -250,7 +259,11 @@ module.exports = function ( jq ) {
 						let shopRes = await common.doCallApi('/api/shop/shop/update', params);
 						if (shopRes.status.code == 200) {
 							$.notify("แก้ไขรายการร้านค้าสำเร็จ", "success");
-							await doShowShopItem()
+							if (successCallback) {
+								successCallback(editShopFormObj);
+							} else {
+								await doShowShopItem();
+							}
 						} else if (shopRes.status.code == 201) {
 							$.notify("ไม่สามารถแก้ไขรายการร้านค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
 						} else {
@@ -270,8 +283,8 @@ module.exports = function ( jq ) {
 		let editShopFormBox = $('body').radalert(editshopformoption);
 	}
 
-	const doOpenManageShop = function(shopData){
-		shopmng.doShowShopMhg(shopData)
+	const doOpenManageShop = function(shopData, uploadLogCallback, editShopCallback){
+		shopmng.doShowShopMhg(shopData, uploadLogCallback, editShopCallback)
 	}
 
 	const doDeleteShop = function(shopId){
@@ -303,6 +316,10 @@ module.exports = function ( jq ) {
 	}
 
   return {
-    doShowShopItem
+    doShowShopItem,
+		doOpenManageShop,
+		doCreateShopForm,
+		doOpenEditShopForm,
+		doStartUploadPicture
 	}
 }
