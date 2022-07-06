@@ -5,9 +5,14 @@ window.$ = window.jQuery = require('jquery');
 const util = require('../../case/mod/utilmod.js')($);
 const common = require('../../case/mod/commonlib.js')($);
 
+const userinfo = require('../../case/mod/userinfolib.js')($);
+const userprofile = require('../../case/mod/userprofilelib.js')($);
 const casecounter = require('../../case/mod/casecounter.js')($);
 const softphone = require('../../case/mod/softphonelib.js')($);
 const masternotify = require('../../case/mod/master-notify.js')($);
+const urgentstd = require('../../case/mod/urgentstd.js')($);
+const consult = require('../../case/mod/consult.js')($);
+const portal = require('../../case/mod/portal-lib.js')($);
 
 var wsm, sipUA;
 
@@ -24,33 +29,9 @@ $( document ).ready(function() {
           if (userdata.usertypeId == 2) {
 			       doLoadMainPage();
              wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
-             if (userdata.userinfo.User_SipPhone){
-                let sipPhoneNumber = userdata.userinfo.User_SipPhone;
-                let sipPhoneSecret = userdata.userinfo.User_SipSecret;
-                sipUA = softphone.doRegisterSoftphone(sipPhoneNumber, sipPhoneSecret);
-
-                sipUA.start();
-                let sipPhoneOptions = {onRejectCallCallback: softphone.doRejectCall, onAcceptCallCallback: softphone.doAcceptCall, onEndCallCallback: softphone.doEndCall};
-                let mySipPhoneIncomeBox = $('<div id="SipPhoneIncomeBox" tabindex="1"></div>');
-                $(mySipPhoneIncomeBox).css({'position': 'absolute', 'width': '98%', 'min-height': '50px;', 'max-height': '50px', 'background-color': '#fefefe', 'padding': '5px', 'border': '1px solid #888',  'z-index': '192', 'top': '-65px'});
-                let mySipPhone = $(mySipPhoneIncomeBox).sipphoneincome(sipPhoneOptions);
-                $('body').append($(mySipPhoneIncomeBox));
-             }
+             doCreateRegisterVoIP(userdata);
            } else {
-             const contentBox = $('<div></div>');
-             $(contentBox).append($('<p>บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้</p>'));
-             $(contentBox).append($('<p>โปรด Login ใหม่อีกครั้งเพื่อเปลี่ยนบัญชีใช้งานให้ถูกต้อง</p>'));
-             const radalertoption = {
-               title: 'ข้อมูลผู้ใช้งานไม่ถูกต้อง',
-               msg: $(contentBox),
-               width: '410px',
-               onOk: function(evt) {
-                 radAlertBox.closeAlert();
-                 doLoadLogin();
-               }
-             }
-             let radAlertBox = $('body').radalert(radalertoption);
-             $(radAlertBox.cancelCmd).hide();
+             doNotAllowAccessPage();
            }
         } else {
           doLoadLogin();
@@ -92,6 +73,38 @@ const doLoadLogin = function(){
   common.doUserLogout(wsm);
 }
 
+const doCreateRegisterVoIP = function(userdata){
+  if (userdata.userinfo.User_SipPhone){
+     let sipPhoneNumber = userdata.userinfo.User_SipPhone;
+     let sipPhoneSecret = userdata.userinfo.User_SipSecret;
+     sipUA = softphone.doRegisterSoftphone(sipPhoneNumber, sipPhoneSecret);
+
+     sipUA.start();
+     let sipPhoneOptions = {onRejectCallCallback: softphone.doRejectCall, onAcceptCallCallback: softphone.doAcceptCall, onEndCallCallback: softphone.doEndCall};
+     let mySipPhoneIncomeBox = $('<div id="SipPhoneIncomeBox" tabindex="1"></div>');
+     $(mySipPhoneIncomeBox).css({'position': 'absolute', 'width': '98%', 'min-height': '50px;', 'max-height': '50px', 'background-color': '#fefefe', 'padding': '5px', 'border': '1px solid #888',  'z-index': '192', 'top': '-65px'});
+     let mySipPhone = $(mySipPhoneIncomeBox).sipphoneincome(sipPhoneOptions);
+     $('body').append($(mySipPhoneIncomeBox));
+  }
+}
+
+const doNotAllowAccessPage = function(){
+  const contentBox = $('<div></div>');
+  $(contentBox).append($('<p>บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้</p>'));
+  $(contentBox).append($('<p>โปรด Login ใหม่อีกครั้งเพื่อเปลี่ยนบัญชีใช้งานให้ถูกต้อง</p>'));
+  const radalertoption = {
+    title: 'ข้อมูลผู้ใช้งานไม่ถูกต้อง',
+    msg: $(contentBox),
+    width: '410px',
+    onOk: function(evt) {
+      radAlertBox.closeAlert();
+      doLoadLogin();
+    }
+  }
+  let radAlertBox = $('body').radalert(radalertoption);
+  $(radAlertBox.cancelCmd).hide();
+}
+
 const doLoadMainPage = function(){
   let printjs = 'https://radconnext.info/lib/print/print.min.js';
   let excelexportjs = 'https://radconnext.info/lib/excel/excelexportjs.js';
@@ -103,6 +116,7 @@ const doLoadMainPage = function(){
 	let controlPagePlugin = "https://radconnext.info/setting/plugin/jquery-controlpage-plugin.js"
   let customSelectPlugin = "https://radconnext.info/setting/plugin/jquery-custom-select-plugin.js";
   let chatBoxPlugin = "https://radconnext.info/setting/plugin/jquery-chatbox-plugin.js";
+  let readystatePlugin = "https://radconnext.info/setting/plugin/jqury-readystate-plugin.js";
 
   $('head').append('<script src="' + printjs + '"></script>');
   $('head').append('<script src="' + excelexportjs + '"></script>');
@@ -115,6 +129,7 @@ const doLoadMainPage = function(){
   $('head').append('<script src="' + controlPagePlugin + '"></script>');
   $('head').append('<script src="' + customSelectPlugin + '"></script>');
   $('head').append('<script src="' + chatBoxPlugin + '"></script>');
+  $('head').append('<script src="' + readystatePlugin + '"></script>');
 
   $('head').append('<link rel="stylesheet" href="https://radconnext.info/lib/tui-image-editor.min.css" type="text/css" />');
 	$('head').append('<link rel="stylesheet" href="https://radconnext.info/lib/tui-color-picker.css" type="text/css" />');
@@ -131,11 +146,38 @@ const doLoadMainPage = function(){
   $('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/main-fix.css" type="text/css" />');
   $('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/menu-fix.css" type="text/css" />');
 
-  let mainFile= 'https://radconnext.info/case/form/main-fix.html';
-  let menuFile = 'https://radconnext.info/case/form/menu-fix.html';
+  let mainFile= '../form/main-fix.html';
+  let menuFile = '../form/menu-fix.html';
 
   $('#app').load(mainFile, function(){
     $('#Menu').load(menuFile, function(){
+
+      $(document).on('openedituserinfo', (evt, data)=>{
+				userinfo.doShowUserProfile();
+			});
+			$(document).on('userlogout', (evt, data)=>{
+				common.doUserLogout(wsm);
+			});
+
+      $(document).on('gotoportal', (evt, data)=>{
+        portal.doShowPortal();
+      });
+
+      $(document).on('newconsult', (evt, data)=>{
+        consult.doCreateNewConsultForm();
+      });
+
+      $(document).on('myconsult', (evt, data)=>{
+        consult.doCreateMyConsultListView();
+      });
+
+      $(document).on('stdurgentconfig', (evt, data)=>{
+        urgentstd.doLoadMyStdUrgentListView();
+      });
+
+      $(document).on('openscanpartprofile', (evt, data)=>{
+				showScanpartAux();
+			});
 
       doAddNotifyCustomStyle();
 
@@ -163,6 +205,59 @@ const doInitDefualPage = function(){
     });
     $('body').loading('stop');
   });
+}
+
+const doTriggerLoadDicom = function(){
+  let queryString = localStorage.getItem('dicomfilter');
+  let query = JSON.parse(queryString);
+  let modality = query.Query.Modality;
+  if (modality !== '*') {
+    $('#HomeMainCmd').next('.NavSubHide').find('.MenuCmd').each((i, cmd) => {
+      let cmdModality = $(cmd).data('dm');
+      if (cmdModality == modality) {
+        $(cmd).click();
+      }
+    });
+  }
+}
+
+const actionAfterSetupCounter = function(){
+  $('#HomeMainCmd').click();
+  doTriggerLoadDicom();
+}
+
+const showScanpartAux = async function() {
+  const userdata = JSON.parse(localStorage.getItem('userdata'));
+	const deleteCallback = async function(scanpartAuxId) {
+		$('body').loading('start');
+		let rqParams = {id: scanpartAuxId};
+		let scanpartauxRes = await common.doCallApi('/api/scanpartaux/delete', rqParams);
+		if (scanpartauxRes.status.code == 200) {
+			$.notify("ลบรายการ Scan Part สำเร็จ", "success");
+			showScanpartAux();
+		} else {
+			$.notify("ไม่สามารถลบรายการ Scan Part ได้ในขณะนี้", "error");
+		}
+		$('body').loading('stop');
+	}
+
+	$('body').loading('start');
+
+  let pageLogo = $('<img src="/images/urgent-icon.png" width="40px" height="auto" style="position: relative; display: inline-block; top: 10px;"/>');
+  let titleText = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>รายการ Scan Part ของฉัน</h3></div>');
+  let titleBox = $('<div></div>').append($(pageLogo)).append($(titleText));
+  $("#TitleContent").empty().append($(titleBox));
+
+	let userId = userdata.id;
+	let rqParams = {userId: userId};
+	let scanpartauxs = await common.doCallApi('/api/scanpartaux/user/list', rqParams);
+	if (scanpartauxs.Records.length > 0) {
+		let scanpartAuxBox = await userprofile.showScanpartProfile(scanpartauxs.Records, deleteCallback);
+		$(".mainfull").empty().append($(scanpartAuxBox));
+	} else {
+		$(".mainfull").append($('<h4>ไม่พบรายการ Scan Part ของคุณ</h4>'));
+	}
+	$('body').loading('stop');
 }
 
 const doAddNotifyCustomStyle = function(){

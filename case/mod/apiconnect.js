@@ -123,18 +123,15 @@ module.exports = function ( jq ) {
 
   const doCallApi = function (apiurl, params) {
 		return new Promise(function(resolve, reject) {
-      /*
-			$.post(apiurl, params, function(data){
-				resolve(data);
-			}).fail(function(error) {
-				reject(error);
-			});
-      */
       let apiname = apiurl;
       const progBar = $('body').radprogress({value: 0, apiname: apiname});
       $(progBar.progressBox).screencenter({offset: {x: 50, y: 50}});
+      let apiURL = apiurl;
+      if (window.location.hostname == 'localhost') {
+        apiURL = 'https://radconnext.info' + apiurl;
+      }
       $.ajax({
-        url: apiurl,
+        url: apiURL,
         type: 'post',
         data: params,
         xhr: function () {
@@ -146,7 +143,6 @@ module.exports = function ( jq ) {
               var event = new CustomEvent('response-progress', {detail: {event: evt, resfrom: apiurl}});
               document.dispatchEvent(event);
               */
-
               let loaded = evt.loaded;
               let total = evt.total;
               let prog = (loaded / total) * 100;
@@ -172,6 +168,7 @@ module.exports = function ( jq ) {
           resolve(res)
         }, 1000);
       }).fail(function (err) {
+        /*
         $(progBar.handle).find('#ApiNameBar').css({'color': 'red'});
         $(progBar.progressValueBox).css({'color': 'red'});
         $.notify('มีข้อผิดพลาดเกิดที่ระบบฯ', 'error');
@@ -203,14 +200,20 @@ module.exports = function ( jq ) {
             progBar.doCloseProgress();
             reject(err);
           }, 2500);
-        })
+        });
+        */
+        reject(err);
       });
 		});
 	}
 
   const doGetApi = function (apiurl, params) {
 		return new Promise(function(resolve, reject) {
-			$.get(apiurl, params, function(data){
+      let apiURL = apiurl;
+      if (window.location.hostname == 'localhost') {
+        apiURL = 'https://radconnext.info' + apiurl;
+      }
+			$.get(apiURL, params, function(data){
 				resolve(data);
 			}).fail(function(error) {
 				reject(error);

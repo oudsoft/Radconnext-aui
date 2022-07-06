@@ -25,7 +25,9 @@ module.exports = function ( jq ) {
           $(itemRow).append($('<div style="display: table-cell; vertical-align: middle;">' + item.StudyDesc + '</div>'));
           $(itemRow).append($('<div style="display: table-cell; vertical-align: middle;">' + item.ProtocolName + '</div>'));
           let scanPartCell = $('<div style="display: table-cell; vertical-align: middle;"></div>');
-          let scanPartBox = await common.doRenderScanpartSelectedBox(item.Scanparts);
+					let scanpartValues = Object.values(item.Scanparts);
+					scanpartValues = scanpartValues.slice(0, -1);
+          let scanPartBox = await common.doRenderScanpartSelectedBox(scanpartValues);
           $(scanPartBox).appendTo($(scanPartCell));
           $(itemRow).append($(scanPartCell));
           let scanPartCmdCell = $('<div style="display: table-cell; vertical-align: middle;"></div>');

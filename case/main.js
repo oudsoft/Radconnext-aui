@@ -171,6 +171,7 @@ function doLoadMainPage(){
 			$(document).on('userlogout', (evt, data)=>{
 				common.doUserLogout(wsm);
 			});
+
 			$(document).on('openhome', (evt, data)=>{
 				common.doSaveQueryDicom(data);
 				newcase.doLoadDicomFromOrthanc();
