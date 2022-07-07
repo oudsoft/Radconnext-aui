@@ -89,7 +89,7 @@ module.exports = function ( jq ) {
 				});
 				let mngShopCmd = $('<input type="button" value=" Manage " class="action-btn"/>').css({'margin-left': '8px'});
 				$(mngShopCmd).on('click', (evt)=>{
-					doOpenManageShop(item);
+					doOpenManageShop(item, doStartUploadPicture, doOpenEditShopForm);
 				});
 				let deleteShopCmd = $('<input type="button" value=" Delete " class="action-btn"/>').css({'margin-left': '8px'});
 				$(deleteShopCmd).on('click', (evt)=>{
@@ -283,8 +283,8 @@ module.exports = function ( jq ) {
 		let editShopFormBox = $('body').radalert(editshopformoption);
 	}
 
-	const doOpenManageShop = function(shopData, uploadLogCallback, editShopCallback){
-		shopmng.doShowShopMhg(shopData, uploadLogCallback, editShopCallback)
+	const doOpenManageShop = function(shopData, uploadLogoCallback, editShopCallback){
+		shopmng.doShowShopMhg(shopData, uploadLogoCallback, editShopCallback)
 	}
 
 	const doDeleteShop = function(shopId){

@@ -2,6 +2,8 @@
 
 window.$ = window.jQuery = require('jquery');
 
+const submain = require('./mod/submainlib.js')($);
+
 const util = require('../../case/mod/utilmod.js')($);
 const common = require('../../case/mod/commonlib.js')($);
 
@@ -9,10 +11,10 @@ const userinfo = require('../../case/mod/userinfolib.js')($);
 const userprofile = require('../../case/mod/userprofilelib.js')($);
 const casecounter = require('../../case/mod/casecounter.js')($);
 const softphone = require('../../case/mod/softphonelib.js')($);
-const masternotify = require('../../case/mod/master-notify.js')($);
 const urgentstd = require('../../case/mod/urgentstd.js')($);
 const consult = require('../../case/mod/consult.js')($);
 const portal = require('../../case/mod/portal-lib.js')($);
+const cases = require('../../case/mod/case.js')($);
 
 var wsm, sipUA;
 
@@ -176,10 +178,99 @@ const doLoadMainPage = function(){
       });
 
       $(document).on('openscanpartprofile', (evt, data)=>{
-				showScanpartAux();
+				submain.showScanpartAux();
 			});
 
-      doAddNotifyCustomStyle();
+      $(document).on('openreportdesign', (evt, data)=>{
+				$('body').loading('start');
+				$(".mainfull").empty();
+				let reportDesignUrl = '../report-design/index.html?hosid=' + data.hospitalId;
+				window.location.replace(reportDesignUrl);
+				$('body').loading('stop');
+			});
+
+      $(document).on('opennewstatuscase', async (evt, data)=>{
+				let titlePage = $('<div></div>');
+				let logoPage = $('<img src="/images/case-incident-icon-2.png" width="40px" height="auto" style="position: relative; display: inline-block; top: 10px;"/>');
+				$(logoPage).appendTo($(titlePage));
+				let titleContent = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>เคสส่งอ่าน [เคสใหม่] -รอตอบรับจากรังสีแพทย์</h3></div>');
+				$(titleContent).appendTo($(titlePage));
+				$("#TitleContent").empty().append($(titlePage));
+				let rqParams = { hospitalId: userdata.hospitalId, statusId: common.caseReadWaitStatus };
+				cases.doLoadCases(rqParams).then(()=>{
+          common.doScrollTopPage();
+        });
+			});
+
+      $(document).on('openacceptedstatuscase', async (evt, data)=>{
+				let resultTitle = $('<div"></div>');
+				let logoPage = $('<img src="/images/case-incident-icon-2.png" width="40px" height="auto" style="position: relative; display: inline-block; top: 10px;"/>');
+				$(logoPage).appendTo($(resultTitle));
+				let titleResult = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>เคสส่งอ่าน [ตอบรับแล้ว] -รอผลอ่าน</h3></div>');
+				$(titleResult).appendTo($(resultTitle));
+				$("#TitleContent").empty().append($(resultTitle));
+				let rqParams = { hospitalId: userdata.hospitalId, /*userId: userdata.id,*/ statusId: common.casePositiveStatus };
+				cases.doLoadCases(rqParams).then(()=>{
+          common.doScrollTopPage();
+        });
+			});
+
+      $(document).on('opensuccessstatuscase', async (evt, data)=>{
+				let resultTitle = $('<div></div>');
+				let logoPage = $('<img src="/images/case-incident-icon-2.png" width="40px" height="auto" style="position: relative; display: inline-block; top: 10px;"/>');
+				$(logoPage).appendTo($(resultTitle));
+				let titleResult = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>เคสส่งอ่าน [ได้ผลอ่านแล้ว]</h3></div>');
+				$(titleResult).appendTo($(resultTitle));
+				$("#TitleContent").empty().append($(resultTitle));
+				let rqParams = { hospitalId: userdata.hospitalId, /*userId: userdata.id,*/ statusId: common.caseReadSuccessStatus };
+				cases.doLoadCases(rqParams).then(()=>{
+          common.doScrollTopPage();
+        });
+			});
+
+      $(document).on('opennegativestatuscase', async (evt, data)=>{
+				let resultTitle = $('<div></div>');
+				let logoPage = $('<img src="/images/case-incident-icon-2.png" width="40px" height="auto" style="position: relative; display: inline-block; top: 10px;"/>');
+				$(logoPage).appendTo($(resultTitle));
+				let titleResult = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>รายการเคสไม่สมบูรณ์/รอคำสั่ง</h3></div>');
+				$(titleResult).appendTo($(resultTitle));
+				$("#TitleContent").empty().append($(resultTitle));
+				let rqParams = { hospitalId: userdata.hospitalId, /*userId: userdata.id,*/ statusId: common.caseNegativeStatus };
+				cases.doLoadCases(rqParams).then(()=>{
+          common.doScrollTopPage();
+        });
+			});
+
+      $(document).on('opensearchcase', async (evt, data)=>{
+				$('body').loading('start');
+        let yesterDayFormat = util.getYesterdayDevFormat();
+        let toDayFormat = util.getTodayDevFormat();
+				let defaultSearchKey = {fromDateKeyValue: yesterDayFormat, toDateKeyValue: toDayFormat, patientNameENKeyValue: '*', patientHNKeyValue: '*', bodypartKeyValue: '*', caseStatusKeyValue: 0};
+				let defaultSearchParam = {key: defaultSearchKey, hospitalId: userdata.hospitalId, userId: userdata.id, usertypeId: userdata.usertypeId};
+
+				let searchTitlePage = cases.doCreateSearchTitlePage();
+
+				$("#TitleContent").empty().append($(searchTitlePage));
+				let response = await common.doCallApi('/api/cases/search/key', defaultSearchParam);
+				$('body').loading('stop');
+				if (response.status.code === 200) {
+					let searchResultViewDiv = $('<div id="SearchResultView"></div>');
+					$(".mainfull").empty().append($(searchResultViewDiv));
+					await cases.doShowSearchResultCallback(response);
+          common.doScrollTopPage();
+				} else {
+					$(".mainfull").append('<h3>ระบบค้นหาเคสขัดข้อง โปรดแจ้งผู้ดูแลระบบ</h3>');
+				}
+			});
+
+      $(document).on('openhome', (evt, data)=>{
+				common.doSaveQueryDicom(data);
+				//newcase.doLoadDicomFromOrthanc();
+			});
+
+      submain.doTriggerDicomFilterForm();
+
+      submain.doAddNotifyCustomStyle();
 
       doInitDefualPage();
 
@@ -191,18 +282,7 @@ const doInitDefualPage = function(){
   $('body').loading('start');
   casecounter.doSetupCounter().then(async(loadRes)=>{
     actionAfterSetupCounter();
-    $('.mainfull').attr('tabindex', 1);
-    $('.mainfull').on('keydown', async (evt)=>{
-      if (event.ctrlKey && event.key === 'Z') {
-        let masterNotifyView = $('.mainfull').find('#MasterNotifyView');
-        if ($(masterNotifyView).length > 0) {
-          $(masterNotifyView).remove();
-        } else {
-          masterNotifyView = await masternotify.doShowMessage(userdata.id);
-          $('.mainfull').append($(masterNotifyView));
-        }
-      }
-    });
+    submain.doInitShowMasterNotify();
     $('body').loading('stop');
   });
 }
@@ -224,67 +304,4 @@ const doTriggerLoadDicom = function(){
 const actionAfterSetupCounter = function(){
   $('#HomeMainCmd').click();
   doTriggerLoadDicom();
-}
-
-const showScanpartAux = async function() {
-  const userdata = JSON.parse(localStorage.getItem('userdata'));
-	const deleteCallback = async function(scanpartAuxId) {
-		$('body').loading('start');
-		let rqParams = {id: scanpartAuxId};
-		let scanpartauxRes = await common.doCallApi('/api/scanpartaux/delete', rqParams);
-		if (scanpartauxRes.status.code == 200) {
-			$.notify("ลบรายการ Scan Part สำเร็จ", "success");
-			showScanpartAux();
-		} else {
-			$.notify("ไม่สามารถลบรายการ Scan Part ได้ในขณะนี้", "error");
-		}
-		$('body').loading('stop');
-	}
-
-	$('body').loading('start');
-
-  let pageLogo = $('<img src="/images/urgent-icon.png" width="40px" height="auto" style="position: relative; display: inline-block; top: 10px;"/>');
-  let titleText = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>รายการ Scan Part ของฉัน</h3></div>');
-  let titleBox = $('<div></div>').append($(pageLogo)).append($(titleText));
-  $("#TitleContent").empty().append($(titleBox));
-
-	let userId = userdata.id;
-	let rqParams = {userId: userId};
-	let scanpartauxs = await common.doCallApi('/api/scanpartaux/user/list', rqParams);
-	if (scanpartauxs.Records.length > 0) {
-		let scanpartAuxBox = await userprofile.showScanpartProfile(scanpartauxs.Records, deleteCallback);
-		$(".mainfull").empty().append($(scanpartAuxBox));
-	} else {
-		$(".mainfull").append($('<h4>ไม่พบรายการ Scan Part ของคุณ</h4>'));
-	}
-	$('body').loading('stop');
-}
-
-const doAddNotifyCustomStyle = function(){
-  $.notify.addStyle('myshopman', {
-    html: "<div class='superblue'><span data-notify-html/></div>",
-    classes: {
-      base: {
-        "border": "3px solid white",
-        "border-radius": "20px",
-        "color": "white",
-        "background-color": "#184175",
-        "padding": "10px"
-      },
-      green: {
-        "border": "3px solid white",
-        "border-radius": "20px",
-        "color": "white",
-        "background-color": "green",
-        "padding": "10px"
-      },
-      red: {
-        "border": "3px solid white",
-        "border-radius": "20px",
-        "color": "white",
-        "background-color": "red",
-        "padding": "10px"
-      }
-    }
-  });
 }

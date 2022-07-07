@@ -33,14 +33,15 @@ module.exports = function ( jq ) {
 			let titleTextBox = $('<div></div>').text('รายการออร์เดอร์ของร้าน');
 			let orderDateBox = $('<div></div>').text(selectDate).css({'width': 'fit-content', 'display': 'inline-block', 'background-color': 'white', 'color': 'black', 'padding': '4px', 'cursor': 'pointer', 'font-size': '16px'});
 			$(orderDateBox).on('click', (evt)=>{
-				common.calendarOptions.onClick = async function(date){
-					calendarHandle.closeAlert();
-					selectDate = common.doFormatDateStr(new Date(date));
-					$(orderDateBox).text(selectDate);
-					$(workAreaBox).empty().append($(titlePageBox)).append($(newOrderCmdBox));
-					await doCreateOrderList(shopData, workAreaBox, selectDate);
-				}
-				let calendarHandle = doShowCalendarDlg(common.calendarOptions);
+					common.calendarOptions.onClick = async function(date){
+						selectDate = common.doFormatDateStr(new Date(date));
+						$(orderDateBox).text(selectDate);
+						$('#OrderListBox').remove();
+						let orderListBox = await doCreateOrderList(shopData, workAreaBox, selectDate);
+						$(workAreaBox).append($(orderListBox));
+						calendarHandle.closeAlert();
+					}
+					let calendarHandle = doShowCalendarDlg(common.calendarOptions);
 			});
 			$(titlePageBox).append($(titleTextBox)).append($(orderDateBox));
 
@@ -54,10 +55,10 @@ module.exports = function ( jq ) {
 			$(newOrderCmdBox).append($(newOrderCmd))
 			$(workAreaBox).append($(newOrderCmdBox));
 
-      await doCreateOrderList(shopData, workAreaBox, selectDate);
-      /*
-        order list of today
-      */
+			$('#OrderListBox').remove();
+			let orderListBox = await doCreateOrderList(shopData, workAreaBox, selectDate);
+			$(workAreaBox).append($(orderListBox));
+
       resolve();
     });
   }
@@ -521,7 +522,7 @@ module.exports = function ( jq ) {
       let orders = orderRes.Records;
       console.log(orders);
       //localStorage.setItem('orders', JSON.stringify(orders));
-      let orderListBox = $('<div></div>').css({'position': 'relative', 'width': '100%', 'margin-top': '25px'});
+      let orderListBox = $('<div id="OrderListBox"></div>').css({'position': 'relative', 'width': '100%', 'margin-top': '25px'});
       if ((orders) && (orders.length > 0)) {
         let	promiseList = new Promise(async function(resolve2, reject2){
           for (let i=0; i < orders.length; i++) {
@@ -587,8 +588,8 @@ module.exports = function ( jq ) {
           resolve(ob[0]);
         });
       } else {
-				$(workAreaBox).append($('<div>ไม่พบรายการออร์เดอร์ของวันที่ ' + orderDate + '</div>'));
-        resolve();
+				$(orderListBox).text('ไม่พบรายการออร์เดอร์ของวันที่ ' + orderDate);
+        resolve($(orderListBox));
       }
     });
   }

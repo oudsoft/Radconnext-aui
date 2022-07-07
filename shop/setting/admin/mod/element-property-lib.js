@@ -591,13 +591,14 @@ module.exports = function ( jq ) {
   						console.log("ดำเนินการได้ : " + Math.round(progress) + "%");
   					},
             success: function(uploaddata){
-  						//console.log('Uploaded.', data);
+  						//console.log('Uploaded.', uploaddata);
               var imageUrl = uploaddata.link;
               $("#urltext").val(imageUrl);
               targetData.customImageelement.options['url'] = imageUrl;
               targetData.customImageelement.options.refresh();
             }
           });
+					$(fragTarget).click();
         }
       });
       $(fileBrowser).appendTo($(fragImageSrcInput));

@@ -61,7 +61,7 @@ module.exports = function ( jq ) {
 
 		let fromDateKeyBox = $('<div style="text-align: left; display: inline-block;"></div>'); //<span>ตั้งแต่</span>
 		$(fromDateKeyBox).appendTo($(formField));
-		let fromDateKey = $('<input type="text" id="FromDateKey" size="6" style="margin-left: 5px;"/>');
+		let fromDateKey = $('<input type="text" id="FromDateKey" style="margin-left: 5px; width: 40px;"/>');
 		if (key.fromDateKeyValue) {
 			let arrTmps = key.fromDateKeyValue.split('-');
 			let fromDateTextValue = arrTmps[2] + '-' + arrTmps[1] + '-' + arrTmps[0];
@@ -75,7 +75,7 @@ module.exports = function ( jq ) {
 
 		let toDateKeyBox = $('<div style="text-align: left; display: inline-block;"></div>'); //<span>ถึง</span>
 		$(toDateKeyBox).appendTo($(formField));
-		let toDateKey = $('<input type="text" id="ToDateKey" size="6" style="margin-left: 5px;"/>');
+		let toDateKey = $('<input type="text" id="ToDateKey" size="6" style="margin-left: 5px; width: 40px;"/>');
 		if (key.toDateKeyValue) {
 			let arrTmps = key.toDateKeyValue.split('-');
 			let toDateTextValue = arrTmps[2] + '-' + arrTmps[1] + '-' + arrTmps[0];
@@ -88,7 +88,7 @@ module.exports = function ( jq ) {
 		$(formField).appendTo($(searchFormRow));
 
 		formField = $('<div style="display: table-cell; text-align: left; vertical-align: middle;" class="header-cell"></div>');
-		let patientNameENKey = $('<input type="text" id="PatientNameENKey" size="8"/>');
+		let patientNameENKey = $('<input type="text" id="PatientNameENKey" style="width: 140px;"/>');
 		$(patientNameENKey).val(key.patientNameENKeyValue);
 		$(formField).append($(patientNameENKey));
 		$(formField).appendTo($(searchFormRow));

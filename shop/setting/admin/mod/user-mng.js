@@ -186,7 +186,11 @@ module.exports = function ( jq ) {
 		usertypes.forEach((item, i) => {
 			$(inputValue).append($('<option value="' + item.Value + '">' + item.DisplayText + '<option>'))
 		});
-		$(inputValue).val(userData.usertypeId);
+		if ((userData) && (userData.usertypeId)) {
+			$(inputValue).val(userData.usertypeId);
+		} else {
+			$(inputValue).val(3);
+		}
 		$(inputField).append($(inputValue));
 		$(fieldRow).append($(labelField));
 		$(fieldRow).append($(inputField));

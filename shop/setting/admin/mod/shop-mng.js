@@ -11,7 +11,7 @@ module.exports = function ( jq ) {
 	const order = require('./order-mng.js')($);
 	const template = require('./template-design.js')($);
 
-  const doCreateTitlePage = function(shopData, uploadLogCallback, editShopCallback){
+  const doCreateTitlePage = function(shopData, uploadLogoCallback, editShopCallback){
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
     let shopLogoIcon = new Image();
     if (shopData['Shop_LogoFilename'] !== ''){
@@ -35,7 +35,7 @@ module.exports = function ( jq ) {
 		});
 		$(editShopLogoCmd).on('click', (evt)=>{
 			evt.stopPropagation();
-			uploadLogCallback(evt, shopLogoIconBox, shopData.id, (successData)=>{
+			uploadLogoCallback(evt, shopLogoIconBox, shopData.id, (successData)=>{
 				//console.log(successData);
 				shopLogoIcon.src = successData.link;
 			});
@@ -72,6 +72,11 @@ module.exports = function ( jq ) {
 					$(shopTel).text(newShopData['Shop_Tel']);
 					$(shopMail).text(newShopData['Shop_Mail']);
 					$(shopVatNo).text(newShopData['Shop_VatNo']);
+					shopData['Shop_Name'] = newShopData['Shop_Name'];
+					shopData['Shop_Address'] = newShopData['Shop_Address'];
+					shopData['Shop_Tel'] = newShopData['Shop_Tel'];
+					shopData['Shop_Mail'] = newShopData['Shop_Mail'];
+					shopData['Shop_VatNo'] = newShopData['Shop_VatNo'];
 				});
 				$('#Shop_BillQuota').attr('readOnly', true);
 			});

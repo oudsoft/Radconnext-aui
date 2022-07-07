@@ -433,6 +433,7 @@ module.exports = function ( jq ) {
 			}
 		});
 		if (typeFilters.length > 0) {
+			$(wrapper).empty();
 			let elements = typeFilters[0].Content;
 			$(templateNameInput).val(typeFilters[0].Name);
 			const promiseList = new Promise(async function(resolve2, reject2){
