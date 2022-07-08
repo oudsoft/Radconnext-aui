@@ -47,18 +47,16 @@ module.exports = function ( jq ) {
     });
   }
 
-  const doCreateTemplateTypeSelector = function(){
+  const doCreateTemplateTypeSelector = function(shopData){
     let selector = $('<select></select>');
     constant.templateTypes.forEach((item, i) => {
-      $(selector).append($('<option value="' + item.id + '">' + item.NameTH + '</option>'));
-    });
-    return $(selector);
-  }
-
-  const doCreateShopTemplateSelector = function(templates){
-    let selector = $('<select></select>');
-    templates.forEach((item, i) => {
-      $(selector).append($('<option value="' + item.id + '">' + item.Name + '</option>'));
+			if (item.id != 3) {
+      	$(selector).append($('<option value="' + item.id + '">' + item.NameTH + '</option>'));
+			} else {
+				if ((shopData.Shop_VatNo) && (shopData.Shop_VatNo != '')) {
+					$(selector).append($('<option value="' + item.id + '">' + item.NameTH + '</option>'));
+				}
+			}
     });
     return $(selector);
   }
@@ -324,7 +322,7 @@ module.exports = function ( jq ) {
       let controlTemplateForm = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
       let controlRow = $('<tr></tr>').css({'background-color': '#ddd', 'border': '2px solid grey'});
       $(controlTemplateForm).append($(controlRow));
-      let templatTypeSelector = doCreateTemplateTypeSelector();
+      let templatTypeSelector = doCreateTemplateTypeSelector(shopData);
 
 			let paperSizeSelector = doCreatePaperSizeSelector();
 
@@ -412,54 +410,51 @@ module.exports = function ( jq ) {
         }
 			});
 
-			let templateRes = await common.doCallApi('/api/shop/template/list/by/shop/' + shopData.id, {});
-      let templateItems = templateRes.Records;
-			let typeSelect = $(templatTypeSelector).val();
-      if (templateItems.length > 0) {
-				doShowTemplateLoaded(shopData, templateItems, typeSelect, templateNameInput, paperSizeSelector, wrapper);
-      } else {
-				templateRes = await common.doCallApi('/api/shop/template/select/1', {});
-				templateItems = templateRes.Records;
-				doShowTemplateLoaded(shopData, templateItems, typeSelect, templateNameInput, paperSizeSelector, wrapper);
-      }
+			$(templatTypeSelector).change();
+
       resolve();
     });
   }
 
-	const doShowTemplateLoaded = async function(shopData, templateItems, typeSelect, templateNameInput, paperSizeSelector, wrapper) {
-		let typeFilters = await templateItems.filter((template)=>{
-			if (typeSelect == template.TypeId) {
-				return template;
+	const doShowTemplateLoaded = async function(shopData, templateItems, templateNameInput, paperSizeSelector, wrapper) {
+		$(wrapper).empty();
+		let elements = templateItems[0].Content;
+		$(templateNameInput).val(templateItems[0].Name);
+		const promiseList = new Promise(async function(resolve2, reject2){
+			for (let i=0; i < elements.length; i++){
+				let element = elements[i];
+				let elementType = element.elementType;
+				let elementCreated = elementProperty.doCreateElement(wrapper, elementType, element);
 			}
+			common.delay(900).then(()=>resolve2());
 		});
-		if (typeFilters.length > 0) {
-			$(wrapper).empty();
-			let elements = typeFilters[0].Content;
-			$(templateNameInput).val(typeFilters[0].Name);
-			const promiseList = new Promise(async function(resolve2, reject2){
-				for (let i=0; i < elements.length; i++){
-					let element = elements[i];
-					let elementType = element.elementType;
-					let elementCreated = elementProperty.doCreateElement(wrapper, elementType, element);
-				}
-				common.delay(900).then(()=>resolve2());
-			});
-			Promise.all([promiseList]).then((ob)=>{
-				$(paperSizeSelector).val(typeFilters[0].PaperSize).change();
-			});
-		}
+		Promise.all([promiseList]).then((ob)=>{
+			$(paperSizeSelector).val(templateItems[0].PaperSize).change();
+		});
 	}
 
   const onTemplateTypeChange = async function(evt, typeValue, shopData, templateNameInput, paperSizeSelector, wrapper){
 		let templateRes = await common.doCallApi('/api/shop/template/list/by/shop/' + shopData.id, {});
 		let templateItems = templateRes.Records;
 		if (templateItems.length > 0) {
-			doShowTemplateLoaded(shopData, templateItems, typeValue, templateNameInput, paperSizeSelector, wrapper)
+			let typeFilters = await templateItems.filter((template)=>{
+				if (typeValue == template.TypeId) {
+					return template;
+				}
+			});
+			if (typeFilters.length > 0) {
+				doShowTemplateLoaded(shopData, templateItems, templateNameInput, paperSizeSelector, wrapper);
+			} else {
+				//doCreateDefualTemplate
+				templateRes = await common.doCallApi('/api/shop/template/select/1', {});
+				templateItems = templateRes.Records;
+				doShowTemplateLoaded(shopData, templateItems, templateNameInput, paperSizeSelector, wrapper);
+			}
 		} else {
 			//doCreateDefualTemplate
 			templateRes = await common.doCallApi('/api/shop/template/select/1', {});
 			templateItems = templateRes.Records;
-			doShowTemplateLoaded(shopData, templateItems, typeValue, templateNameInput, wrapper);
+			doShowTemplateLoaded(shopData, templateItems, templateNameInput, paperSizeSelector, wrapper);
 		}
   }
 

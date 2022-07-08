@@ -37,9 +37,9 @@ module.exports = function ( jq ) {
 						selectDate = common.doFormatDateStr(new Date(date));
 						$(orderDateBox).text(selectDate);
 						$('#OrderListBox').remove();
+						calendarHandle.closeAlert();
 						let orderListBox = await doCreateOrderList(shopData, workAreaBox, selectDate);
 						$(workAreaBox).append($(orderListBox));
-						calendarHandle.closeAlert();
 					}
 					let calendarHandle = doShowCalendarDlg(common.calendarOptions);
 			});
