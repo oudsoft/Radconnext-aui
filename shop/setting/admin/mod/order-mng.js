@@ -257,8 +257,12 @@ module.exports = function ( jq ) {
 				let docParams = {orderId: orderObj.id, shopId: shopData.id/*, filename: newInvoiceData.Filename, No: newInvoiceData.No*/};
 				let docRes = await common.doCallApi('/api/shop/invoice/create/report', docParams);
 				console.log(docRes);
-				window.open(docRes.result.link, '_blank');
-				$.notify("ออกใบแจ้งหนี้่สำเร็จ", "sucess");
+				if (docRes.status.code == 200) {
+					window.open(docRes.result.link, '_blank');
+					$.notify("ออกใบแจ้งหนี้่สำเร็จ", "sucess");
+				} else if (docRes.status.code == 300) {
+					$.notify("ระบบไม่พบรูปแบบเอกสารใบแจ้งหนี้", "error");
+				}
 			} else {
 				$.notify("บันทึกใบแจ้งหนี้ไม่สำเร็จ", "error");
 			}
@@ -280,8 +284,12 @@ module.exports = function ( jq ) {
 					let docParams = {orderId: orderObj.id, shopId: shopData.id/*, filename: newBillData.Filename, No: newBillData.No*/};
 					let docRes = await common.doCallApi('/api/shop/bill/create/report', docParams);
 					console.log(docRes);
-					window.open(docRes.result.link, '_blank');
-					$.notify("ออกบิลเงินสด/ใบเสร็จรับเงินสำเร็จ", "sucess");
+					if (docRes.status.code == 200) {
+						window.open(docRes.result.link, '_blank');
+						$.notify("ออกบิลเงินสด/ใบเสร็จรับเงินสำเร็จ", "sucess");
+					} else if (docRes.status.code == 300) {
+						$.notify("ระบบไม่พบรูปแบบเอกสารบิลเงินสด/ใบเสร็จรับเงิน", "error");
+					}
 				} else {
 					$.notify("บันทึกข้อมูลการชำระเงินไม่สำเร็จ", "error");
 				}
@@ -306,8 +314,12 @@ module.exports = function ( jq ) {
 					let docParams = {orderId: orderObj.id, shopId: shopData.id/*, filename: newInvoiceData.Filename, No: newInvoiceData.No*/};
 					let docRes = await common.doCallApi('/api/shop/taxinvoice/create/report', docParams);
 					console.log(docRes);
-					window.open(docRes.result.link, '_blank');
-					$.notify("ออกใบกำกับภาษีสำเร็จ", "sucess");
+					if (docRes.status.code == 200) {
+						window.open(docRes.result.link, '_blank');
+						$.notify("ออกใบกำกับภาษีสำเร็จ", "sucess");
+					} else if (docRes.status.code == 300) {
+						$.notify("ระบบไม่พบรูปแบบเอกสารใบกำกับภาษี", "error");
+					}
 				} else {
 					$.notify("บันทึกข้อมูลการชำระเงินไม่สำเร็จ", "error");
 				}
@@ -557,7 +569,7 @@ module.exports = function ( jq ) {
 								let orderRes = await common.doCallApi('/api/shop/order/update', params);
 								if (orderRes.status.code == 200) {
 									$.notify("ยกเลิกรายการออร์เดอร์สำเร็จ", "success");
-									$(workAreaBox).empty();
+									$('#OrderListBox').remove();
 									doCreateOrderList(shopData, workAreaBox, orderDate);
 								} else {
 									$.notify("ระบบไม่สามารถยกเลิกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
