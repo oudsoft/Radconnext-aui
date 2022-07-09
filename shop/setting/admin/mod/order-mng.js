@@ -172,7 +172,7 @@ module.exports = function ( jq ) {
           if (orderRes.status.code == 200) {
             $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
 						orderObj.id = orderRes.Records[0].id;
-						orderData.id = orderObj.id;
+						orderData = orderRes.Records[0];
 						doShowCloseOrderDlg();
           } else {
             $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
