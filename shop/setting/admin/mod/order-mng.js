@@ -33,15 +33,15 @@ module.exports = function ( jq ) {
 			let titleTextBox = $('<div></div>').text('รายการออร์เดอร์ของร้าน');
 			let orderDateBox = $('<div></div>').text(selectDate).css({'width': 'fit-content', 'display': 'inline-block', 'background-color': 'white', 'color': 'black', 'padding': '4px', 'cursor': 'pointer', 'font-size': '16px'});
 			$(orderDateBox).on('click', (evt)=>{
-					common.calendarOptions.onClick = async function(date){
-						selectDate = common.doFormatDateStr(new Date(date));
-						$(orderDateBox).text(selectDate);
-						$('#OrderListBox').remove();
-						calendarHandle.closeAlert();
-						let orderListBox = await doCreateOrderList(shopData, workAreaBox, selectDate);
-						$(workAreaBox).append($(orderListBox));
-					}
-					let calendarHandle = doShowCalendarDlg(common.calendarOptions);
+				common.calendarOptions.onClick = async function(date){
+					selectDate = common.doFormatDateStr(new Date(date));
+					$(orderDateBox).text(selectDate);
+					$('#OrderListBox').remove();
+					calendarHandle.closeAlert();
+					let orderListBox = await doCreateOrderList(shopData, workAreaBox, selectDate);
+					$(workAreaBox).append($(orderListBox));
+				}
+				let calendarHandle = doShowCalendarDlg(common.calendarOptions);
 			});
 			$(titlePageBox).append($(titleTextBox)).append($(orderDateBox));
 
@@ -155,18 +155,28 @@ module.exports = function ( jq ) {
 		let callCreateCloseOrderCmd = common.doCreateTextCmd(' คิดเงิน ', '#F5500E', 'white', '#5D6D7E', '#FF5733');
 		$(callCreateCloseOrderCmd).on('click', async (evt)=>{
 			if (orderObj.customer) {
-				if (!orderData) {
-					let params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopData.id, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
-          let orderRes = await common.doCallApi('/api/shop/order/add', params);
+				let params = undefined;
+				let orderRes = undefined;
+				if ((orderData) && (orderData.id)) {
+					params = {data: {Items: orderObj.gooditems, Status: orderObj.Status, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, id: orderData.id};
+					orderRes = await common.doCallApi('/api/shop/order/update', params);
+					if (orderRes.status.code == 200) {
+						$.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
+						doShowCloseOrderDlg();
+					} else {
+						$.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+					}
+				} else {
+					params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopData.id, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
+          orderRes = await common.doCallApi('/api/shop/order/add', params);
           if (orderRes.status.code == 200) {
             $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
 						orderObj.id = orderRes.Records[0].id;
+						orderData.id = orderObj.id;
 						doShowCloseOrderDlg();
           } else {
             $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
           }
-				} else {
-					doShowCloseOrderDlg();
 				}
 			} else {
         $.notify("โปรดระบุข้อมูลลูกค้าก่อนบันทึกออร์เดอร์", "error");
@@ -539,6 +549,21 @@ module.exports = function ( jq ) {
             $(orderBox).append($('<div><b>วันที่-เวลา :</b> ' + fmtDate + ':' + fmtTime + '</div>').css({'width': '100%'}));
 						if (orders[i].Status == 1) {
 							$(orderBox).css({'background-color': 'yellow'});
+							let cancelOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210'});
+							$(cancelOrderCmdBox).append($('<span>ยกเลิกออร์เดอร์</span>').css({'font-weight': 'bold'}));
+							$(cancelOrderCmdBox).on('click', async (evt)=>{
+								evt.stopPropagation();
+								let params = {data: {Status: 0, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, id: orders[i].id};
+								let orderRes = await common.doCallApi('/api/shop/order/update', params);
+								if (orderRes.status.code == 200) {
+									$.notify("ยกเลิกรายการออร์เดอร์สำเร็จ", "success");
+									$(workAreaBox).empty();
+									doCreateOrderList(shopData, workAreaBox, orderDate);
+								} else {
+									$.notify("ระบบไม่สามารถยกเลิกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+								}
+							});
+							$(orderBox).append($(cancelOrderCmdBox));
 						} else if (orders[i].Status == 2) {
 							$(orderBox).css({'background-color': 'orange'});
 							let invoiceBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210'});

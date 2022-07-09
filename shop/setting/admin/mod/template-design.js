@@ -376,7 +376,8 @@ module.exports = function ( jq ) {
 					let adjustLeft = (wrapperBoxWidth - constant.SlipWidth) / 2;
 					$(wrapperBox).css({'margin-left': adjustLeft+'px', 'width': reportWrapperWidth+'px'});
 				}
-				$(wrapperBox).css({'height': newHeight+'px', 'max-height': newHeight + 'px'});
+				//$(wrapperBox).css({'height': newHeight+'px', 'max-height': newHeight + 'px'});
+				$(wrapperBox).css({'height': 'auto'});
 
 				doRenderElement(shopData, wrapperBox, templateDesignElements, renderRatio, paperSize);
 				const radalertoption = {
