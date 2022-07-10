@@ -9,61 +9,119 @@ module.exports = function ( jq ) {
 		{fieldName: 'Mail', displayName: 'อีเมล์', width: '15%', align: 'left', inputSize: '30', verify: false, showHeader: true},
 	];
 
+	const doLoadCustomerItem = function(shopId){
+    return new Promise(async function(resolve, reject) {
+			let customerRes = await common.doCallApi('/api/shop/customer/list/by/shop/' + shopId, {});
+			localStorage.setItem('customers', JSON.stringify(customerRes.Records));
+			resolve(customerRes.Records);
+		});
+	}
+
+	const doFilterCustomer = function(customers, key) {
+		return new Promise(async function(resolve, reject) {
+			let result = customers.filter((item)=>{
+        let n = item.Name.search(key);
+        if (n >= 0) {
+          return item;
+        }
+      });
+      resolve(result);
+		});
+	}
+
+	const doCreateCustomerListTable = function(shopData, workAreaBox, customerItems){
+		let customerTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="1"></table>');
+		let headerRow = $('<tr></tr>');
+		$(headerRow).append($('<td width="2%" align="center"><b>#</b></td>'));
+		for (let i=0; i < customerTableFields.length; i++) {
+			if (customerTableFields[i].showHeader) {
+				$(headerRow).append($('<td width="' + customerTableFields[i].width + '" align="center"><b>' + customerTableFields[i].displayName + '</b></td>'));
+			}
+		}
+		$(headerRow).append($('<td width="*" align="center"><b>คำสั่ง</b></td>'));
+		$(customerTable).append($(headerRow));
+
+		for (let x=0; x < customerItems.length; x++) {
+			let itemRow = $('<tr></tr>');
+			$(itemRow).append($('<td align="center">' + (x+1) + '</td>'));
+			let item = customerItems[x];
+			for (let i=0; i < customerTableFields.length; i++) {
+				if (customerTableFields[i].showHeader) {
+					let field = $('<td align="' + customerTableFields[i].align + '"></td>');
+					$(field).text(item[customerTableFields[i].fieldName]);
+					$(itemRow).append($(field));
+				}
+			}
+
+			let commandCell = $('<td align="center"></td>');
+
+			let editCustomerCmd = $('<input type="button" value=" Edit " class="action-btn"/>');
+			$(editCustomerCmd).on('click', (evt)=>{
+				doOpenEditCustomerForm(shopData, workAreaBox, item);
+			});
+			/*
+			let orderCustomerCmd = $('<input type="button" value=" Order " class="action-btn"/>').css({'margin-left': '8px'});
+			$(orderCustomerCmd).on('click', (evt)=>{
+				1. เปิด search order form for customer
+					options search [ทั้งหมด/ตั้งแต่วันที่/เมื่อวันที่] / ปฏิทิน
+				2. แสดงรายการออร์เดอร์ที่ค้นเจอแบบตาราง
+					fields[วันที่/บิล/ใบกำกับ/รายการสินค้า]
+				3. ใช้ Navigator Bar มาควบคุมการแสกงจำนวนรายการออร์เดอร์ที่ค้นเจอ
+			});
+			*/
+			let deleteCustomerCmd = $('<input type="button" value=" Delete " class="action-btn"/>').css({'margin-left': '8px'});
+			$(deleteCustomerCmd).on('click', (evt)=>{
+				doDeleteCustomer(shopData, workAreaBox, item.id);
+			});
+
+			$(commandCell).append($(editCustomerCmd));
+			$(commandCell).append($(deleteCustomerCmd));
+			//$(commandCell).append($(orderCustomerCmd));
+			$(itemRow).append($(commandCell));
+			$(customerTable).append($(itemRow));
+		}
+		return $(customerTable);
+	}
+
   const doShowCustomerItem = function(shopData, workAreaBox){
     return new Promise(async function(resolve, reject) {
       $(workAreaBox).empty();
-      let customerRes = await common.doCallApi('/api/shop/customer/list/by/shop/' + shopData.id, {});
-			let customerItems = customerRes.Records;
+
+			let customerItems = await doLoadCustomerItem(shopData.id);
+			let customerTable = undefined;
 
       let titlePageBox = $('<div style="padding: 4px;">รายการลูกค้าของร้าน</viv>').css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
 			$(workAreaBox).append($(titlePageBox));
 			let newCustomerCmdBox = $('<div style="padding: 4px;"></div>').css({'width': '99.5%', 'text-align': 'right'});
+			let searchKeyInput = $('<input type="text" size="40" value="*"/>');
+			$(searchKeyInput).css({'background': 'url(../../images/search-icon.png) no-repeat right center', 'background-size': '6% 100%', 'padding-right': '3px'});
+			$(searchKeyInput).on('keyup', async (evt)=>{
+				if (customerTable) {
+					$(customerTable).remove();
+				}
+				let key = $(searchKeyInput).val();
+				if (key !== ''){
+					if (key === '*') {
+						customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems);
+					} else {
+						let customers = JSON.parse(localStorage.getItem('customers'));
+						let customerFilter = await doFilterCustomer(customers, key);
+						customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerFilter);
+					}
+					$(workAreaBox).append($(customerTable));
+				}
+			});
+
 			let newCustomerCmd = $('<input type="button" value=" + New Customer " class="action-btn"/>');
 			$(newCustomerCmd).on('click', (evt)=>{
 				doOpenNewCustomerForm(shopData, workAreaBox);
 			});
-			$(newCustomerCmdBox).append($(newCustomerCmd))
+			$(newCustomerCmdBox).append($(searchKeyInput)).append($(newCustomerCmd).css({'margin-left': '10px'}));
+
 			$(workAreaBox).append($(newCustomerCmdBox));
 
-      let customerTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="1"></table>');
-			let headerRow = $('<tr></tr>');
-			$(headerRow).append($('<td width="2%" align="center"><b>#</b></td>'));
-      for (let i=0; i < customerTableFields.length; i++) {
-        if (customerTableFields[i].showHeader) {
-          $(headerRow).append($('<td width="' + customerTableFields[i].width + '" align="center"><b>' + customerTableFields[i].displayName + '</b></td>'));
-        }
-			}
-      $(headerRow).append($('<td width="*" align="center"><b>คำสั่ง</b></td>'));
-			$(customerTable).append($(headerRow));
+			customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems);
 
-      for (let x=0; x < customerItems.length; x++) {
-				let itemRow = $('<tr></tr>');
-				$(itemRow).append($('<td align="center">' + (x+1) + '</td>'));
-				let item = customerItems[x];
-        for (let i=0; i < customerTableFields.length; i++) {
-          if (customerTableFields[i].showHeader) {
-  					let field = $('<td align="' + customerTableFields[i].align + '"></td>');
-            $(field).text(item[customerTableFields[i].fieldName]);
-            $(itemRow).append($(field));
-          }
-        }
-
-        let commandCell = $('<td align="center"></td>');
-
-        let editCustomerCmd = $('<input type="button" value=" Edit " class="action-btn"/>');
-				$(editCustomerCmd).on('click', (evt)=>{
-					doOpenEditCustomerForm(shopData, workAreaBox, item);
-				});
-				let deleteCustomerCmd = $('<input type="button" value=" Delete " class="action-btn"/>').css({'margin-left': '8px'});
-				$(deleteCustomerCmd).on('click', (evt)=>{
-					doDeleteCustomer(shopData, workAreaBox, item.id);
-				});
-
-				$(commandCell).append($(editCustomerCmd));
-				$(commandCell).append($(deleteCustomerCmd));
-        $(itemRow).append($(commandCell));
-				$(customerTable).append($(itemRow));
-      }
       $(workAreaBox).append($(customerTable));
       resolve();
     });
