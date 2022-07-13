@@ -1,16 +1,21 @@
 /* main.js */
 
 window.$ = window.jQuery = require('jquery');
+//require('../../case/mod/jquery-ex.js');
+window.$.ajaxSetup({
+  beforeSend: function(xhr) {
+    xhr.setRequestHeader('Authorization', localStorage.getItem('token'));
+  }
+});
 
 const submain = require('./mod/submainlib.js')($);
+const dicom = require('./mod/dicom.js')($);
 
 const util = require('../../case/mod/utilmod.js')($);
 const common = require('../../case/mod/commonlib.js')($);
 
 const userinfo = require('../../case/mod/userinfolib.js')($);
-const userprofile = require('../../case/mod/userprofilelib.js')($);
 const casecounter = require('../../case/mod/casecounter.js')($);
-const softphone = require('../../case/mod/softphonelib.js')($);
 const urgentstd = require('../../case/mod/urgentstd.js')($);
 const consult = require('../../case/mod/consult.js')($);
 const portal = require('../../case/mod/portal-lib.js')($);
@@ -31,9 +36,9 @@ $( document ).ready(function() {
           if (userdata.usertypeId == 2) {
 			       doLoadMainPage();
              wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
-             doCreateRegisterVoIP(userdata);
+             submain.doCreateRegisterVoIP(userdata);
            } else {
-             doNotAllowAccessPage();
+             submain.doNotAllowAccessPage();
            }
         } else {
           doLoadLogin();
@@ -75,43 +80,11 @@ const doLoadLogin = function(){
   common.doUserLogout(wsm);
 }
 
-const doCreateRegisterVoIP = function(userdata){
-  if (userdata.userinfo.User_SipPhone){
-     let sipPhoneNumber = userdata.userinfo.User_SipPhone;
-     let sipPhoneSecret = userdata.userinfo.User_SipSecret;
-     sipUA = softphone.doRegisterSoftphone(sipPhoneNumber, sipPhoneSecret);
-
-     sipUA.start();
-     let sipPhoneOptions = {onRejectCallCallback: softphone.doRejectCall, onAcceptCallCallback: softphone.doAcceptCall, onEndCallCallback: softphone.doEndCall};
-     let mySipPhoneIncomeBox = $('<div id="SipPhoneIncomeBox" tabindex="1"></div>');
-     $(mySipPhoneIncomeBox).css({'position': 'absolute', 'width': '98%', 'min-height': '50px;', 'max-height': '50px', 'background-color': '#fefefe', 'padding': '5px', 'border': '1px solid #888',  'z-index': '192', 'top': '-65px'});
-     let mySipPhone = $(mySipPhoneIncomeBox).sipphoneincome(sipPhoneOptions);
-     $('body').append($(mySipPhoneIncomeBox));
-  }
-}
-
-const doNotAllowAccessPage = function(){
-  const contentBox = $('<div></div>');
-  $(contentBox).append($('<p>บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้</p>'));
-  $(contentBox).append($('<p>โปรด Login ใหม่อีกครั้งเพื่อเปลี่ยนบัญชีใช้งานให้ถูกต้อง</p>'));
-  const radalertoption = {
-    title: 'ข้อมูลผู้ใช้งานไม่ถูกต้อง',
-    msg: $(contentBox),
-    width: '410px',
-    onOk: function(evt) {
-      radAlertBox.closeAlert();
-      doLoadLogin();
-    }
-  }
-  let radAlertBox = $('body').radalert(radalertoption);
-  $(radAlertBox.cancelCmd).hide();
-}
-
 const doLoadMainPage = function(){
   let printjs = 'https://radconnext.info/lib/print/print.min.js';
   let excelexportjs = 'https://radconnext.info/lib/excel/excelexportjs.js';
   let jquerySimpleUploadUrl = 'https://radconnext.info/lib/simpleUpload.min.js';
-  let patientHistoryPluginUrl = "https://radconnext.info/setting/plugin/jquery-patient-history-image-plugin.js";
+  let patientHistoryPluginUrl = "https://radconnext.info/setting/plugin/jquery-patient-history-image-plugin.js?r=ml";
 	let countdownclockPluginUrl = "https://radconnext.info/setting/plugin/jquery-countdown-clock-plugin.js";
 	let scanpartPluginUrl = "https://radconnext.info/setting/plugin/jquery-scanpart-plugin.js";
 	let customUrgentPlugin = "https://radconnext.info/setting/plugin/jquery-custom-urgent-plugin.js";
@@ -265,7 +238,7 @@ const doLoadMainPage = function(){
 
       $(document).on('openhome', (evt, data)=>{
 				common.doSaveQueryDicom(data);
-				//newcase.doLoadDicomFromOrthanc();
+				dicom.doLoadDicomFromOrthanc();
 			});
 
       submain.doTriggerDicomFilterForm();
@@ -273,7 +246,7 @@ const doLoadMainPage = function(){
       submain.doAddNotifyCustomStyle();
 
       doInitDefualPage();
-
+      //submain.testLocalConvetDiocom();
     });
   });
 }

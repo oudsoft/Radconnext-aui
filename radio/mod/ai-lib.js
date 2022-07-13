@@ -11,12 +11,13 @@ module.exports = function ( jq ) {
 
   const doCallCheckSeries = function(studyID) {
     return new Promise(async function(resolve, reject) {
-      let seriesList = await common.doGetSeriesList(studyID);
+      let seriesList = await common.doGetLocalSeriesList(studyID);
 			if (seriesList){
 	      let seriesDescList = [];
 	      let	promiseList = new Promise(async function(resolve2, reject2){
 	        seriesList.Series.forEach(async(item, i) => {
-	          let seriesTags = await common.doGetOrthancSeriesDicom(item);
+						//let seriesTags = await common.doGetOrthancSeriesDicom(item);
+	          let seriesTags = await common.doGetLocalOrthancSeriesDicom(item);
 						let seriesName = undefined;
 						if (seriesTags.MainDicomTags.SeriesDescription){
 							seriesName = seriesTags.MainDicomTags.SeriesDescription
@@ -65,7 +66,8 @@ module.exports = function ( jq ) {
 						$('#quickreply').append($('<div id="overlay"><div class="loader"></div></div>'));
 					  $('#quickreply').loading({overlay: $("#overlay"), stoppable: true});
 						$('#quickreply').loading('start');
-	          let callSeriesRes = await common.doGetOrthancSeriesDicom(item.id);
+						//let callSeriesRes = await common.doGetOrthancSeriesDicom(item.id);
+	          let callSeriesRes = await common.doGetLocalOrthancSeriesDicom(item.id);
 						let modality = callSeriesRes.MainDicomTags.Modality;
 						let studyId = callSeriesRes.ParentStudy;
 	          let callCreatePreview = await common.doCallCreatePreviewSeries(item.id, callSeriesRes.Instances);

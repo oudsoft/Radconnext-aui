@@ -89,6 +89,7 @@ module.exports = function ( jq ) {
 			}).catch((err) => {
 				console.log('error at api ' + url);
 				console.log(JSON.stringify(err));
+				reject(err);
 			})
 		});
 	}
@@ -100,6 +101,59 @@ module.exports = function ( jq ) {
 			}).catch((err) => {
 				console.log(JSON.stringify(err));
 			})
+		});
+	}
+
+	const doCallLocalApi = function(apiurl, rqParams) {
+		return new Promise(function(resolve, reject) {
+			const progBar = $('body').radprogress({value: 0, apiname: apiurl});
+      $(progBar.progressBox).screencenter({offset: {x: 50, y: 50}});
+			$.ajax({
+        url: apiurl,
+        type: 'post',
+        data: rqParams,
+        xhr: function () {
+          var xhr = $.ajaxSettings.xhr();
+          xhr.onprogress = function(evt) {
+            if (evt.lengthComputable) {
+              // For Download
+              let loaded = evt.loaded;
+              let total = evt.total;
+              let prog = (loaded / total) * 100;
+              let perc = prog.toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+              $('body').find('#ProgressValueBox').text(perc + '%');
+            }
+          };
+          xhr.upload.onprogress = function (evt) {
+            // For uploads
+          };
+          return xhr;
+        }
+      }).done(function (res) {
+        progBar.doUpdateProgressValue(100);
+        setTimeout(()=>{
+  				progBar.doCloseProgress();
+          let apiItem = {api: apiurl};
+          console.log(apiItem);
+          let logWin = $('body').find('#LogBox');
+					if (logWin) {
+          	$(logWin).simplelog(apiItem);
+					}
+          resolve(res)
+        }, 1000);
+      }).fail(function (err) {
+        reject(err);
+      });
+		});
+	}
+
+	const doGetLocalApi = function(url, rqParams) {
+		return new Promise(function(resolve, reject) {
+			$.get(apiURL, params, function(data){
+				resolve(data);
+			}).fail(function(error) {
+				reject(error);
+			});
 		});
 	}
 
@@ -431,6 +485,41 @@ module.exports = function ( jq ) {
 		})
   }
 
+	const doDownloadLocalDicom = function(studyID, dicomFilename){
+		return new Promise(async function(resolve, reject) {
+			$('body').loading('start');
+			const dicomUrl = '/api/orthanc/download/dicom/archive';
+			let dicomStudiesRes = await doCallLocalApi(dicomUrl, {StudyID: studyID, UsrArchiveFileName: dicomFilename});
+			//console.log(dicomStudiesRes);
+			var pom = document.createElement('a');
+			pom.setAttribute('href', dicomStudiesRes.result.archive);
+			pom.setAttribute('download', dicomFilename);
+			pom.click();
+			resolve(dicomStudiesRes.result);
+			$('body').loading('stop');
+		});
+	}
+
+	const doDeleteLocalDicom = function(studyID){
+		return new Promise(async function(resolve, reject) {
+			$('body').loading('start');
+			const dicomUrl = '/api/orthanc/delete/study';
+			let dicomStudiesRes = await doCallLocalApi(dicomUrl, {StudyID: studyID});
+			resolve(dicomStudiesRes.result);
+			$('body').loading('stop');
+		});
+	}
+
+	const doCountImageLocalDicom = function(studyID){
+		return new Promise(async function(resolve, reject) {
+			$('body').loading('start');
+			const dicomUrl = '/api/orthanc/study/count/instances';
+			let dicomStudiesRes = await doCallLocalApi(dicomUrl, {StudyID: studyID});
+			resolve(dicomStudiesRes.result);
+			$('body').loading('stop');
+		});
+	}
+
   const doPreparePatientParams = function(newCaseData){
 		let rqParams = {};
 		let patientFragNames = newCaseData.patientNameEN.split(' ');
@@ -527,6 +616,14 @@ module.exports = function ( jq ) {
 		});
 	}
 
+	const doGetLocalSeriesList = function(studyId) {
+		return new Promise(async function(resolve, reject) {
+			const dicomUrl = '/api/orthanc/select/study/' + studyId;
+			let dicomStudiesRes = await doCallLocalApi(dicomUrl, {});
+			resolve(dicomStudiesRes.result);
+		});
+	}
+
 	const doGetOrthancStudyDicom = function(studyId) {
 		return new Promise(async function(resolve, reject) {
 			const userdata = JSON.parse(localStorage.getItem('userdata'));
@@ -550,6 +647,14 @@ module.exports = function ( jq ) {
 	  	let params = {method: 'get', uri: orthancUri, body: rqBody, hospitalId: hospitalId};
 	  	let orthancRes = await apiconnector.doCallOrthancApiByProxy(params);
 			resolve(orthancRes);
+		});
+	}
+
+	const doGetLocalOrthancSeriesDicom = function(seriesId) {
+		return new Promise(async function(resolve, reject) {
+			const dicomUrl = '/api/orthanc/select/series/' + seriesId;
+			let dicomSeriesRes = await doCallLocalApi(dicomUrl, {});
+			resolve(dicomSeriesRes.result);
 		});
 	}
 
@@ -1107,17 +1212,24 @@ module.exports = function ( jq ) {
 		/* Function share */
 		doCallApi,
 		doGetApi,
+		doCallLocalApi,
+		doGetLocalApi,
 		doCreateDicomFilterForm,
 		doSaveQueryDicom,
 		doFilterDicom,
 		doUserLogout,
 		doOpenStoneWebViewer,
 		doDownloadDicom,
+		doDownloadLocalDicom,
+		doDeleteLocalDicom,
+		doCountImageLocalDicom,
     doPreparePatientParams,
     doPrepareCaseParams,
 		doGetSeriesList,
+		doGetLocalSeriesList,
 		doGetOrthancStudyDicom,
 		doGetOrthancSeriesDicom,
+		doGetLocalOrthancSeriesDicom,
 		doCallCreatePreviewSeries,
 		doCallCreateZipInstance,
 		doCallSendAI,

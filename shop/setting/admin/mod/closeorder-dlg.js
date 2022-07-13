@@ -194,7 +194,31 @@ module.exports = function ( jq ) {
     });
   }
 
+	const doOpenReportPdfDlg = function(pdfUrl, title){
+    return new Promise(async function(resolve, reject) {
+      const reportPdfDlgContent = $('<object data="' + pdfUrl + '" type="application/pdf" width="99%" height="380"></object>');
+      $(reportPdfDlgContent).css({'margin-top': '10px'});
+      const reportformoption = {
+  			title: title,
+  			msg: $(reportPdfDlgContent),
+  			width: '720px',
+				okLabel: ' เปิดหน้าต่างใหม่ ',
+				cancelLabel: ' ปิด ',
+  			onOk: async function(evt) {
+					window.open(pdfUrl, '_blank');
+          reportPdfDlgHandle.closeAlert();
+  			},
+  			onCancel: function(evt){
+  				reportPdfDlgHandle.closeAlert();
+  			}
+  		}
+  		let reportPdfDlgHandle = $('body').radalert(reportformoption);
+      resolve(reportPdfDlgHandle)
+    });
+  }
+
   return {
-    doCreateFormDlg
+    doCreateFormDlg,
+		doOpenReportPdfDlg
 	}
 }
