@@ -19,7 +19,7 @@ module.exports = function ( jq ) {
     let newRatio = doCalRatio(paperSize);
     let newHeight = undefined;
 		if (paperSize == 1){
-			newHeight = constant.A4Height * newRatio;
+			newHeight = constant.A4Height/* * newRatio*/;
 			$('#report-container').css({'width': constant.A4Width, 'margin-left': '0px'});
 		} else if (paperSize == 2){
 			newHeight = constant.SlipHeight * newRatio;
@@ -238,56 +238,68 @@ module.exports = function ( jq ) {
   }
 
 	const doRenderElement = function(shopData, wrapper, reportElements, ratio, paperSize){
-		let newRatio = 1;
-		if (ratio) {
-			newRatio = ratio;
-		}
-		console.log(newRatio);
-    reportElements.forEach((elem, i) => {
-      let element;
-      switch (elem.elementType) {
-        case "text":
-          element = $("<div></div>").css({'position': 'absolute'});
-          //$(element).addClass("reportElement");
-          $(element).css({"left": Number(elem.x)*newRatio + "px", "top": Number(elem.y)*newRatio + "px", "width": Number(elem.width)*newRatio + "px", "height": Number(elem.height)*newRatio + "px"});
-          $(element).css({"font-size": Number(elem.fontsize)*newRatio + "px"});
-          $(element).css({"font-weight": elem.fontweight});
-          $(element).css({"font-style": elem.fontstyle});
-          $(element).css({"text-align": elem.fontalign});
-					let field = elem.title.substring(1);
-					if (field == 'shop_name') {
-						$(element).text(shopData.Shop_Name);
-					} else if (field == 'shop_address') {
-						$(element).text(shopData.Shop_Address);
-					} else {
-						$(element).text(elem.title);
-					}
-        break;
-        case "hr":
-          element = $("<div><hr/></div>").css({'position': 'absolute'});
-          //$(element).addClass("reportElement");
-          $(element).css({"left": Number(elem.x)*newRatio + "px", "top": Number(elem.y)*newRatio + "px", "width": Number(elem.width)*newRatio + "px", "height": Number(elem.height)*newRatio + "px"});
-          $(element > "hr").css({"border": elem.border});
-        break;
-        case "image":
-          element = $("<div></div>").css({'position': 'absolute'});
-          //$(element).addClass("reportElement");
-          let newImage = new Image();
-          newImage.src = elem.url;
-          newImage.setAttribute("width", Number(elem.width)*newRatio);
-          $(element).append(newImage);
-          $(element).css({"left": Number(elem.x)*newRatio + "px", "top": Number(elem.y)*newRatio + "px", "width": Number(elem.width)*newRatio + "px", "height": "auto"});
-        break;
-				case "table":
-					//doCreateTable(wrapper, elem.rows);
-					doRenderTable(wrapper, elem.rows, elem.x, elem.y, newRatio);
-				break;
-      }
-			if (element) {
-      	$(wrapper).append($(element));
+		return new Promise(async function(resolve, reject) {
+			let newRatio = 1;
+			if (ratio) {
+				newRatio = ratio;
 			}
-    });
-    return $(wrapper);
+			let maxTop = 0;
+			const promiseList = new Promise(async function(resolve2, reject2) {
+		    await reportElements.forEach((elem, i) => {
+		      let element;
+		      switch (elem.elementType) {
+		        case "text":
+		          element = $("<div></div>").css({'position': 'absolute'});
+		          //$(element).addClass("reportElement");
+		          $(element).css({"left": Number(elem.x)*newRatio + "px", "top": Number(elem.y)*newRatio + "px", "width": Number(elem.width)*newRatio + "px", "height": Number(elem.height)*newRatio + "px"});
+		          $(element).css({"font-size": Number(elem.fontsize)*newRatio + "px"});
+		          $(element).css({"font-weight": elem.fontweight});
+		          $(element).css({"font-style": elem.fontstyle});
+		          $(element).css({"text-align": elem.fontalign});
+							let field = elem.title.substring(1);
+							if (field == 'shop_name') {
+								$(element).text(shopData.Shop_Name);
+							} else if (field == 'shop_address') {
+								$(element).text(shopData.Shop_Address);
+							} else {
+								$(element).text(elem.title);
+							}
+		        break;
+		        case "hr":
+		          element = $("<div><hr/></div>").css({'position': 'absolute'});
+		          //$(element).addClass("reportElement");
+		          $(element).css({"left": Number(elem.x)*newRatio + "px", "top": Number(elem.y)*newRatio + "px", "width": Number(elem.width)*newRatio + "px", "height": Number(elem.height)*newRatio + "px"});
+		          $(element > "hr").css({"border": elem.border});
+		        break;
+		        case "image":
+		          element = $("<div></div>").css({'position': 'absolute'});
+		          //$(element).addClass("reportElement");
+		          let newImage = new Image();
+		          newImage.src = elem.url;
+		          newImage.setAttribute("width", Number(elem.width)*newRatio);
+		          $(element).append(newImage);
+		          $(element).css({"left": Number(elem.x)*newRatio + "px", "top": Number(elem.y)*newRatio + "px", "width": Number(elem.width)*newRatio + "px", "height": "auto"});
+		        break;
+						case "table":
+							//doCreateTable(wrapper, elem.rows);
+							doRenderTable(wrapper, elem.rows, elem.x, elem.y, newRatio);
+						break;
+		      }
+					if (element) {
+		      	$(wrapper).append($(element));
+					}
+					if (Number(elem.y) > maxTop) {
+						maxTop = Number(elem.y);
+					}
+		    });
+				setTimeout(()=> {
+	        resolve2(maxTop);
+	      }, 1000);
+	    });
+	    Promise.all([promiseList]).then((ob)=> {
+	      resolve(ob[0]);
+	    });
+		});
   }
 
 	const doRenderTable = function(wrapper, tableRows, left, top, ratio){
@@ -376,10 +388,14 @@ module.exports = function ( jq ) {
 					let adjustLeft = (wrapperBoxWidth - constant.SlipWidth) / 2;
 					$(wrapperBox).css({'margin-left': adjustLeft+'px', 'width': reportWrapperWidth+'px'});
 				}
-				$(wrapperBox).css({'height': newHeight+'px', 'max-height': newHeight + 'px'});
+
+				let maxTop = await doRenderElement(shopData, wrapperBox, templateDesignElements, renderRatio, paperSize);
+				//console.log(maxTop);
+				maxTop = (Number(maxTop) * renderRatio);
+				//console.log(maxTop);
+				$(wrapperBox).css({'height': maxTop+'px', 'max-height': maxTop + 'px'});
 				//$(wrapperBox).css({'height': 'auto'});
 
-				doRenderElement(shopData, wrapperBox, templateDesignElements, renderRatio, paperSize);
 				const radalertoption = {
 		      title: 'ตัวอย่างเอกสาร',
 		      msg: $(wrapperBox),

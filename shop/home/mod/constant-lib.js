@@ -24,31 +24,31 @@ const defaultTableData = [
     ]
   },
   {id: 'dataRow', class: 'gooditem', fields: [
-      {id: 'dataCell_1', cellData: '1', fontweight: 'normal', fontalign: 'center', width: '10%'},
-      {id: 'dataCell_2', cellData: 'ชื่อสินค้า', fontweight: 'normal', fontalign: 'left', width: '34%'},
-      {id: 'dataCell_3', cellData: '100.00', fontweight: 'normal', fontalign: 'center', width: '20%'},
-      {id: 'dataCell_4', cellData: '1', fontweight: 'normal', fontalign: 'center', width: '13%'},
-      {id: 'dataCell_5', cellData: '100.00', fontweight: 'normal', fontalign: 'right', width: '19%'}
+      {id: 'dataCell_1', type: "dynamic", cellData: '$gooditem_no', fontweight: 'normal', fontalign: 'center', width: '10%'},
+      {id: 'dataCell_2', type: "dynamic", cellData: '$gooditem_name', fontweight: 'normal', fontalign: 'left', width: '34%'},
+      {id: 'dataCell_3', type: "dynamic", cellData: '$gooditem_price', fontweight: 'normal', fontalign: 'center', width: '20%'},
+      {id: 'dataCell_4', type: "dynamic", cellData: '$gooditem_qty', fontweight: 'normal', fontalign: 'center', width: '13%'},
+      {id: 'dataCell_5', type: "dynamic", cellData: '$gooditem_total', fontweight: 'normal', fontalign: 'right', width: '19%'}
     ]
   },
   {id: 'totalRow', fields: [
       {id: 'totalCell_1', cellData: 'รวมค่าสินค้า', fontweight: 'normal', fontalign: 'center', width: '78%'},
-      {id: 'totalCell_2', cellData: '100.00', fontweight: 'normal', fontalign: 'right', width: '19%'}
+      {id: 'totalCell_2', type: "dynamic", cellData: '$total', fontweight: 'normal', fontalign: 'right', width: '19%'}
     ]
   },
   {id: 'discountRow', fields: [
       {id: 'discountCell_1', cellData: 'ส่วนลด', fontweight: 'normal', fontalign: 'center', width: '78%'},
-      {id: 'discountCell_2', cellData: '0.00', fontweight: 'normal', fontalign: 'right', width: '19%'}
+      {id: 'discountCell_2', type: "dynamic", cellData: '$discount', fontweight: 'normal', fontalign: 'right', width: '19%'}
     ]
   },
   {id: 'vatRow', fields: [
       {id: 'vatCell_1', cellData: 'ภาษีมูลค่าเพิ่ม 7%', fontweight: 'normal', fontalign: 'center', width: '78%'},
-      {id: 'vatCell_2', cellData: '0.00', fontweight: 'normal', fontalign: 'right', width: '19%'}
+      {id: 'vatCell_2', type: "dynamic", cellData: '$vat', fontweight: 'normal', fontalign: 'right', width: '19%'}
     ]
   },
   {id: 'grandTotalRow', backgroundColor: '#ddd', fields: [
       {id: 'grandTotalCell_1', cellData: 'รวมทั้งหมด', fontweight: 'bold', fontalign: 'center', width: '78%'},
-      {id: 'grandTotalCell_2', cellData: '100.00', fontweight: 'bold', fontalign: 'right', width: '19%'}
+      {id: 'grandTotalCell_2', type: "dynamic", cellData: '$grandtotal', fontweight: 'bold', fontalign: 'right', width: '19%'}
     ]
   }
 ]
