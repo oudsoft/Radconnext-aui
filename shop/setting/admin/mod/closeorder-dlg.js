@@ -196,7 +196,8 @@ module.exports = function ( jq ) {
 
 	const doOpenReportPdfDlg = function(pdfUrl, title){
     return new Promise(async function(resolve, reject) {
-      const reportPdfDlgContent = $('<object data="' + pdfUrl + '" type="application/pdf" width="99%" height="380"></object>');
+			const pdfURL = pdfUrl + '?t=' + common.genUniqueID();
+      const reportPdfDlgContent = $('<object data="' + pdfURL + '" type="application/pdf" width="99%" height="380"></object>');
       $(reportPdfDlgContent).css({'margin-top': '10px'});
       const reportformoption = {
   			title: title,

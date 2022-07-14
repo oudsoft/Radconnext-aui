@@ -21,6 +21,7 @@ $( document ).ready(function() {
     let jquerySimpleUploadUrl = '../lib/simpleUpload.min.js';
     let utilityPlugin = "../lib/plugin/jquery-radutil-plugin.js";
     let reportElementPlugin = "../lib/plugin/jquery-report-element-plugin.js";
+    let controlPagePlugin = "../lib/plugin/jquery-controlpage-plugin.js"
 
     let momentWithLocalesPlugin = "../lib/moment-with-locales.min.js";
     let ionCalendarPlugin = "../lib/ion.calendar.min.js";
@@ -39,6 +40,7 @@ $( document ).ready(function() {
 
     $('head').append('<script src="' + utilityPlugin + '"></script>');
     $('head').append('<script src="' + reportElementPlugin + '"></script>');
+    $('head').append('<script src="' + controlPagePlugin + '"></script>');
 
     $('head').append('<script src="' + momentWithLocalesPlugin + '"></script>');
     $('head').append('<script src="' + ionCalendarPlugin + '"></script>');

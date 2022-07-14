@@ -44,6 +44,14 @@ module.exports = function ( jq ) {
     return Number(num).toLocaleString('en', options);
   }
 
+	function doFormatQtyNumber(num){
+	  if ((Number(num) === num) && (num % 1 !== 0)) {
+	    return doFormatNumber(num);
+	  } else {
+	    return Number(num);
+	  }
+	}
+
 	const doFormatDateStr = function(d) {
 		var yy, mm, dd;
 		yy = d.getFullYear();
@@ -118,17 +126,26 @@ module.exports = function ( jq ) {
 		sundayFirst:false,
 	};
 
+	const genUniqueID = function () {
+		function s4() {
+			return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+		}
+		return s4() + s4() + '-' + s4();
+	}
+
   return {
 		fileUploadMaxSize,
     doCallApi,
     doGetApi,
 		doUserLogout,
 		doFormatNumber,
+		doFormatQtyNumber,
 		doFormatDateStr,
 		doFormatTimeStr,
 		doCreateImageCmd,
 		doCreateTextCmd,
 		delay,
-		calendarOptions
+		calendarOptions,
+		genUniqueID
 	}
 }

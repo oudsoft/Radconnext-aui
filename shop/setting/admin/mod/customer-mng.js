@@ -1,6 +1,9 @@
 module.exports = function ( jq ) {
 	const $ = jq;
   const common = require('../../../home/mod/common-lib.js')($);
+	const order = require('./order-mng.js')($);
+	const calendardlg = require('./calendar-dlg.js')($);
+	const history = require('./order-history.js')($);
 
   const customerTableFields = [
 		{fieldName: 'Name', displayName: 'ชื่อ', width: '20%', align: 'left', inputSize: '30', verify: true, showHeader: true},
@@ -29,7 +32,20 @@ module.exports = function ( jq ) {
 		});
 	}
 
-	const doCreateCustomerListTable = function(shopData, workAreaBox, customerItems){
+	const doCreateCalendarCmd = function(cmdTitle, successCallback){
+		let orderDateBox = $('<div></div>').text(cmdTitle).css({'width': 'fit-content', 'display': 'inline-block', 'background-color': 'white', 'color': 'black', 'padding': '4px', 'cursor': 'pointer', 'font-size': '16px'});
+		$(orderDateBox).on('click', (evt)=>{
+			common.calendarOptions.onClick = async function(date){
+				calendarHandle.closeAlert();
+				successCallback(date);
+				selectDate = common.doFormatDateStr(new Date(date));
+			}
+			let calendarHandle = order.doShowCalendarDlg(common.calendarOptions);
+		});
+		return $(orderDateBox);
+	}
+
+	const doCreateCustomerListTable = function(shopData, workAreaBox, customerItems, newCustomerCmdBox){
 		let customerTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="1"></table>');
 		let headerRow = $('<tr></tr>');
 		$(headerRow).append($('<td width="2%" align="center"><b>#</b></td>'));
@@ -42,7 +58,7 @@ module.exports = function ( jq ) {
 		$(customerTable).append($(headerRow));
 
 		for (let x=0; x < customerItems.length; x++) {
-			let itemRow = $('<tr></tr>');
+			let itemRow = $('<tr class="customer-row"></tr>');
 			$(itemRow).append($('<td align="center">' + (x+1) + '</td>'));
 			let item = customerItems[x];
 			for (let i=0; i < customerTableFields.length; i++) {
@@ -59,24 +75,65 @@ module.exports = function ( jq ) {
 			$(editCustomerCmd).on('click', (evt)=>{
 				doOpenEditCustomerForm(shopData, workAreaBox, item);
 			});
-			/*
+
 			let orderCustomerCmd = $('<input type="button" value=" Order " class="action-btn"/>').css({'margin-left': '8px'});
-			$(orderCustomerCmd).on('click', (evt)=>{
+			$(orderCustomerCmd).on('click', async (evt)=>{
+				let params = {};
+				let orderRes = await common.doCallApi('/api/shop/order/list/by/customer/' + item.id, params);
+				localStorage.setItem('customerorders', JSON.stringify(orderRes.Records));
+				console.log(JSON.parse(localStorage.getItem('customerorders')));
+				/*
 				1. เปิด search order form for customer
 					options search [ทั้งหมด/ตั้งแต่วันที่/เมื่อวันที่] / ปฏิทิน
 				2. แสดงรายการออร์เดอร์ที่ค้นเจอแบบตาราง
 					fields[วันที่/บิล/ใบกำกับ/รายการสินค้า]
 				3. ใช้ Navigator Bar มาควบคุมการแสกงจำนวนรายการออร์เดอร์ที่ค้นเจอ
+				*/
+
+				$(editCustomerCmd).hide();
+				$(orderCustomerCmd).hide();
+				$(deleteCustomerCmd).hide();
+				$(newCustomerCmdBox).hide();
+				$('.customer-row').hide();
+				$(itemRow).css({'background-color': 'gray', 'color': 'white'});
+				let fromDateCmd = doCreateCalendarCmd('ตั้งแต่วันที่', async (date)=>{
+					let selectDate = common.doFormatDateStr(new Date(date));
+					$(fromDateCmd).text(selectDate);
+					$('#HistoryTable').remove();
+					let orderHostoryTable = await history.doCreateOrderHistoryTable(workAreaBox, 0, 0, selectDate);
+				})
+				let backCustomerCmd = $('<input type="button" value=" Back " class="action-btn"/>').css({'margin-left': '8px'});
+				$(backCustomerCmd).on('click', (evt)=>{
+					$(backCustomerCmd).remove();
+					$(editCustomerCmd).show();
+					$(orderCustomerCmd).show();
+					$(deleteCustomerCmd).show();
+					$(newCustomerCmdBox).show();
+					$('.customer-row').show();
+					$(itemRow).css({'background-color': '', 'color': ''});
+					localStorage.removeItem('customerorders');
+				});
+				$(commandCell).append($(fromDateCmd)).append($(backCustomerCmd));
+				$(itemRow).show();
+
+				$('#HistoryTable').remove();
+				if (orderRes.Records.length > 0) {
+					let orderHostoryTable = await history.doCreateOrderHistoryTable(workAreaBox, 0, 0);
+				} else {
+					let notFoundBox = $('<div id="HistoryTable"></div>').css({'position': 'relative', 'width': '100%', 'margin-top': '25px'});
+					$(notFoundBox).text('ไม่พบรายการออร์เดอร์');
+					$(workAreaBox).append($(notFoundBox));
+				}
 			});
-			*/
+
 			let deleteCustomerCmd = $('<input type="button" value=" Delete " class="action-btn"/>').css({'margin-left': '8px'});
 			$(deleteCustomerCmd).on('click', (evt)=>{
 				doDeleteCustomer(shopData, workAreaBox, item.id);
 			});
 
 			$(commandCell).append($(editCustomerCmd));
+			$(commandCell).append($(orderCustomerCmd));
 			$(commandCell).append($(deleteCustomerCmd));
-			//$(commandCell).append($(orderCustomerCmd));
 			$(itemRow).append($(commandCell));
 			$(customerTable).append($(itemRow));
 		}
@@ -102,11 +159,11 @@ module.exports = function ( jq ) {
 				let key = $(searchKeyInput).val();
 				if (key !== ''){
 					if (key === '*') {
-						customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems);
+						customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems, newCustomerCmdBox);
 					} else {
 						let customers = JSON.parse(localStorage.getItem('customers'));
 						let customerFilter = await doFilterCustomer(customers, key);
-						customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerFilter);
+						customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerFilter, newCustomerCmdBox);
 					}
 					$(workAreaBox).append($(customerTable));
 				}
@@ -120,7 +177,7 @@ module.exports = function ( jq ) {
 
 			$(workAreaBox).append($(newCustomerCmdBox));
 
-			customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems);
+			customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems, newCustomerCmdBox);
 
       $(workAreaBox).append($(customerTable));
       resolve();
