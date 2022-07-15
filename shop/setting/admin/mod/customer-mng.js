@@ -82,13 +82,6 @@ module.exports = function ( jq ) {
 				let orderRes = await common.doCallApi('/api/shop/order/list/by/customer/' + item.id, params);
 				localStorage.setItem('customerorders', JSON.stringify(orderRes.Records));
 				console.log(JSON.parse(localStorage.getItem('customerorders')));
-				/*
-				1. เปิด search order form for customer
-					options search [ทั้งหมด/ตั้งแต่วันที่/เมื่อวันที่] / ปฏิทิน
-				2. แสดงรายการออร์เดอร์ที่ค้นเจอแบบตาราง
-					fields[วันที่/บิล/ใบกำกับ/รายการสินค้า]
-				3. ใช้ Navigator Bar มาควบคุมการแสกงจำนวนรายการออร์เดอร์ที่ค้นเจอ
-				*/
 
 				$(editCustomerCmd).hide();
 				$(orderCustomerCmd).hide();
@@ -100,11 +93,13 @@ module.exports = function ( jq ) {
 					let selectDate = common.doFormatDateStr(new Date(date));
 					$(fromDateCmd).text(selectDate);
 					$('#HistoryTable').remove();
+					$('#NavigBar').remove();
 					let orderHostoryTable = await history.doCreateOrderHistoryTable(workAreaBox, 0, 0, selectDate);
 				})
 				let backCustomerCmd = $('<input type="button" value=" Back " class="action-btn"/>').css({'margin-left': '8px'});
 				$(backCustomerCmd).on('click', (evt)=>{
 					$(backCustomerCmd).remove();
+					$(fromDateCmd).remove();
 					$(editCustomerCmd).show();
 					$(orderCustomerCmd).show();
 					$(deleteCustomerCmd).show();
@@ -117,6 +112,7 @@ module.exports = function ( jq ) {
 				$(itemRow).show();
 
 				$('#HistoryTable').remove();
+				$('#NavigBar').remove();
 				if (orderRes.Records.length > 0) {
 					let orderHostoryTable = await history.doCreateOrderHistoryTable(workAreaBox, 0, 0);
 				} else {
