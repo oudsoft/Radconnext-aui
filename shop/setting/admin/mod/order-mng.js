@@ -446,7 +446,7 @@ module.exports = function ( jq ) {
             let goodItemRow = $('<tr></tr>');
             $(goodItemRow).append($('<td align="center">' + (i+1) + '</td>'));
             $(goodItemRow).append($('<td align="left">' + goodItems[i].MenuName + '</td>'));
-            let goodItemQtyCell = $('<td align="center">' + doFormatQtyNumber(goodItems[i].Qty) + '</td>');
+            let goodItemQtyCell = $('<td align="center">' + common.doFormatQtyNumber(goodItems[i].Qty) + '</td>');
             $(goodItemRow).append($(goodItemQtyCell));
             $(goodItemRow).append($('<td align="center">' + goodItems[i].Unit + '</td>'));
             $(goodItemRow).append($('<td align="center">' + common.doFormatNumber(Number(goodItems[i].Price)) + '</td>'));
@@ -462,7 +462,7 @@ module.exports = function ( jq ) {
               let oldQty = $(goodItemQtyCell).text();
               oldQty = Number(oldQty);
               let newQty = oldQty + 1;
-              $(goodItemQtyCell).text(doFormatQtyNumber(newQty));
+              $(goodItemQtyCell).text(common.doFormatQtyNumber(newQty));
               goodItems[i].Qty = newQty;
               subTotal = Number(goodItems[i].Price) * newQty;
               $(subTotalCell).empty().append($('<span><b>' + common.doFormatNumber(subTotal) + '</b></span>').css({'margin-right': '4px'}));
@@ -475,7 +475,7 @@ module.exports = function ( jq ) {
               oldQty = Number(oldQty);
               let newQty = oldQty - 1;
               if (newQty > 0) {
-                $(goodItemQtyCell).text(doFormatQtyNumber(newQty));
+                $(goodItemQtyCell).text(common.doFormatQtyNumber(newQty));
                 goodItems[i].Qty = newQty;
                 subTotal = Number(goodItems[i].Price) * newQty;
                 $(subTotalCell).empty().append($('<span><b>' + common.doFormatNumber(subTotal) + '</b></span>').css({'margin-right': '4px'}));

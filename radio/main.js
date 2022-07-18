@@ -22,8 +22,8 @@ const acccase = require('./mod/acccaselib.js')($);
 const searchcase = require('./mod/searchcaselib.js')($);
 const opencase = require('./mod/opencase.js')($);
 const template = require('./mod/templatelib.js')($);
-const profile = require('./mod/profilelib.js')($);
-//const profile = require('./mod/profilelibV2.js')($);
+//const profile = require('./mod/profilelib.js')($);
+const profile = require('./mod/profilelibV2.js')($);
 const softphone = require('../case/mod/softphonelib.js')($);
 
 const modalLockScreenStyle = { 'position': 'fixed', 'z-index': '41', 'left': '0', 'top': '0', 'width': '100%', 'height': '100%', 'overflow': 'auto', 'background-color': '#ccc'};
@@ -428,7 +428,6 @@ function doLoadDefualtPage() {
   let homeTitlePage = welcome.doCreateHomeTitlePage();
   $("#TitleContent").empty().append($(homeTitlePage));
   welcome.doSetupCounter().then((loadRes)=>{
-    $(".mainfull").empty();
     /*
     let dicomzipsync = JSON.parse(localStorage.getItem('dicomzipsync'));
     dicomzipsync.forEach((dicom, i) => {
@@ -437,6 +436,14 @@ function doLoadDefualtPage() {
       }
     });
     */
+    
+    if (loadRes.newList.Records.length > 0 ) {
+      $('#NewCaseCmd').click();
+    } else if (loadRes.accList.Records.length > 0) {
+      $('#AcceptedCaseCmd').click();
+    } else {
+      $(".mainfull").empty();
+    }
     $('body').loading('stop');
   }).catch(async (err)=>{
     if (err.error.code == 210){
@@ -565,7 +572,6 @@ function onLockScreenTrigger() {
 
 function onUnLockScreenTrigger(evt){
   resetScreen();
-
 }
 
 function onAutoLogoutTrigger(evt){
@@ -615,19 +621,16 @@ function doAutoAcceptCase(){
       console.log(myNewCase);
       if (myNewCase.status.code == 200){
         let caseLists = myNewCase.Records;
-        for (let i=0; i < caseLists.length; i++) {
-          let caseItem = caseLists[i];
-          await common.doUpdateCaseStatus(caseItem.id, 2, 'Radiologist Accept case by Auto Acc.');
-        }
-        /*
         if (caseLists.length > 0){
+          for (let i=0; i < caseLists.length; i++) {
+            let caseItem = caseLists[i];
+            await common.doUpdateCaseStatus(caseItem.id, 2, 'Radiologist Accept case by Auto Acc.');
+          }
           $('#AcceptedCaseCmd').click();
         } else {
           doLoadDefualtPage();
         }
-        */
       }
-      $('#AcceptedCaseCmd').click();
     });
   } else {
     doLoadDefualtPage();

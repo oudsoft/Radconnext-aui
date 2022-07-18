@@ -342,7 +342,7 @@ module.exports = function ( jq ) {
 		console.log(protocol);
 
 		let wsProtocol = 'ws://';
-		if (protocol == 'https') {
+		if (protocol == 'https:') {
 			wsProtocol = 'wss://';
 		}
 	  //const wsUrl = 'wss://' + hostname + ':' + port + '/' + rootname + '/' + username + '/' + hospitalId + '?type=' + type;

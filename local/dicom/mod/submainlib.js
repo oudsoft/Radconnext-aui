@@ -145,6 +145,64 @@ module.exports = function ( jq ) {
 	  $(radAlertBox.cancelCmd).hide();
 	}
 
+	const doCreateCustomNotify = function(){
+	  let msgBox = $('<div></div>');
+	  let titleBox = $("<div id='notify-title' style='background-color: white; color: black; font-weight: bold; text-align: center;'></div>");
+	  $(titleBox).append($('<h4>แจ้งส่งภาพเข้าระบบสำเร็จ</h4>'));
+	  let boyBox = $("<div id='notify-body'></div>");
+	  $(boyBox).append($('<span>คลิกที่ปุ่ม <b>ตกลง</b> เพื่อปิดการแจ้งเตือนนี้</span>'));
+	  let footerBox = $("<div id='notify-footer' style='text-align: center;'></div>");
+	  let updateCmd = $('<input type="button" value="ตกลง" id="UpdateDicomCmd"/>');
+		$(updateCmd).on('click', (evt)=>{
+			$(msgBox).remove()
+		});
+
+	  $(footerBox).append($(updateCmd));
+	  return $(msgBox).append($(titleBox)).append($(boyBox)).append($(footerBox))
+	}
+
+	const onCaseMisstakeNotifyTrigger = function(evt){
+	  let trigerData = evt.detail.data;
+	  let msg = trigerData.msg;
+	  let from = trigerData.from;
+	  let patientFullName = trigerData.caseData.patientFullName;
+	  let patientHN = trigerData.caseData.patientHN;
+	  let caseScanParts = trigerData.caseData.caseScanParts;
+	  let caseScanPartsText = '';
+	  caseScanParts.forEach((item, i) => {
+	    if (i != (caseScanParts.length - 1)) {
+	      caseScanPartsText  += item.Name + ' \ ';
+	    } else {
+	      caseScanPartsText  += item.Name;
+	    }
+	  });
+
+	  let radAlertMsg = $('<div></div>');
+	  let notifyFromromBox = $('<div></div>');
+	  $(notifyFromromBox).append($('<p>ผ้ป่วย ชื่อ ' + patientFullName + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(notifyFromromBox).append($('<p>HN ' + patientHN + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(notifyFromromBox).append($('<p>Scan Part ' + caseScanPartsText + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(notifyFromromBox).append($('<p>ผู้แจ้ง ' + from.userfullname + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(notifyFromromBox).append($('<p>สาเหตุเคสผิดพลาด ' + msg.cause + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(notifyFromromBox).append($('<p>ข้อความแจ้งเพิ่มเติม ' + msg.other + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(radAlertMsg).append($(notifyFromromBox));
+
+	  const radalertoption = {
+	    title: 'ข้อความแจ้งเตือนเตสผิดพลาด',
+	    msg: $(radAlertMsg),
+	    width: '420px',
+	    onOk: function(evt) {
+	      radConfirmBox.closeAlert();
+	    }
+	  }
+	  let radAlertBox = $('body').radalert(radalertoption);
+	  $(radAlertBox.cancelCmd).hide();
+	}
+
+	const onNewDicomTransferTrigger = function(evt) {
+		let msgBox = doCreateCustomNotify();
+		$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
+	}
 
 	return {
     showScanpartAux,
@@ -153,5 +211,8 @@ module.exports = function ( jq ) {
     doTriggerDicomFilterForm,
 		doCreateRegisterVoIP,
 		doNotAllowAccessPage,
+		doCreateCustomNotify,
+		onCaseMisstakeNotifyTrigger,
+		onNewDicomTransferTrigger
   }
 }

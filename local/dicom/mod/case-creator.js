@@ -5,6 +5,7 @@ module.exports = function ( jq ) {
 	const util = require('../../../case/mod/utilmod.js')($);
   const common = require('../../../case/mod/commonlib.js')($);
   const newreffuser = require('../../../case/mod/createnewrefferal.js')($);
+	const submain = require('./submainlib.js')($);
 
   const phProp = {
     attachFileUploadApiUrl: 'https://radconnext.info/api/uploadpatienthistory',
@@ -927,18 +928,24 @@ module.exports = function ( jq ) {
 	      const cliamerightId = newCaseData.patientRights
 	      let caseData = common.doPrepareCaseParams(newCaseData);
 
-        await doPrepareTransferDicomZip(caseData, patientData, defualtValue);
+				let currentTime = new Date().toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+	      currentTime = currentTime.split(':').join('');
+	      let dicomZipFileName = fmtStr('%s_%s-%s-%s-%s.zip', patientData.Patient_NameEN, patientData.Patient_LastNameEN, defualtValue.studyTags.MainDicomTags.StudyDate, defualtValue.studyTags.MainDicomTags.StudyTime, currentTime);
 
-	      rqParams = {data: caseData, hospitalId: hospitalId, userId: userId, patientId: patientId, urgenttypeId: urgenttypeId, cliamerightId: cliamerightId, option: newCaseData.option};
+				caseData.Case_DicomZipFilename = dicomZipFileName;
+
+	      rqParams = {data: caseData, hospitalId: hospitalId, userId: userId, patientId: patientId, urgenttypeId: urgenttypeId, cliamerightId: cliamerightId, option: newCaseData.option, studyTags: defualtValue.studyTags};
+				console.log(rqParams);
 
 	      let caseRes = await common.doCallApi('/api/cases/add', rqParams);
 	      if (caseRes.status.code === 200) {
 					console.log('caseActions=>', caseRes.actions);
-					//let advanceDicom = await apiconnector.doCrateDicomAdvance(defualtValue.studyID, hospitalId);
 	        $.notify("บันทึกเคสใหม่เข้าสู่ระบบเรียบร้อยแล้ว", "success");
 					if (userdata.usertypeId == 2) {
 						let isActive = $('#CaseMainCmd').hasClass('NavActive');
 						if (!isActive) {
+							let hrPatientFiles = caseData.Case_PatientHRLink;
+							doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue);
 							$('#CaseMainCmd').click();
 						}
 						$('#NewStatusSubCmd').click(); // <- Tech Page
@@ -959,24 +966,14 @@ module.exports = function ( jq ) {
 		}
 	}
 
-  function doPrepareTransferDicomZip(caseData, patientData, defualtValue){
+  function doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue){
     return new Promise(async function(resolve, reject) {
-
-      let currentTime = new Date().toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
-      currentTime = currentTime.split(':').join('');
-      let dicomZipFileName = fmtStr('%s_%s-%s-%s-%s.zip', patientData.Patient_NameEN, patientData.Patient_LastNameEN, defualtValue.studyTags.MainDicomTags.StudyDate, defualtValue.studyTags.MainDicomTags.StudyTime, currentTime);
-
       let transerDicomUrl = '/api/orthanc/transfer/dicom';
-      let transferParams = {DicomZipFileName: dicomZipFileName, StudyTags: defualtValue.studyTags, HrPatientFiles: caseData.Case_PatientHRLink};
+      let transferParams = {DicomZipFileName: dicomZipFileName, StudyTags: defualtValue.studyTags, HrPatientFiles: hrPatientFiles};
 			console.log(transferParams);
+			resolve();
       let transerDicomRes = await common.doCallLocalApi(transerDicomUrl, transferParams);
 			console.log(transerDicomRes);
-			/* UDATE ZIP FILENEME ใน CASE */
-			let updateZipFilenameParams = {StudyID: defualtValue.studyTags.ID, ArchiveFileName: dicomZipFileName};
-			let updateZipFilenameUtl = '/api/cases/reset/dicom/zipfilename';
-			let updateZipFilenameRes = await common.doCallApi(updateZipFilenameUtl, updateZipFilenameParams);
-			console.log(updateZipFilenameRes);
-      resolve();
     });
   }
 

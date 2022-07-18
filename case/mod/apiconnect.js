@@ -11,7 +11,7 @@ const hostIP = 'localhost';
 const hostOrthancApiPort = '8042';
 const hostName = hostIP + ':' + hostApiPort;
 const domainName = 'radconnext.com';
-const adminEmailAddress = 'oudsoft@gmail.com';
+const adminEmailAddress = 'oudsoft@yahoo.com';
 
 
 //const hostURL = 'https://radconnext.com/rad_test/api';

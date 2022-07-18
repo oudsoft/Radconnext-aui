@@ -168,7 +168,7 @@ module.exports = function ( jq ) {
 				//localStorage.setItem('dicomzipsync', JSON.stringify(dicomzipsync));
 				caseCounter.doShowCaseCounter(newstatusCases, accstatusCases, newConsult);
 				$('body').loading('stop');
-				resolve();
+				resolve(myList);
 			}).catch((err)=>{
 				reject(err);
 			});

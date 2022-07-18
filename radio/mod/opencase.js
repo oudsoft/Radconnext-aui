@@ -65,6 +65,7 @@ module.exports = function ( jq ) {
 			const userdata = JSON.parse(localStorage.getItem('userdata'));
 	    const downloadCmd = $(evt.currentTarget);
 	    const downloadData = $(downloadCmd).data('downloadData');
+			console.log(downloadData);
 			/*
 			let downloadData = {patientId: selectedCase.case.patient.id, studyID: selectedCase.case.Case_OrthancStudyID, casedate: casedate, casetime: casetime, hospitalId: selectedCase.case.hospitalId, dicomzipfilename: selectedCase.case.Case_DicomZipFilename};
       $(downloadCmd).data('downloadData', downloadData);
@@ -288,7 +289,7 @@ module.exports = function ( jq ) {
 	const onCreateNewResponseCmdClick = async function(evt) {
 		let responseHTML = $('#SimpleEditor').val();
 		//console.log($(responseHTML));
-		if (responseHTML !== '') {
+		if ((responseHTML) && (responseHTML !== '')) {
 			const createNewResponseCmd = $(evt.currentTarget);
 			const saveNewResponseData = $(createNewResponseCmd).data('createNewResponseData');
 			console.log(saveNewResponseData);
@@ -1038,6 +1039,7 @@ module.exports = function ( jq ) {
 	}
 
 	const doCreateSummaryDF = function(df){
+		console.log(df);
 		let summaryDF = $('<div style="padding: 5px;"></div>');
 		let total = 0;
 		let summaryTable = $('<table width="100%" border="0" cellspacing="0" cellpadding="0"></table>');

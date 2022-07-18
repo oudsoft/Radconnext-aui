@@ -121,6 +121,9 @@ const doLoadMainPage = function(){
   $('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/main-fix.css" type="text/css" />');
   $('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/menu-fix.css" type="text/css" />');
 
+  document.addEventListener("triggernewdicom", submain.onNewDicomTransferTrigger);
+  document.addEventListener("triggercasemisstake", submain.onCaseMisstakeNotifyTrigger);
+
   let mainFile= '../form/main-fix.html';
   let menuFile = '../form/menu-fix.html';
 
