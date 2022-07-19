@@ -942,9 +942,27 @@ module.exports = function ( jq ) {
 		let reportRes = await common.doCallApi('/api/casereport/select/' + caseId, {});
 		//console.log(reportRes);
 		if (reportRes.Records.length > 0){
-			let pdfReportLink = reportRes.Records[0].PDF_Filename  + '?t=' + common.genUniqueID();
-			let pdfDialog = doCreateResultPDFDialog(pdfReportLink);
-			$("#dialog").append($(pdfDialog));
+			let pdfReportLink = 'https://radconnext.info' + reportRes.Records[0].PDF_Filename  + '?t=' + common.genUniqueID();
+			console.log(pdfReportLink);
+			//let pdfDialog = doCreateResultPDFDialog(pdfReportLink);
+			let pdfDialog = $('<object data="' + pdfReportLink + '" type="application/pdf" width="99%" height="380"></object>');
+			//$("#dialog").append($(pdfDialog));
+			const reportformoption = {
+  			title: 'ผลอ่าน',
+  			msg: $(pdfDialog),
+  			width: '720px',
+				okLabel: ' เปิดหน้าต่างใหม่ ',
+				cancelLabel: ' ปิด ',
+  			onOk: async function(evt) {
+					window.open(pdfReportLink, '_blank');
+          reportPdfDlgHandle.closeAlert();
+  			},
+  			onCancel: function(evt){
+  				reportPdfDlgHandle.closeAlert();
+  			}
+  		}
+  		let reportPdfDlgHandle = $('body').radalert(reportformoption);
+
 			let viewLog = {action: 'view', by: userdata.id, at: new Date()};
 			let callRes = await common.doCallApi('/api/casereport/appendlog/' + caseId, {Log: viewLog});
 			/*

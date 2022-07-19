@@ -163,11 +163,15 @@ module.exports = function ( jq ) {
 
 	const onCaseMisstakeNotifyTrigger = function(evt){
 	  let trigerData = evt.detail.data;
+		//console.log(trigerData);
 	  let msg = trigerData.msg;
 	  let from = trigerData.from;
-	  let patientFullName = trigerData.caseData.patientFullName;
-	  let patientHN = trigerData.caseData.patientHN;
-	  let caseScanParts = trigerData.caseData.caseScanParts;
+	  let patientFullName = msg.caseData.patientFullName;
+	  let patientHN = msg.caseData.patientHN;
+	  //let caseScanParts = msg.caseData.caseScanParts;
+		let scanpartValues = Object.values(msg.caseData.caseScanParts);
+		let caseScanParts = scanpartValues.slice(0, -1);
+		//console.log(caseScanParts);
 	  let caseScanPartsText = '';
 	  caseScanParts.forEach((item, i) => {
 	    if (i != (caseScanParts.length - 1)) {
@@ -179,20 +183,20 @@ module.exports = function ( jq ) {
 
 	  let radAlertMsg = $('<div></div>');
 	  let notifyFromromBox = $('<div></div>');
-	  $(notifyFromromBox).append($('<p>ผ้ป่วย ชื่อ ' + patientFullName + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
-	  $(notifyFromromBox).append($('<p>HN ' + patientHN + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
-	  $(notifyFromromBox).append($('<p>Scan Part ' + caseScanPartsText + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
-	  $(notifyFromromBox).append($('<p>ผู้แจ้ง ' + from.userfullname + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
-	  $(notifyFromromBox).append($('<p>สาเหตุเคสผิดพลาด ' + msg.cause + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
-	  $(notifyFromromBox).append($('<p>ข้อความแจ้งเพิ่มเติม ' + msg.other + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(notifyFromromBox).append($('<p><b>ผ้ป่วย ชื่อ</b> ' + patientFullName + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(notifyFromromBox).append($('<p><b>HN</b> ' + patientHN + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(notifyFromromBox).append($('<p><b>Scan Part</b> ' + caseScanPartsText + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(notifyFromromBox).append($('<p><b>ผู้แจ้ง</b> ' + from.userfullname + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(notifyFromromBox).append($('<p><b>สาเหตุเคสผิดพลาด</b> ' + msg.cause + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
+	  $(notifyFromromBox).append($('<p><b>ข้อความแจ้งเพิ่มเติม</b> ' + msg.other + '</p>').css({'text-align': 'left', 'line-height': '14px'}));
 	  $(radAlertMsg).append($(notifyFromromBox));
 
 	  const radalertoption = {
-	    title: 'ข้อความแจ้งเตือนเตสผิดพลาด',
+	    title: 'ข้อความแจ้งเตือนเคสผิดพลาด',
 	    msg: $(radAlertMsg),
 	    width: '420px',
 	    onOk: function(evt) {
-	      radConfirmBox.closeAlert();
+	      radAlertBox.closeAlert();
 	    }
 	  }
 	  let radAlertBox = $('body').radalert(radalertoption);

@@ -108,6 +108,17 @@ module.exports = function ( jq ) {
 
   const doShowDicomResult = function(dj, startRef){
 		return new Promise(async function(resolve, reject) {
+			/* sort dj by studydatetime */
+			await dj.sort((a,b) => {
+				let av = util.getDatetimeValue(a.MainDicomTags.StudyDate, a.MainDicomTags.StudyTime);
+				let bv = util.getDatetimeValue(b.MainDicomTags.StudyDate, b.MainDicomTags.StudyTime);
+				if (av && bv) {
+					return bv - av;
+				} else {
+					return 0;
+				}
+			});
+			//console.log(dj);
 			const table = $('<div style="display: table; width: 100%; border-collapse: collapse;"></div>');
 			const tableHeader = doCreateDicomHeaderRow();
 			$(tableHeader).appendTo($(table));

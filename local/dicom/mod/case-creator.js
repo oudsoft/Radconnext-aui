@@ -934,28 +934,32 @@ module.exports = function ( jq ) {
 
 				caseData.Case_DicomZipFilename = dicomZipFileName;
 
-	      rqParams = {data: caseData, hospitalId: hospitalId, userId: userId, patientId: patientId, urgenttypeId: urgenttypeId, cliamerightId: cliamerightId, option: newCaseData.option, studyTags: defualtValue.studyTags};
-				console.log(rqParams);
+				console.log(defualtValue);
+				if (defualtValue.studyTags) {
+		      rqParams = {data: caseData, hospitalId: hospitalId, userId: userId, patientId: patientId, urgenttypeId: urgenttypeId, cliamerightId: cliamerightId, option: newCaseData.option, studyTags: defualtValue.studyTags};
+					console.log(rqParams);
 
-	      let caseRes = await common.doCallApi('/api/cases/add', rqParams);
-	      if (caseRes.status.code === 200) {
-					console.log('caseActions=>', caseRes.actions);
-	        $.notify("บันทึกเคสใหม่เข้าสู่ระบบเรียบร้อยแล้ว", "success");
-					if (userdata.usertypeId == 2) {
-						let isActive = $('#CaseMainCmd').hasClass('NavActive');
-						if (!isActive) {
-							let hrPatientFiles = caseData.Case_PatientHRLink;
-							doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue);
-							$('#CaseMainCmd').click();
+		      let caseRes = await common.doCallApi('/api/cases/add', rqParams);
+		      if (caseRes.status.code === 200) {
+						console.log('caseActions=>', caseRes.actions);
+		        $.notify("บันทึกเคสใหม่เข้าสู่ระบบเรียบร้อยแล้ว", "success");
+						if (userdata.usertypeId == 2) {
+							let isActive = $('#CaseMainCmd').hasClass('NavActive');
+							if (!isActive) {
+								let hrPatientFiles = caseData.Case_PatientHRLink;
+								doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue);
+								$('#CaseMainCmd').click();
+							}
+							$('#NewStatusSubCmd').click(); // <- Tech Page
+						} else if (userdata.usertypeId == 5) {
+							$('#HomeMainCmd').click(); // <- Refer Page
 						}
-						$('#NewStatusSubCmd').click(); // <- Tech Page
-					} else if (userdata.usertypeId == 5) {
-						$('#HomeMainCmd').click(); // <- Refer Page
-					}
-	      } else {
-	        $.notify("เกิดความผิดพลาด ไม่สามารถบันทึกเคสใหม่เข้าสู่ระบบได้ในขณะนี้", "error");
-	      }
-
+		      } else {
+		        $.notify("เกิดความผิดพลาด ไม่สามารถบันทึกเคสใหม่เข้าสู่ระบบได้ในขณะนี้", "error");
+		      }
+				} else {
+					$.notify("เกิดความผิดพลาด ไม่สามารถสร้างจ้อมูล Dicom เพื่อใช้งานได้", "error");
+				}
 		    $('body').loading('stop');
 	    } catch(e) {
 	      console.log('Unexpected error occurred =>', e);

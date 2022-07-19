@@ -339,14 +339,16 @@ module.exports = function ( jq ) {
 	  const paths = window.location.pathname.split('/');
 	  const rootname = paths[1];
 
-		console.log(protocol);
-
 		let wsProtocol = 'ws://';
 		if (protocol == 'https:') {
 			wsProtocol = 'wss://';
 		}
-	  //const wsUrl = 'wss://' + hostname + ':' + port + '/' + rootname + '/' + username + '/' + hospitalId + '?type=' + type;
-		const wsUrl = wsProtocol + hostname + ':' + port + '/' + username + '/' + hospitalId + '?type=' + connecttype;
+
+		let wsUrl = wsProtocol + hostname + ':' + port + '/' + username + '/' + hospitalId + '?type=' + connecttype;
+		if (hostname == 'localhost') {
+			wsUrl = 'wss://radconnext.info/' + username + '/' + hospitalId + '?type=' + connecttype;
+		}
+
 	  wsm = new WebSocket(wsUrl);
 		wsm.onopen = function () {
 			//console.log('Master Websocket is connected to the signaling server')

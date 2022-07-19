@@ -112,9 +112,22 @@ module.exports = function ( jq ) {
     return hh + '.' + mn;
   }
 
-  function fmtReportNumber(x) {
+  const fmtReportNumber = function (x) {
     return x.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
+
+	const strToDateFmt = function(strToken) {
+		var yy = strToken.substr(0, 4);
+		var mo = strToken.substr(4, 2);
+		var dd = strToken.substr(6, 2);
+		return Number(dd) + '/' + Number(mo) + '/' + (Number(yy) + 543);
+	}
+
+	const strToTimeFmt = function(strToken) {
+		var hh = strToken.substr(0, 2);
+		var mn = strToken.substr(2, 2);
+		return hh + '.' + mn;
+	}
 
 	const doOpenSelectFile = function(evt, hospitalId){
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
@@ -478,8 +491,8 @@ module.exports = function ( jq ) {
 		return new Promise(async function(resolve, reject) {
 	    const reportViewBox = $('<div id="ReportViewBox" style="position: relative; width: 100%; padding: 5p; margin-top: 8px;"></div>');
 	    const contentRow = '<tr></tr>';
-	    const upperHeaderFeilds = [{name: 'ลำดับที่', width: 7}, {name: 'วันเดือนปี', width: 10}, {name: 'เวลา', width: 8}, {name: 'HN', width: 10}, {name: 'ชื่อ-สกุล', width: 20}, {name: 'รายการ', width: 20}, {name: 'รังสีแพทย์', width: 13}, {name: 'รหัส', width: 10}, {name: 'ราคาที่', width: 10}];
-	    const lowerHeaderFeilds = ['', 'ที่รับบริการ', '', '', '', '', '', 'กรมบัญชีกลาง', 'เรียกเก็บ'];
+	    const upperHeaderFeilds = [{name: 'ลำดับที่', width: 5}, {name: 'วันเดือนปี', width: 6}, {name: 'เวลา', width: 5}, {name: 'วันเดือนปี', width: 6}, {name: 'เวลา', width: 5}, {name: 'วันเดือนปี', width: 6}, {name: 'เวลา', width: 5}, {name: 'HN', width: 8}, {name: 'ชื่อ-สกุล', width: 15}, {name: 'รายการ', width: 15}, {name: 'รังสีแพทย์', width: 12}, {name: 'รหัส', width: 8}, {name: 'ราคาที่', width: 10}];
+	    const lowerHeaderFeilds = ['', 'ที่สแกน', '', 'ส่งอ่านผล', '', 'ส่งผลอ่าน', '', '', '', '', '', 'กรมบัญชีกลาง', 'เรียกเก็บ'];
 	    if (contents.length > 0){
 	      let contentTable = $('<table id ="ContentTable" width="100%" cellpadding="5" cellspacing="0" border="1px solid black"></table>');
 	      let upperHeaderRow = $(contentRow);
@@ -517,8 +530,12 @@ module.exports = function ( jq ) {
 	          let fmtDate = fmtReportDate(item.createdAt);
 						let isOutTime = common.doCheckOutTime(item.createdAt);
 						*/
-						let fmtDate = fmtReportDate(item.reportCreatedAt);
-						let fmtTime = fmtReportTime(item.reportCreatedAt);
+						let fmtScanDate = strToDateFmt(item.scanDate);
+						let fmtScanTime = strToTimeFmt(item.scanTime);
+						let fmtCaseCreateDate = fmtReportDate(item.createdAt);
+						let fmtCaseCreateTime = fmtReportTime(item.createdAt);
+						let fmtReportCreateDate = fmtReportDate(item.reportCreatedAt);
+						let fmtReportCreateTime = fmtReportTime(item.reportCreatedAt);
 						let isOutTime = common.doCheckOutTime(item.reportCreatedAt);
 						let fmtPrice = undefined;
 						if (scanParts[j].PR) {
@@ -530,8 +547,12 @@ module.exports = function ( jq ) {
 							priceTotal += Number(prRes.prdf.pr.normal);
 						}
 	          $(itemRow).append('<td align="center">' + itemNo + '</td>');
-	          $(itemRow).append('<td align="left">' + fmtDate + '</td>');
-						$(itemRow).append('<td align="left">' + fmtTime + '</td>');
+						$(itemRow).append('<td align="left">' + fmtScanDate + '</td>');
+						$(itemRow).append('<td align="left">' + fmtScanTime + '</td>');
+						$(itemRow).append('<td align="left">' + fmtCaseCreateDate + '</td>');
+						$(itemRow).append('<td align="left">' + fmtCaseCreateTime + '</td>');
+	          $(itemRow).append('<td align="left">' + fmtReportCreateDate + '</td>');
+						$(itemRow).append('<td align="left">' + fmtReportCreateTime + '</td>');
 	          $(itemRow).append('<td align="left">' + item.patient.Patient_HN + '</td>');
 	          $(itemRow).append('<td align="left">' + item.patient.Patient_NameTH + ' ' + item.patient.Patient_LastNameTH + '</td>');
 	          $(itemRow).append('<td align="left">' + scanParts[j].Name + '</td>');

@@ -73,7 +73,7 @@ $( document ).ready(function() {
   $('head').append('<script src="' + radUtilityPlugin + '"></script>');
   setTimeout(()=>{
 	   initPage();
-  }, 800);
+  }, 1200);
 });
 
 const doLoadLogin = function(){
