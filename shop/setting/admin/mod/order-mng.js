@@ -442,9 +442,11 @@ module.exports = function ( jq ) {
         let	promiseList = new Promise(async function(resolve2, reject2){
           let total = 0;
           let goodItems = orderData.gooditems;
+					let itenNoCells = [];
           for (let i=0; i < goodItems.length; i++) {
             let goodItemRow = $('<tr></tr>');
-            $(goodItemRow).append($('<td align="center">' + (i+1) + '</td>'));
+						let itenNoCell = $('<td align="center">' + (i+1) + '</td>');
+            $(goodItemRow).append($(itenNoCell));
             $(goodItemRow).append($('<td align="left">' + goodItems[i].MenuName + '</td>'));
             let goodItemQtyCell = $('<td align="center">' + common.doFormatQtyNumber(goodItems[i].Qty) + '</td>');
             $(goodItemRow).append($(goodItemQtyCell));
@@ -491,11 +493,23 @@ module.exports = function ( jq ) {
 							$(goodItemRow).remove();
               let newGoodItems = await doDeleteGoodItem(i, orderData);
               orderData.gooditems = newGoodItems;
+							itenNoCells = await itenNoCells.filter((item)=>{
+								if ($(item).text() !== $(itenNoCell).text()) {
+									if ($(item).text() > $(itenNoCell).text()) {
+										let value = $(item).text();
+										value = Number(value) - 1;
+										return $(item).text(value);
+									} else {
+										return $(item);
+									}
+								}
+							})
               let total = await doCalOrderTotal(orderData.gooditems);
               $(totalValueCell).empty().append($('<span><b>' + common.doFormatNumber(total) + '</b></span>').css({'margin-right': '4px'}));
             });
             $(commandCell).append($(increaseBtnCmd)).append($(decreaseBtnCmd)).append($(deleteGoodItemCmd));
             $(goodItemForm).append($(goodItemRow));
+						itenNoCells.push($(itenNoCell));
           }
           total = await doCalOrderTotal(orderData.gooditems);
           $(totalValueCell).empty().append($('<span><b>' + common.doFormatNumber(total) + '</b></span>').css({'margin-right': '4px'}));
@@ -518,7 +532,6 @@ module.exports = function ( jq ) {
   const doDeleteGoodItem = function(goodItemIndex, orderData) {
     return new Promise(async function(resolve, reject) {
       let anotherItems = await orderData.gooditems.filter((item, i)=>{
-				console.log(i);
         if (i != goodItemIndex) {
           return item;
         }
