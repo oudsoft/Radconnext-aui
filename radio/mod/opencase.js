@@ -306,6 +306,15 @@ module.exports = function ( jq ) {
 			localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
 
 			let responseText = toAsciidoc(responseHTML);
+			let startPointText = '<!--StartFragment-->'
+			let endPointText = '<!--EndFragment-->';
+			let tempToken = responseText.replace('\n', '');
+			let startPosition = tempToken.indexOf(startPointText);
+			if (startPosition >= 0) {
+				let endPosition = tempToken.indexOf(endPointText);
+				let output = responseText.slice((startPosition+20), (endPosition));
+				responseText = output;
+			}
 			let rsW = saveNewResponseData.resultFormat.width;
 			console.log(rsW);
 			let fnS = saveNewResponseData.resultFormat.fontsize;
