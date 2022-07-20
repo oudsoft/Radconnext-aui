@@ -280,12 +280,25 @@ module.exports = function ( jq ) {
   const doCreateCaseResult = function(caseId){
     return new Promise(async function(resolve, reject){
       let resultRes = await apiconnector.doCallApi('/api/cases/result/'+ caseId, {});
-      let resultReport = resultRes.Records[0];
+			let resultReport = undefined;
+			if (resultRes.Records.length > 0) {
+      	resultReport = resultRes.Records[0];
+			} else {
+				resultRes = await common.doGetApi('/api/cases//do/resubmit/'+ caseId, {});
+				console.log(resultRes);
+			}
 			let pdfStream = undefined;
 			let embetObject = undefined;
+			let reportLink = resultReport.PDF_Filename;
+			/*
+			if (window.location.hostname == 'localhost') {
+				reportLink = 'https://radconnext.info' + resultReport.PDF_Filename;
+			}
+			*/
 			try {
-				pdfStream = await util.doCreateDownloadPDF(resultReport.PDF_Filename);
-	      embetObject = $('<object data="' + resultReport.PDF_Filename + '" type="application/pdf" width="100%" height="480"></object>');
+				pdfStream = await util.doCreateDownloadPDF(reportLink);
+				console.log(pdfStream);
+	      embetObject = $('<object data="' + reportLink + '" type="application/pdf" width="100%" height="480"></object>');
 			} catch (err) {
 				console.log(err);
 				embetObject = $('<object data="" type="application/pdf" width="100%" height="480"></object>');

@@ -53,7 +53,7 @@ module.exports = function ( jq ) {
         } else {
           showDicoms = await common.doExtractList(studies, 1, userItemPerPage);
         }
-
+				console.log(showDicoms);
         let dicomView = await doShowDicomResult(showDicoms, 0);
         $(".mainfull").find('#ResultView').empty().append($(dicomView));
 
@@ -322,7 +322,7 @@ module.exports = function ( jq ) {
 			const promiseList = new Promise(function(resolve2, reject2){
 				for (let i=0; i < dj.length; i++) {
 					let desc, protoname, mld, sa, studydate, bdp;
-					if ((dj[i].MainDicomTags) && (dj[i].SamplingSeries)){
+					if ((dj[i].MainDicomTags) && (dj[i].SamplingSeries) && (dj[i].SamplingSeries.MainDicomTags)){
 						if (dj[i].MainDicomTags.StudyDescription) {
 							bdp = dj[i].MainDicomTags.StudyDescription;
 						} else {
