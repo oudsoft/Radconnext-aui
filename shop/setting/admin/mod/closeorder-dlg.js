@@ -58,7 +58,7 @@ module.exports = function ( jq ) {
         $(closeOrderTable).append($(dataRow));
       }
       dataRow = $('<tr></tr>').css({'background-color': '#ddd', 'height': '40px'});
-      $(dataRow).append($('<td width="40%" align="left"><b>รวมทั้งสิ้น</b></td>'));
+      $(dataRow).append($('<td width="55%" align="left"><b>รวมทั้งสิ้น</b></td>'));
       let discountValue = $(discountInput).val();
       let vatValue = $(vatInput).val();
       let grandTotal = (Number(orderTotal) - Number(discountValue)) + Number(vatValue);
@@ -119,7 +119,33 @@ module.exports = function ( jq ) {
 	        $(dataRow).append($('<td align="right"></td>').append($(payAmountInput)));
 	        $(closeOrderTable).append($(dataRow));
 
-	        let finalActionCmdRow = $('<tr></tr>').css({'height': '40px'});
+					let addRemarkCmdRow = $('<tr></tr>').css({'height': '40px'});
+	        let addRemarkCmdCell = $('<td align="left"></td>');
+	        $(addRemarkCmdRow).append($(addRemarkCmdCell)).append($('<td align="left"></td>'));
+	        $(closeOrderTable).append($(addRemarkCmdRow));
+
+					let addRemarkCmd = common.doCreateTextCmd('เพิ่มบันทึกการปิดบิล', 'gray', 'white');
+					$(addRemarkCmd).css({'width' : '100%'});
+					$(addRemarkCmd).on('click', (evt)=>{
+						let hasHiddenRemarkBox = ($(remarkBox).css('display') == 'none');
+						if (hasHiddenRemarkBox) {
+							$(remarkBox).slideDown('slow');
+							$(addRemarkCmd).text('ซ่อนบันทึก');
+						} else {
+							$(remarkBox).slideUp('slow');
+							$(addRemarkCmd).text('เพิ่มบันทึกการปิดบิล');
+						}
+					});
+					$(addRemarkCmdCell).append($(addRemarkCmd));
+
+					let remarkBoxRow = $('<tr></tr>').css({'height': '80px'});
+	        let remarkBoxCell = $('<td colspan="2" align="left"></td>');
+					let remarkBox = $('<textarea id="Remark" cols="44" rows="5"></textarea>').css({'display': 'none'});
+					$(remarkBoxCell).append($(remarkBox));
+	        $(remarkBoxRow).append($(remarkBoxCell));
+	        $(closeOrderTable).append($(remarkBoxRow));
+
+	        let finalActionCmdRow = $('<tr></tr>').css({'height': '60px', 'vertical-align': 'bottom'});
 	        let finalCommandCell = $('<td colspan="2" align="center"></td>');
 	        $(finalActionCmdRow).append($(finalCommandCell));
 	        $(closeOrderTable).append($(finalActionCmdRow));
@@ -137,7 +163,7 @@ module.exports = function ( jq ) {
 						let payAmountValue = parseFloat($(payAmountInput).val());
 						let payType = parseInt($(paytypeSelect).val());
 						let paymentData = {Amount: payAmountValue, PayType: payType};
-
+						let hasHiddenRemarkBox = ($(remarkBox).css('display') == 'none');
 	          let lastbillnoRes = await common.doCallApi('/api/shop/bill/find/last/billno/' + shopId, {});
 						console.log(lastbillnoRes);
 	          if (lastbillnoRes.Records.length > 0) {
@@ -147,9 +173,15 @@ module.exports = function ( jq ) {
 	            nextBillNo = nextNo.toString().lpad("0", 9);
 	            filename = shopId.toString().lpad("0", 5) + '-2-' + nextBillNo + '.pdf';
 	            let billData = {No: nextBillNo, Discount: discountValue, Vat:vatValue, Filename: filename};
+							if (!hasHiddenRemarkBox) {
+								billData.Remark = $(remarkBox).val();
+							}
 							billSuccessCallback(billData, paymentData);
 	          } else {
 							let billData = {No: nextBillNo, Discount: discountValue, Vat:vatValue, Filename: filename};
+							if (!hasHiddenRemarkBox) {
+								billData.Remark = $(remarkBox).val();
+							}
 							billSuccessCallback(billData, paymentData);
 						}
 	        });
@@ -168,7 +200,7 @@ module.exports = function ( jq ) {
 							let payAmountValue = parseFloat($(payAmountInput).val());
 							let payType = parseInt($(paytypeSelect).val());
 							let paymentData = {Amount: payAmountValue, PayType: payType};
-
+							let hasHiddenRemarkBox = ($(remarkBox).css('display') == 'none');
 		          let lasttaxinvoicenoRes = await common.doCallApi('/api/shop/taxinvoice/find/last/taxinvioceno/' + shopId, {});
 							console.log(lasttaxinvoicenoRes);
 		          if (lasttaxinvoicenoRes.Records.length > 0) {
@@ -178,9 +210,15 @@ module.exports = function ( jq ) {
 		            nextTaxInvoiceNo = nextNo.toString().lpad("0", 9);
 		            filename = shopId.toString().lpad("0", 5) + '-3-' + nextTaxInvoiceNo + '.pdf';
 		            let taxinvoicenoData = {No: nextTaxInvoiceNo, Discount: discountValue, Vat: vatValue, Filename: filename};
+								if (!hasHiddenRemarkBox) {
+									taxinvoicenoData.Remark = $(remarkBox).val();
+								}
 								taxinvoiceSuccessCallback(taxinvoicenoData, paymentData);
 		          } else {
 								let taxinvoicenoData = {No: nextTaxInvoiceNo, Discount: discountValue, Vat: vatValue, Filename: filename};
+								if (!hasHiddenRemarkBox) {
+									taxinvoicenoData.Remark = $(remarkBox).val();
+								}
 								taxinvoiceSuccessCallback(taxinvoicenoData, paymentData);
 							}
 	          });
@@ -217,6 +255,24 @@ module.exports = function ( jq ) {
       resolve(reportPdfDlgHandle)
     });
   }
+
+	const doShowBillRemarkBox = function(evt) {
+		let masterCmd = $(evt.currentTarget);
+		let masterCell = $(masterCmd).parent();
+		$(masterCmd).hide();
+
+		let remarkBox = $('<div></div>').css({'display': 'block', 'height': '100px', 'border': '1px solid red'});
+		let hiddenBoxCmd = common.doCreateTextCmd('ซ่อน', 'gray', 'white');
+		$(hiddenBoxCmd).on('click', (evt)=>{
+			$(remarkBox).slideUp('fast')/*.css({'display': 'none'})*/;
+			$(remarkBox).remove();
+			$(masterCmd).show();
+		});
+
+		$(remarkBox).append($(hiddenBoxCmd));
+		$(masterCell).append($(remarkBox));
+		$(remarkBox)/*.css({'display': 'block'})*/.slideDown('slow');
+	}
 
   return {
     doCreateFormDlg,

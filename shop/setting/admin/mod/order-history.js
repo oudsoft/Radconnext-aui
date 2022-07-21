@@ -53,7 +53,7 @@ module.exports = function ( jq ) {
       let historyTable = $('<table id="HistoryTable" width="100%" cellspacing="0" cellpadding="0" border="1"></table>');
 
       let titleRow = $('<tr></tr>').css({'background-color': 'gray', 'color': 'white'});
-      let titleCol = $('<td colspan="4" align="center"></td>');
+      let titleCol = $('<td colspan="5" align="center"></td>');
       $(titleCol).append($('<h3></h3>').text(titleText).css({'font-weight': 'bold'}));
       $(titleRow).append($(titleCol));
       $(historyTable).append($(titleRow));
@@ -61,7 +61,9 @@ module.exports = function ( jq ) {
       let headerRow = $('<tr></tr>');
       $(headerRow).append($('<td width="4%" align="center"><b>#</b></td>'));
       $(headerRow).append($('<td width="15%" align="center"><b>วันที่</b></td>'));
-      $(headerRow).append($('<td width="55%" align="center"><b>รายการสินค้า</b></td>'));
+      $(headerRow).append($('<td width="45%" align="center"><b>รายการสินค้า</b></td>'));
+			let billRemarkCol = $('<td width="20%" align="center"><b>บันทึกการปิดบิล</b></td>');
+			$(headerRow).append($(billRemarkCol));
       let cmdCol = $('<td width="*" align="center"></td>');
       $(headerRow).append($(cmdCol));
       $(historyTable).append($(headerRow));
@@ -90,7 +92,28 @@ module.exports = function ( jq ) {
             $(orderItemCol).append($(orderItemRow));
           }
           $(dataRow).append($(orderItemCol));
-          $(dataRow).append($('<td align="center"></td>'));
+
+					let remarkText = '';
+					if (orderHistoryItem.bill) {
+						remarkText = orderHistoryItem.bill.Remark;
+					} else if (orderHistoryItem.taxinvoice) {
+						remarkText = orderHistoryItem.taxinvoice.Remark;
+					}
+					if ((remarkText) && (remarkText !== '')) {
+						let remarkTexts = remarkText.split('\n');
+						console.log(remarkTexts);
+						let remarkBox = $('<div></div>').css({'text-align': 'left'});
+						await remarkTexts.forEach((line, i) => {
+							$(remarkBox).append($('<p></p>').text(line).css({'line-height': '14px'}));
+						});
+
+						let remarkCell = $('<td align="center"></td>');
+						$(remarkCell).append($(remarkBox));
+						$(dataRow).append($(remarkCell));
+					} else {
+						$(dataRow).append($('<td align="center"></td>'));
+					}
+					$(dataRow).append($('<td align="center"></td>'));
           $(historyTable).append($(dataRow));
         }
         setTimeout(()=> {
