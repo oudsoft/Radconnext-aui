@@ -99,9 +99,8 @@ module.exports = function ( jq ) {
     let titlePageBox = $('<div style="padding: 4px;"></viv>').text(titleText).css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
     let customerWokingBox = $('<div id="OrderCustomer" style="padding: 4px; width: 99.1%;"></viv>');
     let itemlistWorkingBox = $('<div id="OrderItemList" style="padding: 4px; width: 99.1%;"></viv>');
-    //let addNewGoodItemCmdBox = $('<div></div>').css({'width': '99.1%', 'text-align': 'right'});
     let saveNewOrderCmdBox = $('<div></div>').css({'width': '99.1%', 'text-align': 'center'});
-    $(workAreaBox).append($(titlePageBox)).append($(customerWokingBox))/*.append($(addNewGoodItemCmdBox))*/.append($(itemlistWorkingBox)).append($(saveNewOrderCmdBox));
+    $(workAreaBox).append($(titlePageBox)).append($(customerWokingBox)).append($(itemlistWorkingBox)).append($(saveNewOrderCmdBox));
 
     let customerForm = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
     let customerFormRow = $('<tr></tr>');
@@ -131,17 +130,20 @@ module.exports = function ( jq ) {
 
 		console.log(orderObj);
 
-		//if ((!orderObj.Status) || ())
-    $(customerControlCmd).append($(editCustomerCmd));
     let dlgHandle = undefined;
+
     $(editCustomerCmd).on('click', async (evt)=>{
       dlgHandle = await doOpenCustomerMngDlg(shopData, customerSelectedCallback);
     });
+		$(customerControlCmd).append($(editCustomerCmd));
 
-		let addNewGoodItemCmd = common.doCreateTextCmd('เพิ่มรายการ', 'green', 'white');
-    $(addNewGoodItemCmd).on('click', async (evt)=>{
-      dlgHandle = await doOpenGoodItemMngDlg(shopData, gooditemSelectedCallback);
-    });
+		let addNewGoodItemCmd = undefined;
+		if (orderObj.Status == 1) {
+			addNewGoodItemCmd = common.doCreateTextCmd('เพิ่มรายการ', 'green', 'white');
+	    $(addNewGoodItemCmd).on('click', async (evt)=>{
+	      dlgHandle = await doOpenGoodItemMngDlg(shopData, gooditemSelectedCallback);
+	    });
+		}
 
 		let doShowCloseOrderDlg = async function() {
 			let total = await doCalOrderTotal(orderObj.gooditems);
@@ -186,7 +188,9 @@ module.exports = function ( jq ) {
     if ((orderObj) && (orderObj.gooditems)){
       let goodItemTable = await doRenderGoodItemTable(orderObj, itemlistWorkingBox);
 			let lastCell = $(goodItemTable).children(":first").children(":last");
-			$(lastCell).append($(addNewGoodItemCmd));
+			if (addNewGoodItemCmd) {
+				$(lastCell).append($(addNewGoodItemCmd));
+			}
 			lastCell = $(goodItemTable).children(":last").children(":last");
 			$(lastCell).append($(callCreateCloseOrderCmd));
       $(itemlistWorkingBox).append($(goodItemTable));
@@ -226,6 +230,11 @@ module.exports = function ( jq ) {
     });
     $(saveNewOrderCmdBox).append($(saveNewOrderCmd)).append($(cancelCmd));
 
+		if (orderObj.Status != 1) {
+			$(editCustomerCmd).hide();
+			$(saveNewOrderCmd).hide();
+		}
+
     const customerSelectedCallback = function(customerSelected){
       orderObj.customer = customerSelected;
       customerDataBox = doRenderCustomerContent(customerSelected);
@@ -239,7 +248,9 @@ module.exports = function ( jq ) {
       orderObj.gooditems.push(gooditemSelected);
       goodItemTable = await doRenderGoodItemTable(orderObj, itemlistWorkingBox);
 			let lastCell = $(goodItemTable).children(":first").children(":last");
-			$(lastCell).append($(addNewGoodItemCmd));
+			if (addNewGoodItemCmd) {
+				$(lastCell).append($(addNewGoodItemCmd));
+			}
 			lastCell = $(goodItemTable).children(":last").children(":last");
 			$(lastCell).append($(callCreateCloseOrderCmd));
       $(itemlistWorkingBox).empty().append($(goodItemTable));

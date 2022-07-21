@@ -68,12 +68,29 @@ module.exports = function ( jq ) {
 						$(menuitemLogoIcon).on('click', (evt)=>{
 							window.open(item['MenuPicture'], '_blank');
 						});
-						$(field).append($(menuitemLogoIcon));
-						let updateMenuitemLogoCmd = $('<input type="button" value=" เปลี่ยนรูป " class="action-btn"/>');
-						$(updateMenuitemLogoCmd).on('click', (evt)=>{
+
+						let menuItemLogoIconBox = $('<div></div>').css({"position": "relative", "width": "fit-content", "border": "2px solid #ddd"});
+				    $(menuItemLogoIconBox).append($(menuitemLogoIcon));
+						let editMenuItemLogoCmd = $('<img src="../../images/tools-icon-wh.png"/>').css({'position': 'absolute', 'width': '25px', 'height': 'auto', 'cursor': 'pointer', 'right': '2px', 'bottom': '2px', 'display': 'none', 'z-index': '21'});
+						$(editMenuItemLogoCmd).attr('title', 'เปลี่ยนภาพใหม่');
+						$(menuItemLogoIconBox).append($(editMenuItemLogoCmd));
+						$(menuItemLogoIconBox).hover(()=>{
+							$(editMenuItemLogoCmd).show();
+						},()=>{
+							$(editMenuItemLogoCmd).hide();
+						});
+						$(editMenuItemLogoCmd).on('click', (evt)=>{
+							evt.stopPropagation();
 							doStartUploadPicture(evt, menuitemLogoIcon, field, item.id, shopData, workAreaBox);
 						});
-						$(field).append($('<div style="width: 100%;"></div>').append($(updateMenuitemLogoCmd)));
+						$(field).append($(menuItemLogoIconBox));
+
+						let clearMenuitemLogoCmd = $('<input type="button" value=" เคลียร์รูป " class="action-btn"/>');
+						$(clearMenuitemLogoCmd).on('click', async (evt)=>{
+							let callRes = await common.doCallApi('/api/shop/menuitem/change/logo', {data: {MenuPicture: ''}, id: item.id});
+							menuitemLogoIcon.src = '/shop/favicon.ico'
+						});
+						$(field).append($('<div style="width: 100%;"></div>').append($(clearMenuitemLogoCmd)));
 						$(itemRow).append($(field));
 					}
 				}

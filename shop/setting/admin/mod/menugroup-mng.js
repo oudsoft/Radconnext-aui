@@ -54,12 +54,28 @@ module.exports = function ( jq ) {
 						$(groupmenuLogoIcon).on('click', (evt)=>{
 							window.open(item['GroupPicture'], '_blank');
 						});
-						$(field).append($(groupmenuLogoIcon));
-						let updateGroupmenuLogoCmd = $('<input type="button" value=" เปลี่ยนรูป " class="action-btn"/>');
-						$(updateGroupmenuLogoCmd).on('click', (evt)=>{
+						let groupMenuLogoIconBox = $('<div></div>').css({"position": "relative", "width": "fit-content", "border": "2px solid #ddd"});
+				    $(groupMenuLogoIconBox).append($(groupmenuLogoIcon));
+						let editGroupMenuLogoCmd = $('<img src="../../images/tools-icon-wh.png"/>').css({'position': 'absolute', 'width': '25px', 'height': 'auto', 'cursor': 'pointer', 'right': '2px', 'bottom': '2px', 'display': 'none', 'z-index': '21'});
+						$(editGroupMenuLogoCmd).attr('title', 'เปลี่ยนภาพใหม่');
+						$(groupMenuLogoIconBox).append($(editGroupMenuLogoCmd));
+						$(groupMenuLogoIconBox).hover(()=>{
+							$(editGroupMenuLogoCmd).show();
+						},()=>{
+							$(editGroupMenuLogoCmd).hide();
+						});
+						$(editGroupMenuLogoCmd).on('click', (evt)=>{
+							evt.stopPropagation();
 							doStartUploadPicture(evt, groupmenuLogoIcon, field, item.id, shopData, workAreaBox);
 						});
-						$(field).append($('<div style="width: 100%;"></div>').append($(updateGroupmenuLogoCmd)));
+						$(field).append($(groupMenuLogoIconBox));
+
+						let clearGroupmenuLogoCmd = $('<input type="button" value=" เคลียร์รูป " class="action-btn"/>');
+						$(clearGroupmenuLogoCmd).on('click', async (evt)=>{
+							let callRes = await common.doCallApi('/api/shop/menugroup/change/logo', {data: {GroupPicture: ''}, id: item.id});
+							groupmenuLogoIcon.src = '/shop/favicon.ico'
+						});
+						$(field).append($('<div style="width: 100%;"></div>').append($(clearGroupmenuLogoCmd)));
 						$(itemRow).append($(field));
 					}
 				}
