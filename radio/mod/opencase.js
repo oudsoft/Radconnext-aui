@@ -305,7 +305,8 @@ module.exports = function ( jq ) {
 			let draftbackup = {caseId: caseId, content: responseHTML, backupAt: new Date()};
 			localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
 
-			let responseText = toAsciidoc(responseHTML);
+			//let responseText = toAsciidoc(responseHTML);
+			let responseText = responseHTML;
 			let startPointText = '<!--StartFragment-->'
 			let endPointText = '<!--EndFragment-->';
 			let tempToken = responseText.replace('\n', '');
@@ -313,7 +314,7 @@ module.exports = function ( jq ) {
 			if (startPosition >= 0) {
 				let endPosition = tempToken.indexOf(endPointText);
 				let output = responseText.slice((startPosition+20), (endPosition));
-				responseText = output;
+				responseText = toAsciidoc(output);
 			}
 			let rsW = saveNewResponseData.resultFormat.width;
 			console.log(rsW);

@@ -64,6 +64,8 @@ $( document ).ready(function() {
 	};
 
 	initPage();
+
+  doTestCreateInvoice();
 });
 
 const doShowShopItems = function(){
@@ -81,7 +83,16 @@ const doShowShopMng = async function(shopId) {
   shopitem.doOpenManageShop(shopData, uploadLogCallback, editShopCallback);
 }
 
+const doTestCreateInvoice = async function(){
+  let docParams = {orderId: 15, shopId: 1};
+  let docRes = await common.doCallApi('/api/shop/invoice/create/report', docParams);
+  console.log(docRes);
+
+  window.open(docRes.result.link, '_blank');
+  window.open(docRes.result.qrLink, '_blank');
+}
+
 module.exports = {
   doShowShopItems,
-  doShowShopMng
+  doShowShopMng,
 }
