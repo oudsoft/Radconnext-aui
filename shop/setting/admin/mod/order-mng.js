@@ -138,7 +138,8 @@ module.exports = function ( jq ) {
 		$(customerControlCmd).append($(editCustomerCmd));
 
 		let addNewGoodItemCmd = undefined;
-		if (orderObj.Status == 1) {
+		//if (orderObj.Status == 1) {
+		if ([1, 2].includes(orderObj.Status)) {
 			addNewGoodItemCmd = common.doCreateTextCmd('เพิ่มรายการ', 'green', 'white');
 	    $(addNewGoodItemCmd).on('click', async (evt)=>{
 	      dlgHandle = await doOpenGoodItemMngDlg(shopData, gooditemSelectedCallback);
@@ -230,7 +231,8 @@ module.exports = function ( jq ) {
     });
     $(saveNewOrderCmdBox).append($(saveNewOrderCmd)).append($(cancelCmd));
 
-		if (orderObj.Status != 1) {
+		//if (orderObj.Status != 1) {
+		if ([3, 4].includes(orderObj.Status)) {
 			$(editCustomerCmd).hide();
 			$(saveNewOrderCmd).hide();
 		}
@@ -298,7 +300,9 @@ module.exports = function ( jq ) {
 					console.log(docRes);
 					if (docRes.status.code == 200) {
 						//window.open(docRes.result.link, '_blank');
-						closeorderdlg.doOpenReportPdfDlg(docRes.result.link, 'บิลเงินสด/ใบเสร็จรับเงิน');
+						closeorderdlg.doOpenReportPdfDlg(docRes.result.link, 'บิลเงินสด/ใบเสร็จรับเงิน', ()=>{
+							$(cancelCmd).click();
+						});
 						$.notify("ออกบิลเงินสด/ใบเสร็จรับเงินสำเร็จ", "sucess");
 					} else if (docRes.status.code == 300) {
 						$.notify("ระบบไม่พบรูปแบบเอกสารบิลเงินสด/ใบเสร็จรับเงิน", "error");
@@ -329,7 +333,9 @@ module.exports = function ( jq ) {
 					console.log(docRes);
 					if (docRes.status.code == 200) {
 						//window.open(docRes.result.link, '_blank');
-						closeorderdlg.doOpenReportPdfDlg(docRes.result.link, 'ใบกำกับภาษี');
+						closeorderdlg.doOpenReportPdfDlg(docRes.result.link, 'ใบกำกับภาษี', ()=>{
+							$(cancelCmd).click();
+						});
 						$.notify("ออกใบกำกับภาษีสำเร็จ", "sucess");
 					} else if (docRes.status.code == 300) {
 						$.notify("ระบบไม่พบรูปแบบเอกสารใบกำกับภาษี", "error");
@@ -588,7 +594,7 @@ module.exports = function ( jq ) {
             $(orderBox).append($('<div><b>วันที่-เวลา :</b> ' + fmtDate + ':' + fmtTime + '</div>').css({'width': '100%'}));
 						if (orders[i].Status == 1) {
 							$(orderBox).css({'background-color': 'yellow'});
-							let cancelOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210'});
+							let cancelOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
 							$(cancelOrderCmdBox).append($('<span>ยกเลิกออร์เดอร์</span>').css({'font-weight': 'bold'}));
 							$(cancelOrderCmdBox).on('click', async (evt)=>{
 								evt.stopPropagation();
@@ -605,34 +611,52 @@ module.exports = function ( jq ) {
 							$(orderBox).append($(cancelOrderCmdBox));
 						} else if (orders[i].Status == 2) {
 							$(orderBox).css({'background-color': 'orange'});
-							let invoiceBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210'});
-							$(invoiceBox).append($('<span>' + orders[i].invoice.No + '</span>').css({'font-weight': 'bold'}));
-							$(invoiceBox).on('click', (evt)=>{
+							let invoiceBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'left', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
+							let openInvoicePdfCmd = $('<span>' + orders[i].invoice.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
+							$(openInvoicePdfCmd).on('click', (evt)=>{
 								evt.stopPropagation();
-								//window.open('/shop/img/usr/pdf/' + orders[i].invoice.Filename, '_blank');
 								closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].invoice.Filename, 'ใบแจ้งหนี้');
 							});
+							let openInvoiceQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
+							$(openInvoiceQrCmd).on('click', (evt)=>{
+								evt.stopPropagation();
+								let shareCode = orders[i].invoice.Filename.split('.')[0];
+								window.open('/shop/share/?id=' + shareCode, '_blank');
+							});
+							$(invoiceBox).append($(openInvoicePdfCmd)).append($(openInvoicePdfCmd));
 							$(orderBox).append($(invoiceBox));
 						} else if ((orders[i].Status == 3) || (orders[i].Status == 4)) {
 							$(orderBox).css({'background-color': 'green'});
 							if (orders[i].bill){
-								let billBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210'});
-								$(billBox).append($('<span>' + orders[i].bill.No + '</span>').css({'font-weight': 'bold'}));
-								$(billBox).on('click', (evt)=>{
+								let billBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'left', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
+								let openBillPdfCmd = $('<span>' + orders[i].bill.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
+								$(openBillPdfCmd).on('click', (evt)=>{
 									evt.stopPropagation();
-									//window.open('/shop/img/usr/pdf/' + orders[i].bill.Filename, '_blank');
 									closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].bill.Filename, 'บิลเงินสด/ใบเสร็จรับเงิน');
 								});
+								let openBillQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
+								$(openBillQrCmd).on('click', (evt)=>{
+									evt.stopPropagation();
+									let shareCode = orders[i].bill.Filename.split('.')[0];
+									window.open('/shop/share/?id=' + shareCode, '_blank');
+								});
+								$(billBox).append($(openBillPdfCmd)).append($(openBillQrCmd));
 								$(orderBox).append($(billBox));
 							}
 							if (orders[i].taxinvoice){
-								let taxinvoiceBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210'});
-								$(taxinvoiceBox).append($('<span>' + orders[i].taxinvoice.No + '</span>').css({'font-weight': 'bold'}));
-								$(taxinvoiceBox).on('click', (evt)=>{
+								let taxinvoiceBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'left', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
+								let openTaxInvoicePdfCmd = $('<span>' + orders[i].taxinvoice.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
+								$(openTaxInvoicePdfCmd).on('click', (evt)=>{
 									evt.stopPropagation();
-									//window.open('/shop/img/usr/pdf/' + orders[i].taxinvoice.Filename, '_blank');
 									closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].taxinvoice.Filename, 'ใบกำกับภาษี');
 								});
+								let openTaxInvoiceQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
+								$(openTaxInvoiceQrCmd).on('click', (evt)=>{
+									evt.stopPropagation();
+									let shareCode = orders[i].taxinvoice.Filename.split('.')[0];
+									window.open('/shop/share/?id=' + shareCode, '_blank');
+								});
+								$(taxinvoiceBox).append($(openTaxInvoicePdfCmd)).append($($(openTaxInvoiceQrCmd)));
 								$(orderBox).append($(taxinvoiceBox));
 							}
 						} else if (orders[i].Status == 0) {

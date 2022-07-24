@@ -232,7 +232,7 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doOpenReportPdfDlg = function(pdfUrl, title){
+	const doOpenReportPdfDlg = function(pdfUrl, title, closeCallback){
     return new Promise(async function(resolve, reject) {
 			const pdfURL = pdfUrl + '?t=' + common.genUniqueID();
       const reportPdfDlgContent = $('<object data="' + pdfURL + '" type="application/pdf" width="99%" height="380"></object>');
@@ -246,9 +246,15 @@ module.exports = function ( jq ) {
   			onOk: async function(evt) {
 					window.open(pdfUrl, '_blank');
           reportPdfDlgHandle.closeAlert();
+					if (closeCallback) {
+						closeCallback();
+					}
   			},
   			onCancel: function(evt){
   				reportPdfDlgHandle.closeAlert();
+					if (closeCallback) {
+						closeCallback();
+					}					
   			}
   		}
   		let reportPdfDlgHandle = $('body').radalert(reportformoption);
