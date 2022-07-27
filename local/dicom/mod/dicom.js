@@ -49,7 +49,7 @@ module.exports = function ( jq ) {
   			$(".mainfull").append($(resultBox));
 
         let studies = localOrthancRes.result;
-        console.log(studies);
+        //console.log(studies);
 
         if (studies.length > 0) {
           let showDicoms = [];

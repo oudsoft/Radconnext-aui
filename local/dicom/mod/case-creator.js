@@ -466,17 +466,19 @@ module.exports = function ( jq ) {
 				$(selectedResultBox).append($(yourSelectScanpart));
 				$(saveScanpartOptionDiv).show();
 			}
-
+			//console.log(defualtValue);
 			if ((defualtValue.scanpart) && (defualtValue.scanpart.length > 0)) {
 				scanpartAutoGuide();
 			} else {
 				let studyDesc = defualtValue.studyDesc;
 				let protocalName = defualtValue.protocalName;
 				let auxScanpart = await common.doLoadScanpartAux(studyDesc, protocalName);
+				//console.log(auxScanpart);
 				if ((auxScanpart.Records) && (auxScanpart.Records.length > 0)) {
 					//scanparts = auxScanpart.Records[0].Scanparts;
           let scanpartValues = Object.values(auxScanpart.Records[0].Scanparts);
           scanparts = scanpartValues.slice(0, -1);
+					//console.log(scanparts);
 					scanpartAutoGuide();
 				} else {
 					$(saveScanpartOptionDiv).hide();
