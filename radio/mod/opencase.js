@@ -234,7 +234,7 @@ module.exports = function ( jq ) {
 			$(radAlertMsg).append($(ownerCaseInfoBox)).append($(notifyMessageBox));
 
 			const radconfirmoption = {
-	      title: 'แจ้งเตสผิดพลาด',
+	      title: 'แจ้งเคสผิดพลาด',
 	      msg: $(radAlertMsg),
 	      width: '420px',
 	      onOk: function(evt) {

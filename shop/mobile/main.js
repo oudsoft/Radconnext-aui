@@ -10,6 +10,8 @@ window.$.ajaxSetup({
 
 const common = require('../home/mod/common-lib.js')($);
 
+const orderMng = require('./mod/order-mng-lib.js')($);
+
 let pageHandle = undefined;
 $( document ).ready(function() {
   const initPage = function() {
@@ -36,24 +38,24 @@ $( document ).ready(function() {
     $('head').append('<link rel="stylesheet" href="../lib/print/print.min.css" type="text/css" />');
     $('head').append('<link rel="stylesheet" href="' + ionCalendarCssUrl + '" type="text/css" />');
 
-    $('body').append($('<div id="MainBox"></div>').css({'position': 'absolute', 'top': '0px', 'border': '1px solid red'}));
+    $('body').append($('<div id="MainBox"></div>').css({'position': 'absolute', 'top': '0px', 'float': 'left', 'right': '0px', 'left': '0px', 'border': '1px solid red'}));
     $('body').append($('<div id="MenuBox"></div>').css({'display': 'none', 'position': 'fixed', 'z-index': '42', 'left': '0px', 'top': '0px', 'width': '100%;', 'width': '100%', 'height': '100%', 'overflow': 'auto', 'background-color': 'rgba(0,255,0,0.2)'}));
     $('body').append($('<div id="overlay"><div class="loader"></div></div>'));
 
     $('body').loading({overlay: $("#overlay"), stoppable: true});
 
-    let userdata = JSON.parse(localStorage.getItem('userdata'));
-    console.log(userdata);
-
 	};
+
+  let userdata = JSON.parse(localStorage.getItem('userdata'));
+  console.log(userdata);
 
 	initPage();
 
   pageHandle = doCreatePageLayout();
+  orderMng.setupPageHandle(pageHandle);
 
-  let calendar = doCreateCalendar(common.calendarOptions, onSelectDateSuccessCallback);
-  $(pageHandle.menuContent).append($(calendar));
-  $(pageHandle.toggleMenuCmd).click();
+
+  orderMng.doShowOrderList(userdata.shopId, pageHandle.mainContent);
   $('body').loading('stop');
 });
 
@@ -62,11 +64,12 @@ const doCreatePageLayout = function(){
   $(toggleMenuCmd).css({'position': 'fixed', 'top': '1px', 'left': '10px', 'z-index': '49', 'cursor': 'pointer'});
   let mainBox = $('#MainBox');
   $(mainBox).append($(toggleMenuCmd));
-  let mainContent = $('<div></div>').css({'position': 'relative', 'width': '100%', 'height': '100%'});
+  let mainContent = $('<div></div>').css({'position': 'relative', 'width': '100%'});
   $(mainBox).append($(mainContent));
-  let menuContent = $('<div id="MenuContent"></div>').css({'position': 'absolute', 'background-color': '#fefefe', 'width': '80%', 'top': '4%', 'left': '4%', 'right': '4%'});
+  let userInfoBox = doCreateUserInfoBox();
+  let menuContent = $('<div id="MenuContent"></div>').css({'position': 'relative', 'width': '80%', 'left': '10%'});
   let menuBox = $('#MenuBox');
-  $(menuBox).append($(menuContent));
+  $(menuBox).append($(userInfoBox)).append($(menuContent));
   let timeAnimate = 550;
 
   $(toggleMenuCmd).on('click', (evt)=>{
@@ -83,14 +86,17 @@ const doCreatePageLayout = function(){
   return handle;
 }
 
-const doCreateCalendar = function(calendarOptions, successCallback){
-  calendarOptions.onClick = successCallback;
-  let calendareBox = $('<div id="CalendarBox"></div>');
-  return $(calendareBox).ionCalendar(calendarOptions);
-}
-
-const onSelectDateSuccessCallback = function(date) {
-  let selectDate = common.doFormatDateStr(new Date(date));
-  $(pageHandle.mainContent).append($('<span>' + selectDate + '</span>').css({'font-size': '32px', 'font-weight': 'bold'}));
-  $(pageHandle.toggleMenuCmd).click();
+const doCreateUserInfoBox = function(){
+  let userdata = JSON.parse(localStorage.getItem('userdata'));
+  let userInfoBox = $('<div></div>').css({'position': 'relative', 'width': '100%', 'text-align': 'center'});
+  let userPictureBox = $('<img src="../../images/avatar-icon.png"/>').css({'position': 'relative', 'width': '80px', 'height': 'auto', 'cursor': 'pointer', 'margin-top': '-2px'});
+  $(userPictureBox).on('click', (evt)=>{
+    //...
+  });
+  let userInfo = $('<div></div>').text(userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH).css({'position': 'relative', 'margin-top': '-20px', 'padding': '2px', 'font-size': '18px'});
+  let userLogoutCmd = $('<div>ออกจากระบบ</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin-top': '0px', 'padding': '2px', 'font-size': '18px'});
+  $(userLogoutCmd).on('click', (evt)=>{
+    common.doUserLogout();
+  });
+  return $(userInfoBox).append($(userPictureBox)).append($(userInfo)).append($(userLogoutCmd));
 }

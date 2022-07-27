@@ -58,7 +58,7 @@ module.exports = function ( jq, wsm ) {
 			let triggerData = data;
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: triggerData}});
 			document.dispatchEvent(event);
-
+			console.log(event);
     } else if (data.type == 'notify') {
       $.notify(data.message, "info");
     } else if (data.type == 'exec') {

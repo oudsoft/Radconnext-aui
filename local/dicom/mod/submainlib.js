@@ -224,6 +224,7 @@ module.exports = function ( jq ) {
 		doNotAllowAccessPage,
 		doCreateCustomNotify,
 		onCaseMisstakeNotifyTrigger,
-		onNewDicomTransferTrigger
+		onNewDicomTransferTrigger,
+		onNewReportTrigger
   }
 }
