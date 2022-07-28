@@ -815,7 +815,7 @@ module.exports = function ( jq ) {
 		return new Promise(async function(resolve, reject) {
 			let userdata = JSON.parse(localStorage.getItem('userdata'));
 			let hospitalId = userdata.hospitalId;
-			let userId = userdata.userId;
+			let userId = userdata.id;
 			let rqParams = { hospitalId: hospitalId, userId: userId, studyDesc: studyDesc, protocolName: protocolName};
 			let apiUrl = '/api/scanpartaux/select';
 			try {

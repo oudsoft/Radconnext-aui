@@ -54,7 +54,7 @@ module.exports = function ( jq ) {
       let newOrderCmdBox = $('<div style="padding: 4px;"></div>').css({'width': '99.5%', 'text-align': 'right'});
 			let newOrderCmd = common.doCreateTextCmd('เปิดออร์เดอร์ใหม', 'green', 'white');
 			$(newOrderCmd).on('click', (evt)=>{
-				orderForm.doOpenOrderForm(shopId, workAreaBox);
+				orderForm.doOpenOrderForm(shopId, workAreaBox, undefined, undefined, doShowOrderList);
 			});
 			$(newOrderCmdBox).append($(newOrderCmd))
 			$(workAreaBox).append($(newOrderCmdBox));
@@ -170,7 +170,7 @@ module.exports = function ( jq ) {
 							evt.stopPropagation();
               let orderData = {customer: orders[i].customer, gooditems: orders[i].Items, id: orders[i].id, Status: orders[i].Status};
               $(orderListBox).remove();
-              orderForm.doOpenOrderForm(shopId, workAreaBox, orderData, orderDate);
+              orderForm.doOpenOrderForm(shopId, workAreaBox, orderData, orderDate, doShowOrderList);
             });
             $(orderListBox).append($(orderBox));
           }

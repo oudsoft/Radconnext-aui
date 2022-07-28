@@ -2,14 +2,14 @@ module.exports = function ( jq ) {
 	const $ = jq;
 
   const common = require('../../home/mod/common-lib.js')($);
-
+	const customerdlg = require('../../setting/admin/mod/customer-dlg.js')($);
   let pageHandle = undefined;
 
   const setupPageHandle = function(value){
     pageHandle = value;
   }
 
-  const doOpenOrderForm = async function(shopData, workAreaBox, orderData, selectDate){
+  const doOpenOrderForm = async function(shopId, workAreaBox, orderData, selectDate, doShowOrderList){
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		let userId = userdata.id;
 		let userinfoId = userdata.userinfoId;
@@ -61,7 +61,10 @@ module.exports = function ( jq ) {
     let dlgHandle = undefined;
 
     $(editCustomerCmd).on('click', async (evt)=>{
-      dlgHandle = await doOpenCustomerMngDlg(shopData, customerSelectedCallback);
+    	//dlgHandle = await doOpenCustomerMngDlg(shopId, customerSelectedCallback);
+			let customerDlgContent = await customerdlg.doCreateFormDlg(shopData, callback)
+			$(pageHandle.menuContent).empty().append($(customerDlgContent).css({'position': 'relative', 'margin-top': '15px'}));
+			$(pageHandle.toggleMenuCmd).click();
     });
 		$(customerControlCmd).append($(editCustomerCmd));
 
@@ -70,14 +73,14 @@ module.exports = function ( jq ) {
 		if ([1, 2].includes(orderObj.Status)) {
 			addNewGoodItemCmd = common.doCreateTextCmd('เพิ่มรายการ', 'green', 'white');
 	    $(addNewGoodItemCmd).on('click', async (evt)=>{
-	      dlgHandle = await doOpenGoodItemMngDlg(shopData, gooditemSelectedCallback);
+	      dlgHandle = await doOpenGoodItemMngDlg(shopId, gooditemSelectedCallback);
 	    });
 		}
 
 		let doShowCloseOrderDlg = async function() {
 			let total = await doCalOrderTotal(orderObj.gooditems);
 			if (total > 0) {
-				dlgHandle = await doOpenCreateCloseOrderDlg(shopData, total, orderObj, invoiceCallback, billCallback, taxinvoiceCallback);
+				dlgHandle = await doOpenCreateCloseOrderDlg(shopId, total, orderObj, invoiceCallback, billCallback, taxinvoiceCallback);
 			} else {
 				$.notify("ออร์เดอร์ยังไม่สมบูรณ์โปรดเพิ่มรายการสินค้าก่อน", "error");
 			}
@@ -98,7 +101,7 @@ module.exports = function ( jq ) {
 						$.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
 					}
 				} else {
-					params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopData.id, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
+					params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopId, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
           orderRes = await common.doCallApi('/api/shop/order/add', params);
           if (orderRes.status.code == 200) {
             $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
@@ -127,7 +130,7 @@ module.exports = function ( jq ) {
 
     let cancelCmd = $('<input type="button" value=" กลับ "/>').css({'margin-left': '10px'});
     $(cancelCmd).on('click', async(evt)=>{
-      await doShowOrderList(shopData, workAreaBox, selectDate);
+      await doShowOrderList(shopId, workAreaBox, selectDate);
     });
     let saveNewOrderCmd = $('<input type="button" value=" บันทึก " class="action-btn"/>');
     $(saveNewOrderCmd).on('click', async(evt)=>{
@@ -139,16 +142,16 @@ module.exports = function ( jq ) {
           orderRes = await common.doCallApi('/api/shop/order/update', params);
           if (orderRes.status.code == 200) {
             $.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
-            await doShowOrderList(shopData, workAreaBox, selectDate);
+            await doShowOrderList(shopId, workAreaBox, selectDate);
           } else {
             $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
           }
         } else {
-          params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopData.id, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
+          params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopId, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
           orderRes = await common.doCallApi('/api/shop/order/add', params);
           if (orderRes.status.code == 200) {
             $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
-            await doShowOrderList(shopData, workAreaBox, selectDate);
+            await doShowOrderList(shopId, workAreaBox, selectDate);
           } else {
             $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
           }
@@ -190,12 +193,12 @@ module.exports = function ( jq ) {
     }
 
 		const invoiceCallback = async function(newInvoiceData){
-			let invoiceParams = {data: newInvoiceData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
+			let invoiceParams = {data: newInvoiceData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 			let invoiceRes = await common.doCallApi('/api/shop/invoice/add', invoiceParams);
 
 			if (invoiceRes.status.code == 200) {
 				let invoiceId = invoiceRes.Record.id;
-				let docParams = {orderId: orderObj.id, shopId: shopData.id/*, filename: newInvoiceData.Filename, No: newInvoiceData.No*/};
+				let docParams = {orderId: orderObj.id, shopId: shopId/*, filename: newInvoiceData.Filename, No: newInvoiceData.No*/};
 				let docRes = await common.doCallApi('/api/shop/invoice/create/report', docParams);
 				console.log(docRes);
 				if (docRes.status.code == 200) {
@@ -215,15 +218,15 @@ module.exports = function ( jq ) {
 		}
 
 		const billCallback = async function(newBillData, paymentData){
-			let billParams = {data: newBillData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
+			let billParams = {data: newBillData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 			let billRes = await common.doCallApi('/api/shop/bill/add', billParams);
 
 			if (billRes.status.code == 200) {
 				let billId = billRes.Record.id;
-				let paymentParams = {data: paymentData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
+				let paymentParams = {data: paymentData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 				let paymentRes = await common.doCallApi('/api/shop/payment/add', paymentParams);
 				if (paymentRes.status.code == 200) {
-					let docParams = {orderId: orderObj.id, shopId: shopData.id/*, filename: newBillData.Filename, No: newBillData.No*/};
+					let docParams = {orderId: orderObj.id, shopId: shopId/*, filename: newBillData.Filename, No: newBillData.No*/};
 					let docRes = await common.doCallApi('/api/shop/bill/create/report', docParams);
 					console.log(docRes);
 					if (docRes.status.code == 200) {
@@ -248,15 +251,15 @@ module.exports = function ( jq ) {
 		}
 
 		const taxinvoiceCallback = async function(newTaxInvoiceData, paymentData){
-			let taxinvoiceParams = {data: newTaxInvoiceData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
+			let taxinvoiceParams = {data: newTaxInvoiceData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 			let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/add', taxinvoiceParams);
 
 			if (taxinvoiceRes.status.code == 200) {
 				let taxinvoiceId = taxinvoiceRes.Record.id;
-				let paymentParams = {data: paymentData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
+				let paymentParams = {data: paymentData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 				let paymentRes = await common.doCallApi('/api/shop/payment/add', paymentParams);
 				if (paymentRes.status.code == 200) {
-					let docParams = {orderId: orderObj.id, shopId: shopData.id/*, filename: newInvoiceData.Filename, No: newInvoiceData.No*/};
+					let docParams = {orderId: orderObj.id, shopId: shopId/*, filename: newInvoiceData.Filename, No: newInvoiceData.No*/};
 					let docRes = await common.doCallApi('/api/shop/taxinvoice/create/report', docParams);
 					console.log(docRes);
 					if (docRes.status.code == 200) {
