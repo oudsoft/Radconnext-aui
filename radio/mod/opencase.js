@@ -301,9 +301,6 @@ module.exports = function ( jq ) {
 			let caseId = saveNewResponseData.caseId;
 			let reporttype = saveNewResponseData.reporttype;
 			let userId = userdata.id;
-			//await doBackupDraft(caseId, responseHTML);
-			let draftbackup = {caseId: caseId, content: responseHTML, backupAt: new Date()};
-			localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
 
 			//let responseText = toAsciidoc(responseHTML);
 			let responseText = responseHTML;
@@ -311,16 +308,22 @@ module.exports = function ( jq ) {
 			let endPointText = '<!--EndFragment-->';
 			let tempToken = responseText.replace('\n', '');
 			let startPosition = tempToken.indexOf(startPointText);
+			let output = undefined;
 			if (startPosition >= 0) {
 				let endPosition = tempToken.indexOf(endPointText);
-				let output = responseText.slice((startPosition+20), (endPosition));
+				output = responseText.slice((startPosition+20), (endPosition));
 				responseText = toAsciidoc(output);
+			} else {
+				output = responseText;
 			}
+			//await doBackupDraft(caseId, responseHTML);
+			let draftbackup = {caseId: caseId, content: output, backupAt: new Date()};
+			localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
 			let rsW = saveNewResponseData.resultFormat.width;
 			console.log(rsW);
 			let fnS = saveNewResponseData.resultFormat.fontsize;
 			console.log(fnS);
-			let rsH = doCalResultHeigth(responseHTML, rsW, fnS);
+			let rsH = doCalResultHeigth(responseText, rsW, fnS);
 			console.log(rsH);
 			//const contentWidth = 1240;
 			//let rsH = doCalResultHeigth(responseHTML, contentWidth);
@@ -344,6 +347,7 @@ module.exports = function ( jq ) {
 			if (saveNewResponseData.previewOption === 1){
 				//Save with Radio Preview PDF
 				$('body').loading('start');
+				console.log(params);
 				let saveResponseRes = await doCallSaveResult(params);
 				console.log(saveResponseRes);
 				//if ((saveResponseRes.status.code == 200) && (saveResponseRes.responseId)){
@@ -413,15 +417,15 @@ module.exports = function ( jq ) {
 					//let saveResponseRes = doCallSaveResult(params);
 					//->ตรงนี้คืออะไร
 					//-> ตรงนี้คือการสั่งให้เซิร์ฟเวอร์สร้างผลอ่าน pdf ไว้ก่อนล่วงหน้า
-					/*
-					let saveResultApiURL = '/api/uicommon/radio/saveresult';
-					$.post(saveResultApiURL, params, function(saveResponseRes){
+
+					let saveResponseApiURL = '/api/uicommon/radio/saveresponse';
+					$.post(saveResponseApiURL, params, function(saveResponseRes){
 						console.log(saveResponseRes);
 					}).catch((err) => {
 						console.log(err);
 						$.notify("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ โปรดแจ้งผู้ดูแลระบบ", "error");
 					});
-					*/
+
 				} else {
 					alert('ข้อมูลที่ต้องการบันทึกไม่ถูกต้อง ไม่พบหมายเลขเคสของคุณ');
 				}
@@ -599,11 +603,24 @@ module.exports = function ( jq ) {
 	function doSaveDraft(saveDraftResponseData) {
 		return new Promise(async function(resolve, reject) {
 			let type = saveDraftResponseData.type;
-			let caseId = saveDraftResponseData.caseId
+			/*
+			let caseId = saveDraftResponseData.caseId;
+			*/
 			let userdata = JSON.parse(localStorage.getItem('userdata'));
 			let userId = userdata.id;
 			let responseHTML = $('#SimpleEditor').val();
-			let responseText = toAsciidoc(responseHTML);
+			let startPointText = '<!--StartFragment-->'
+			let endPointText = '<!--EndFragment-->';
+			let tempToken = responseHTML.replace('\n', '');
+			let startPosition = tempToken.indexOf(startPointText);
+			let responseText = undefined;
+			if (startPosition >= 0) {
+				let endPosition = tempToken.indexOf(endPointText);
+				let output = responseHTML.slice((startPosition+20), (endPosition));
+				responseText = toAsciidoc(output);
+			} else {
+				responseText = toAsciidoc(responseHTML)
+			}
 			let saveData = {Response_HTML: responseHTML, Response_Text: responseText, Response_Type: type};
 			let params = {caseId: caseId, userId: userId, data: saveData, responseId: caseResponseId, reporttype: type};
 			let saveResponseRes = await doCallSaveResponse(params);
@@ -1664,6 +1681,9 @@ module.exports = function ( jq ) {
 		$(resultBox).html(resultHTML);
 		$('.mainfull').append($(resultBox));
 		let rsH = $(resultBox).outerHeight();
+		if (rsH < 610) {
+			rsH = 610;
+		}
 		$(resultBox).remove();
 		return rsH;
 	}
