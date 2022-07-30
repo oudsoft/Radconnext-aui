@@ -27,7 +27,7 @@ module.exports = function ( jq ) {
           $(customerListBox).empty().append($(customerResult));
         }
       });
-      let addCustomerCmd = $('<input type="button" value=" เพิ่มลูดค้า " class="action-btn"/>').css({'margin-left': '10px'});
+      let addCustomerCmd = $('<input type="button" value=" เพิ่มลูกค้า " class="action-btn"/>').css({'margin-left': '10px'});
       $(addCustomerCmd).on('click', (evt)=>{
         //$(wrapperBox).empty();
         $(searchInputBox).hide();
@@ -39,7 +39,11 @@ module.exports = function ( jq ) {
           $(customerListBox).show();
           customerResult = await doShowList(customers, successCallback);
           $(customerListBox).empty().append($(customerResult));
-        });
+        }, ()=>{
+					$(newCustomerForm).remove();
+          $(searchInputBox).show();
+          $(customerListBox).show();
+				});
         $(wrapperBox).append($(newCustomerForm))
       });
       $(searchInputBox).append($(searchKeyInput)).append($(addCustomerCmd));
@@ -92,17 +96,17 @@ module.exports = function ( jq ) {
     });
   }
 
-  const doShowAddCustomerForm = function(shopData, successCallback){
+  const doShowAddCustomerForm = function(shopData, successCallback, cancelCallback){
     let form = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
     let formRow = $('<tr></tr>');
-    let nameCell = $('<td width="25%" align="left"></td>');
-    let addressCell = $('<td width="45%" align="left"></td>');
+    let nameCell = $('<td width="22%" align="left"></td>');
+    let addressCell = $('<td width="22%" align="left"></td>');
     let telCell = $('<td width="20%" align="left"></td>');
-    let commandCell = $('<td width="*" align="left"></td>');
-    let nameInput = $('<input type="text" placeholder="ชื่อ"/>').css({'width': '80px'});
-    let addressInput = $('<input type="text" placeholder="ที่อยู่"/>').css({'width': '120px'});
-    let telInput = $('<input type="text" placeholder="เบอร์โทร"/>').css({'width': '60px'});
-    let saveCmd = $('<input type="button" value=" บันทึกลูกค้า " class="action-btn"/>');
+    let commandCell = $('<td width="*" align="center"></td>');
+    let nameInput = $('<input type="text" placeholder="ชื่อ"/>').css({'width': '65px'});
+    let addressInput = $('<input type="text" placeholder="ที่อยู่"/>').css({'width': '80px'});
+    let telInput = $('<input type="text" placeholder="เบอร์โทร"/>').css({'width': '80px'});
+    let saveCmd = $('<input type="button" value="บันทึก" class="action-btn"/>');
     $(saveCmd).on('click', async (evt)=>{
       let nameValue = $(nameInput).val();
       let addressValue = $(addressInput).val();
@@ -127,10 +131,14 @@ module.exports = function ( jq ) {
         $(nameInput).css({'border': '1px solid red'});
       }
     });
+		let cancelCmd = $('<input type="button" value="ยกเลิก" style="margin-left: 2px;"/>');
+    $(cancelCmd).on('click', (evt)=>{
+			cancelCallback();
+		});
     $(nameCell).append($(nameInput)).append($('<span>*</span>').css({'margin-left': '5px', 'color': 'red'}));
     $(addressCell).append($(addressInput));
     $(telCell).append($(telInput));
-    $(commandCell).append($(saveCmd));
+    $(commandCell).append($(saveCmd)).append($(cancelCmd));
     $(formRow).append($(nameCell)).append($(addressCell)).append($(telCell)).append($(commandCell));
     return $(form).append($(formRow));
   }

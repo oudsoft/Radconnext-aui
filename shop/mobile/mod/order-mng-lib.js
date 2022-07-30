@@ -4,6 +4,7 @@ module.exports = function ( jq ) {
   const common = require('../../home/mod/common-lib.js')($);
 
   const orderForm = require('./order-form-lib.js')($);
+	const styleCommon = require('./style-common-lib.js')($);
 
   let pageHandle = undefined;
 
@@ -32,9 +33,9 @@ module.exports = function ( jq ) {
 			} else {
 				selectDate = common.doFormatDateStr(new Date());
 			}
-      let titlePageBox = $('<div></viv>').css({'padding': '4px', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
+      let titlePageBox = $('<div></viv>').css(styleCommon.titlePageBoxStyle);
 			let titleTextBox = $('<div></div>').text('รายการออร์เดอร์ของร้าน');
-			let orderDateBox = $('<div></div>').text(selectDate).css({'width': 'fit-content', 'display': 'inline-block', 'background-color': 'white', 'color': 'black', 'padding': '4px', 'cursor': 'pointer', 'font-size': '16px'});
+			let orderDateBox = $('<div></div>').text(selectDate).css(styleCommon.orderDateBoxStyle);
 			$(orderDateBox).on('click', (evt)=>{
         common.calendarOptions.onClick = async function(date) {
           let selectDate = common.doFormatDateStr(new Date(date));

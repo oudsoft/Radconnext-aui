@@ -39,7 +39,7 @@ $( document ).ready(function() {
     $('head').append('<link rel="stylesheet" href="' + ionCalendarCssUrl + '" type="text/css" />');
 
     $('body').append($('<div id="MainBox"></div>').css({'position': 'absolute', 'top': '0px', 'float': 'left', 'right': '0px', 'left': '0px', 'border': '1px solid red'}));
-    $('body').append($('<div id="MenuBox"></div>').css({'display': 'none', 'position': 'fixed', 'z-index': '42', 'left': '0px', 'top': '0px', 'width': '100%;', 'width': '100%', 'height': '100%', 'overflow': 'auto', 'background-color': 'rgba(0,255,0,0.2)'}));
+    $('body').append($('<div id="MenuBox"></div>').css({'display': 'none', 'position': 'fixed', 'z-index': '42', 'left': '0px', 'top': '0px', 'width': '100%;', 'width': '100%', 'height': '100%', 'overflow': 'scroll', 'background-color': 'rgb(240, 240, 240)'}));
     $('body').append($('<div id="overlay"><div class="loader"></div></div>'));
 
     $('body').loading({overlay: $("#overlay"), stoppable: true});
@@ -67,7 +67,7 @@ const doCreatePageLayout = function(){
   let mainContent = $('<div></div>').css({'position': 'relative', 'width': '100%'});
   $(mainBox).append($(mainContent));
   let userInfoBox = doCreateUserInfoBox();
-  let menuContent = $('<div id="MenuContent"></div>').css({'position': 'relative', 'width': '80%', 'left': '10%'});
+  let menuContent = $('<div id="MenuContent"></div>').css({'position': 'relative', 'width': '100%'});
   let menuBox = $('#MenuBox');
   $(menuBox).append($(userInfoBox)).append($(menuContent));
   let timeAnimate = 550;
@@ -75,7 +75,7 @@ const doCreatePageLayout = function(){
   $(toggleMenuCmd).on('click', (evt)=>{
     $(menuBox).animate({width: 'toggle'}, timeAnimate);
     if ($(toggleMenuCmd).css('left') == '10px') {
-      $(toggleMenuCmd).animate({left: '91%'}, timeAnimate);
+      $(toggleMenuCmd).animate({left: '90%'}, timeAnimate);
       $(toggleMenuCmd).attr('src', '../../images/cross-mark-icon.png');
     } else {
       $(toggleMenuCmd).animate({left: '10px'}, timeAnimate);
@@ -89,12 +89,14 @@ const doCreatePageLayout = function(){
 const doCreateUserInfoBox = function(){
   let userdata = JSON.parse(localStorage.getItem('userdata'));
   let userInfoBox = $('<div></div>').css({'position': 'relative', 'width': '100%', 'text-align': 'center'});
-  let userPictureBox = $('<img src="../../images/avatar-icon.png"/>').css({'position': 'relative', 'width': '80px', 'height': 'auto', 'cursor': 'pointer', 'margin-top': '-2px'});
+  let userPictureBox = $('<img src="../../images/avatar-icon.png"/>').css({'position': 'relative', 'width': '50px', 'height': 'auto', 'cursor': 'pointer', 'margin-top': '-2px'});
   $(userPictureBox).on('click', (evt)=>{
-    //...
+    $(userInfo).toggle('slow', 'swing', ()=>{
+      $(userLogoutCmd).toggle('fast', 'linear');
+    });
   });
-  let userInfo = $('<div></div>').text(userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH).css({'position': 'relative', 'margin-top': '-20px', 'padding': '2px', 'font-size': '18px'});
-  let userLogoutCmd = $('<div>ออกจากระบบ</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin-top': '0px', 'padding': '2px', 'font-size': '18px'});
+  let userInfo = $('<div></div>').text(userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH).css({'position': 'relative', 'margin-top': '-15px', 'padding': '2px', 'font-size': '14px'});
+  let userLogoutCmd = $('<div>ออกจากระบบ</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '0px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
   $(userLogoutCmd).on('click', (evt)=>{
     common.doUserLogout();
   });

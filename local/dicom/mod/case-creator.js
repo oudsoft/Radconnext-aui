@@ -197,10 +197,13 @@ module.exports = function ( jq ) {
   function doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId){
 		return new Promise(function(resolve, reject) {
 			let urgentType = $('.mainfull').find('#Urgenttype').val();
+			//console.log(urgentType);
 			let urgenttypeId = defualtValue.urgent;
+			//console.log(urgenttypeId);
 			if (urgentType) {
 				urgenttypeId = urgentType;
 			}
+			//console.log(urgenttypeId);
 			if (!urgenttypeId) {
 				let content = $('<div></div>');
 				$(content).append($('<p>ค่าความเร่งด่วนไม่ถูกต้อง โปรดแก้ไข</p>'));

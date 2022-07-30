@@ -241,6 +241,7 @@ module.exports = function ( jq ) {
       orderObj.customer = customerSelected;
       customerDataBox = doRenderCustomerContent(customerSelected);
       $(customerContent).empty().append($(customerDataBox));
+			$(editCustomerCmd).val('แก้ไขลูกค้า');
       if (dlgHandle) {
         dlgHandle.closeAlert();
       }
@@ -361,6 +362,7 @@ module.exports = function ( jq ) {
   			title: 'เลือกรายการลูกค้า',
   			msg: $(customerDlgContent),
   			width: '520px',
+				cancelLabel: ' ปิด ',
   			onOk: async function(evt) {
           customerFormBoxHandle.closeAlert();
   			},
@@ -382,6 +384,7 @@ module.exports = function ( jq ) {
   			title: 'เลือกรายการสินค้า',
   			msg: $(gooditemDlgContent),
   			width: '720px',
+				cancelLabel: ' ปิด ',
   			onOk: async function(evt) {
           gooditemFormBoxHandle.closeAlert();
   			},

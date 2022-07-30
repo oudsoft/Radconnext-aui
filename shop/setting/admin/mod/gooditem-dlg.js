@@ -12,7 +12,7 @@ module.exports = function ( jq ) {
       let wrapperBox = $('<div></div>');
       let searchInputBox = $('<div></div>').css({'width': '100%', 'padding': '4px'});
       let gooditemListBox = $('<div></div>').css({'width': '100%', 'padding': '4px', 'min-height': '200px'});
-      let searchKeyInput = $('<input type="text" size="40" value="*"/>');
+      let searchKeyInput = $('<input id="SearchKeyInput" type="text" size="40" value="*"/>');
       let gooditemResult = undefined;
       $(searchKeyInput).css({'background': 'url(../../images/search-icon.png) no-repeat right center', 'background-size': '6% 100%', 'padding-right': '3px'});
       $(searchKeyInput).on('keyup', async (evt)=>{
@@ -39,7 +39,11 @@ module.exports = function ( jq ) {
           $(gooditemListBox).show();
           gooditemResult = await doShowList(gooditems, successCallback);
           $(gooditemListBox).empty().append($(gooditemResult));
-        });
+        }, ()=>{
+					$(newGooditemForm).remove();
+          $(searchInputBox).show();
+          $(gooditemListBox).show();
+				});
         $(wrapperBox).append($(newGooditemForm))
       });
       $(searchInputBox).append($(searchKeyInput)).append($(addGoodItemCmd));
@@ -77,7 +81,7 @@ module.exports = function ( jq ) {
           },()=>{
             $(resultRow).css({'background-color': '#ddd', 'color': 'black'});
           });
-          let qtyInput = $('<input type="text" value="1" tabindex="3"/>').css({'width': '40px'});
+          let qtyInput = $('<input type="text" value="1" tabindex="3"/>').css({'width': '20px'});
 					$(qtyInput).on('click', (evt)=>{
 						evt.stopPropagation();
 					});
@@ -121,24 +125,24 @@ module.exports = function ( jq ) {
     });
   }
 
-  const doShowAddGooditemForm = function(shopData, successCallback){
+  const doShowAddGooditemForm = function(shopData, successCallback, cancelCallback){
     let form = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
     let formRow = $('<tr></tr>');
     let nameCell = $('<td width="20%" align="left"></td>');
-    let priceCell = $('<td width="10%" align="left"></td>');
+    let priceCell = $('<td width="15%" align="left"></td>');
     let unitCell = $('<td width="15%" align="left"></td>');
-    let groupCell = $('<td width="30%" align="left"></td>');
+    let groupCell = $('<td width="20%" align="left"></td>');
     let commandCell = $('<td width="*" align="left"></td>');
-    let nameInput = $('<input type="text" placeholder="ชื่อรายการสินค้า"/>').css({'width': '110px'});
-    let priceInput = $('<input type="text" placeholder="ราคา"/>').css({'width': '40px'});
-    let unitInput = $('<input type="text" placeholder="หน่วยขาย"/>').css({'width': '70px'});
-    let groupSelect = $('<select></select>').css({'width': '100px'});
+    let nameInput = $('<input type="text" placeholder="ชื่อรายการสินค้า"/>').css({'width': '50px'});
+    let priceInput = $('<input type="text" placeholder="ราคา"/>').css({'width': '30px'});
+    let unitInput = $('<input type="text" placeholder="หน่วยขาย"/>').css({'width': '40px'});
+    let groupSelect = $('<select></select>').css({'width': '80px'});
     let menugroups = JSON.parse(localStorage.getItem('menugroups'));
     menugroups.forEach((item, i) => {
       $(groupSelect).append($('<option value="' + item.id + '">' + item.GroupName + '</option>'));
     });
 
-    let saveCmd = $('<input type="button" value=" บันทึกสินต้า " class="action-btn"/>');
+    let saveCmd = $('<input type="button" value=" บันทึก " class="action-btn"/>');
     $(saveCmd).on('click', async (evt)=>{
       let nameValue = $(nameInput).val();
       let priceValue = $(priceInput).val();
@@ -174,11 +178,17 @@ module.exports = function ( jq ) {
         $(nameInput).css({'border': '1px solid red'});
       }
     });
+
+		let cancelCmd = $('<input type="button" value="ยกเลิก" style="margin-left: 2px;"/>');
+    $(cancelCmd).on('click', (evt)=>{
+			cancelCallback();
+		});
+
     $(nameCell).append($(nameInput)).append($('<span>*</span>').css({'margin-left': '5px', 'color': 'red'}));
     $(priceCell).append($(priceInput)).append($('<span>*</span>').css({'margin-left': '5px', 'color': 'red'}));
     $(unitCell).append($(unitInput)).append($('<span>*</span>').css({'margin-left': '5px', 'color': 'red'}));
     $(groupCell).append($(groupSelect));
-    $(commandCell).append($(saveCmd));
+    $(commandCell).append($(saveCmd)).append($(cancelCmd));
     $(formRow).append($(nameCell)).append($(priceCell)).append($(unitCell)).append($(groupCell)).append($(commandCell));
     return $(form).append($(formRow));
   }
