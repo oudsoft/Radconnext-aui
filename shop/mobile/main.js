@@ -24,6 +24,8 @@ $( document ).ready(function() {
     let ionCalendarPlugin = "../lib/ion.calendar.min.js";
     let ionCalendarCssUrl = "../stylesheets/ion.calendar.css";
 
+    let utilityPlugin = "../lib/plugin/jquery-radutil-plugin.js";
+
     $('head').append('<script src="' + jqueryUiJsUrl + '"></script>');
   	$('head').append('<link rel="stylesheet" href="' + jqueryUiCssUrl + '" type="text/css" />');
   	//https://carlosbonetti.github.io/jquery-loading/
@@ -38,6 +40,8 @@ $( document ).ready(function() {
     $('head').append('<link rel="stylesheet" href="../lib/print/print.min.css" type="text/css" />');
     $('head').append('<link rel="stylesheet" href="' + ionCalendarCssUrl + '" type="text/css" />');
 
+    $('head').append('<script src="' + utilityPlugin + '"></script>');
+    
     $('body').append($('<div id="MainBox"></div>').css({'position': 'absolute', 'top': '0px', 'float': 'left', 'right': '0px', 'left': '0px', 'border': '1px solid red'}));
     $('body').append($('<div id="MenuBox"></div>').css({'display': 'none', 'position': 'fixed', 'z-index': '42', 'left': '0px', 'top': '0px', 'width': '100%;', 'width': '100%', 'height': '100%', 'overflow': 'scroll', 'background-color': 'rgb(240, 240, 240)'}));
     $('body').append($('<div id="overlay"><div class="loader"></div></div>'));

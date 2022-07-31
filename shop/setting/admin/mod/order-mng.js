@@ -626,7 +626,7 @@ module.exports = function ( jq ) {
 								let shareCode = orders[i].invoice.Filename.split('.')[0];
 								window.open('/shop/share/?id=' + shareCode, '_blank');
 							});
-							$(invoiceBox).append($(openInvoicePdfCmd)).append($(openInvoicePdfCmd));
+							$(invoiceBox).append($(openInvoicePdfCmd)).append($(openInvoiceQrCmd));
 							$(orderBox).append($(invoiceBox));
 						} else if ((orders[i].Status == 3) || (orders[i].Status == 4)) {
 							$(orderBox).css({'background-color': 'green'});

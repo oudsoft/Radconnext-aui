@@ -6,6 +6,7 @@ module.exports = function ( jq ) {
 
 	const customerdlg = require('../../setting/admin/mod/customer-dlg.js')($);
 	const gooditemdlg = require('../../setting/admin/mod/gooditem-dlg.js')($);
+	const closeorderdlg = require('../../setting/admin/mod/closeorder-dlg.js')($);
 
   let pageHandle = undefined;
 
@@ -59,7 +60,11 @@ module.exports = function ( jq ) {
     } else {
       orderObj.gooditems = [];
     }
+		if ((orderData) && (orderData.invoice)) {
+			orderObj.invoice = orderData.invoice;
+		}
 
+		console.log(orderData);
 		console.log(orderObj);
 
     let dlgHandle = undefined;
@@ -81,14 +86,33 @@ module.exports = function ( jq ) {
 				$(gooditemDlgContent).find('#SearchKeyInput').css({'width': '280px', 'background': 'url("../../images/search-icon.png") right center / 8% 100% no-repeat'});
 				$(pageHandle.menuContent).empty().append($(gooditemDlgContent).css({'position': 'relative', 'margin-top': '15px'}));
 				$(pageHandle.toggleMenuCmd).click();
-
 	    });
 		}
 
 		let doShowCloseOrderDlg = async function() {
 			let total = await doCalOrderTotal(orderObj.gooditems);
 			if (total > 0) {
-				dlgHandle = await doOpenCreateCloseOrderDlg(shopId, total, orderObj, invoiceCallback, billCallback, taxinvoiceCallback);
+				let closeOrderDlgContent = await closeorderdlg.doCreateFormDlg({id: shopId}, total, orderObj, invoiceCallback, billCallback, taxinvoiceCallback);
+				$(pageHandle.menuContent).empty().append($(closeOrderDlgContent).css({'position': 'relative', 'margin-top': '15px'}));
+				$(pageHandle.toggleMenuCmd).click();
+				if (orderObj.Status == 2) {
+					let middleActionCmdCell = $(closeOrderDlgContent).find('#MiddleActionCmdCell');
+					let createInvoiceCmd = $(middleActionCmdCell).find('#CreateInvoiceCmd');
+					let invoiceBox = $('<div></div>').css({'position': 'relative', 'display': 'inline-block', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '28px', 'border': '2px solid orange', 'margin-top': '2px'});
+					let openInvoicePdfCmd = $('<span>' + orderObj.invoice.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
+					$(openInvoicePdfCmd).on('click', (evt)=>{
+						evt.stopPropagation();
+						closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orderObj.invoice.Filename, 'ใบแจ้งหนี้');
+					});
+					let openInvoiceQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'relative', 'margin-left': '8px', 'display': 'inline-block', 'bottom': '-6px', 'width': '25px', 'height': 'auto'});
+					$(openInvoiceQrCmd).on('click', (evt)=>{
+						evt.stopPropagation();
+						let shareCode = orderObj.invoice.Filename.split('.')[0];
+						window.open('/shop/share/?id=' + shareCode, '_blank');
+					});
+					$(invoiceBox).append($(openInvoicePdfCmd)).append($(openInvoiceQrCmd));
+					$(middleActionCmdCell).append($(invoiceBox).css({'margin-left': '4px'}));
+				}
 			} else {
 				$.notify("ออร์เดอร์ยังไม่สมบูรณ์โปรดเพิ่มรายการสินค้าก่อน", "error");
 			}
@@ -209,6 +233,9 @@ module.exports = function ( jq ) {
 				if (docRes.status.code == 200) {
 					//window.open(docRes.result.link, '_blank');
 					closeorderdlg.doOpenReportPdfDlg(docRes.result.link, 'ใบแจ้งหนี้');
+					//const pdfURL = docRes.result.link + '?t=' + common.genUniqueID();
+					//const reportPdfDlgContent = $('<object data="' + pdfURL + '" type="application/pdf" width="99%" height="380"></object>');
+					$(pageHandle.toggleMenuCmd).click();
 					$.notify("ออกใบแจ้งหนี้่สำเร็จ", "sucess");
 				} else if (docRes.status.code == 300) {
 					$.notify("ระบบไม่พบรูปแบบเอกสารใบแจ้งหนี้", "error");

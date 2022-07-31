@@ -68,12 +68,13 @@ module.exports = function ( jq ) {
       $(closeOrderTable).append($(dataRow));
 
       let middleActionCmdRow = $('<tr></tr>').css({'height': '40px'});
-      let commandCell = $('<td colspan="2" align="center"></td>');
+      let commandCell = $('<td colspan="2" align="center" id="MiddleActionCmdCell"></td>');
       $(middleActionCmdRow).append($(commandCell));
       $(closeOrderTable).append($(middleActionCmdRow));
 
 			if (orderObj.Status == 1) {
 	      let createInvoiceCmd = common.doCreateTextCmd('พิมพ์ใบแจ้งหนี้', '#F5500E', 'white', '#5D6D7E', '#FF5733');
+				$(createInvoiceCmd).attr('id', 'CreateInvoiceCmd');
 				$(createInvoiceCmd).on('click', async(evt)=>{
 					let shopId = shopData.id;
 					let nextInvoiceNo = '000000001';
@@ -254,7 +255,7 @@ module.exports = function ( jq ) {
   				reportPdfDlgHandle.closeAlert();
 					if (closeCallback) {
 						closeCallback();
-					}					
+					}
   			}
   		}
   		let reportPdfDlgHandle = $('body').radalert(reportformoption);

@@ -5,6 +5,7 @@ module.exports = function ( jq ) {
 
   const orderForm = require('./order-form-lib.js')($);
 	const styleCommon = require('./style-common-lib.js')($);
+	const closeorderdlg = require('../../setting/admin/mod/closeorder-dlg.js')($);
 
   let pageHandle = undefined;
 
@@ -128,7 +129,7 @@ module.exports = function ( jq ) {
 								let shareCode = orders[i].invoice.Filename.split('.')[0];
 								window.open('/shop/share/?id=' + shareCode, '_blank');
 							});
-							$(invoiceBox).append($(openInvoicePdfCmd)).append($(openInvoicePdfCmd));
+							$(invoiceBox).append($(openInvoicePdfCmd)).append($(openInvoiceQrCmd));
 							$(orderBox).append($(invoiceBox));
 						} else if ((orders[i].Status == 3) || (orders[i].Status == 4)) {
 							$(orderBox).css({'background-color': 'green'});
@@ -170,6 +171,9 @@ module.exports = function ( jq ) {
             $(orderBox).on('click', (evt)=>{
 							evt.stopPropagation();
               let orderData = {customer: orders[i].customer, gooditems: orders[i].Items, id: orders[i].id, Status: orders[i].Status};
+							if (orders[i].invoice) {
+								orderData.invoice = orders[i].invoice;
+							}
               $(orderListBox).remove();
               orderForm.doOpenOrderForm(shopId, workAreaBox, orderData, orderDate, doShowOrderList);
             });

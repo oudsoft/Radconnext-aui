@@ -1675,9 +1675,12 @@ module.exports = function ( jq ) {
 		A4 Height = 1122.52 px / 297 mm
 		ต้องเพิ่ม font-size, line-height ด้วย
 		*/
-		const lineHeight = 22;
+		const fontSize = 18;
+		const lineHeight = 20;
+		const resultBoxStyle = {'position': 'relative', 'width': '100%', 'font-family': '"Trirong", sans-serif', 'font-size': fontSize+'px', 'line-height': lineHeight+'px'};
+
 		let resultBox = $('<div></div>');
-		$(resultBox).css({'width': (resultWidth+'px'), 'font-size': (fontsize + 'px'), 'line-height': (lineHeight + 'px')});
+		$(resultBox).css(resultBoxStyle);
 		$(resultBox).html(resultHTML);
 		$('.mainfull').append($(resultBox));
 		let rsH = $(resultBox).outerHeight();
