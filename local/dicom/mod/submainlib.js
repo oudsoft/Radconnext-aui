@@ -215,6 +215,13 @@ module.exports = function ( jq ) {
 		console.log(localOrthancRes);
 	}
 
+	const onRezipTrigger = async function(evt) {
+		let trigerData = evt.detail.data;
+		let localOrthancRes = await common.doCallLocalApi('/api/orthanc/rezip/dicom', trigerData);
+		console.log('==localOrthancRes==');
+		console.log(localOrthancRes);
+	}
+
 	return {
     showScanpartAux,
     doAddNotifyCustomStyle,
@@ -225,6 +232,7 @@ module.exports = function ( jq ) {
 		doCreateCustomNotify,
 		onCaseMisstakeNotifyTrigger,
 		onNewDicomTransferTrigger,
-		onNewReportTrigger
+		onNewReportTrigger,
+		onRezipTrigger
   }
 }

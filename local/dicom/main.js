@@ -126,6 +126,7 @@ const doLoadMainPage = function(){
   document.addEventListener("triggernewdicom", submain.onNewDicomTransferTrigger);
   document.addEventListener("triggercasemisstake", submain.onCaseMisstakeNotifyTrigger);
   document.addEventListener("triggernewreport", submain.onNewReportTrigger);
+  document.addEventListener("triggerrezip", submain.onRezipTrigger);
 
   let mainFile= '../form/main-fix.html';
   let menuFile = '../form/menu-fix.html';

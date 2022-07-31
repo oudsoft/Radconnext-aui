@@ -136,6 +136,10 @@ module.exports = function ( jq, wsm ) {
 			let eventName = 'clientreconnecttrigger';
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.message}});
 			document.dispatchEvent(event);
+		} else if (data.type == 'rezip') {
+			let eventName = 'triggerrezip';
+			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: {studyID: data.studyID, dicomZipFilename: data.dicomZipFilename}}});
+			document.dispatchEvent(event);
     } else {
 			console.log('Nothing Else');
 		}
