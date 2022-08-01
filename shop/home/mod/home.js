@@ -80,6 +80,11 @@ module.exports = function ( jq ) {
 				$('#RightSideBox').load('/shop/lib/feeder/login-form.js', function(formJS){
 					let formResult = eval(formJS);
 		      $('#RightSideBox').empty().append($(formResult.handle));
+					let isMobileDevice = formResult.isMobileDevice();
+					if (isMobileDevice) {
+						$('#LeftSideBox').hide();
+						$('#RightSideBox').find(">:first-child").css({'width': '90%', 'margin-top': '-280px'});
+					}
 					$('body').loading('stop');
 				});
 			});

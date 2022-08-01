@@ -618,7 +618,19 @@ module.exports = function ( jq ) {
 							let openInvoicePdfCmd = $('<span>' + orders[i].invoice.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
 							$(openInvoicePdfCmd).on('click', (evt)=>{
 								evt.stopPropagation();
-								closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].invoice.Filename, 'ใบแจ้งหนี้');
+								//closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].invoice.Filename, 'ใบแจ้งหนี้');
+								let docParams = {orderId: orders[i].id, shopId: shopId};
+								let docRes = await common.doCallApi('/api/shop/invoice/create/report', docParams);
+								console.log(docRes);
+								if (docRes.status.code == 200) {
+									closeorderdlg.doOpenReportPdfDlg(docRes.result.link, 'ใบแจ้งหนี้');
+									//const pdfURL = docRes.result.link + '?t=' + common.genUniqueID();
+									//const reportPdfDlgContent = $('<object data="' + pdfURL + '" type="application/pdf" width="99%" height="380"></object>');
+									$.notify("ออกใบแจ้งหนี้่สำเร็จ", "sucess");
+								} else if (docRes.status.code == 300) {
+									$.notify("ระบบไม่พบรูปแบบเอกสารใบแจ้งหนี้", "error");
+								}
+
 							});
 							let openInvoiceQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
 							$(openInvoiceQrCmd).on('click', (evt)=>{

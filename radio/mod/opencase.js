@@ -1684,8 +1684,8 @@ module.exports = function ( jq ) {
 		$(resultBox).html(resultHTML);
 		$('.mainfull').append($(resultBox));
 		let rsH = $(resultBox).outerHeight();
-		if (rsH < 610) {
-			rsH = 610;
+		if (rsH < 850) {
+			rsH = 850;
 		}
 		$(resultBox).remove();
 		return rsH;

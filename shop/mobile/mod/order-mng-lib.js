@@ -119,9 +119,23 @@ module.exports = function ( jq ) {
 							$(orderBox).css({'background-color': 'orange'});
 							let invoiceBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'left', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
 							let openInvoicePdfCmd = $('<span>' + orders[i].invoice.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
-							$(openInvoicePdfCmd).on('click', (evt)=>{
+							$(openInvoicePdfCmd).on('click', async(evt)=>{
 								evt.stopPropagation();
-								closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].invoice.Filename, 'ใบแจ้งหนี้');
+								//closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].invoice.Filename, 'ใบแจ้งหนี้');
+								let docParams = {orderId: orders[i].id, shopId: shopId};
+								let docRes = await common.doCallApi('/api/shop/invoice/create/report', docParams);
+								console.log(docRes);
+								if (docRes.status.code == 200) {
+									//closeorderdlg.doOpenReportPdfDlg(docRes.result.link, 'ใบแจ้งหนี้');
+									let report = docRes.result;
+									let reportBox = orderForm.doCreateReportBox(report, 'ใบแจ้งหนี้');
+									$(pageHandle.mainContent).slideUp('slow');
+									$(pageHandle.mainBox).append($(reportBox));
+									$(reportBox).slideDown('slow');
+									$.notify("ออกใบแจ้งหนี้่สำเร็จ", "sucess");
+								} else if (docRes.status.code == 300) {
+									$.notify("ระบบไม่พบรูปแบบเอกสารใบแจ้งหนี้", "error");
+								}
 							});
 							let openInvoiceQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
 							$(openInvoiceQrCmd).on('click', (evt)=>{
@@ -138,7 +152,13 @@ module.exports = function ( jq ) {
 								let openBillPdfCmd = $('<span>' + orders[i].bill.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
 								$(openBillPdfCmd).on('click', (evt)=>{
 									evt.stopPropagation();
-									closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].bill.Filename, 'บิลเงินสด/ใบเสร็จรับเงิน');
+									//closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].bill.Filename, 'บิลเงินสด/ใบเสร็จรับเงิน');
+									let report = orders[i].bill.Report;
+									console.log(report);
+									let reportBox = orderForm.doCreateReportBox(report, 'บิลเงินสด/ใบเสร็จรับเงิน');
+									$(pageHandle.mainContent).slideUp('slow');
+									$(pageHandle.mainBox).append($(reportBox));
+									$(reportBox).slideDown('slow');
 								});
 								let openBillQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
 								$(openBillQrCmd).on('click', (evt)=>{
@@ -154,7 +174,13 @@ module.exports = function ( jq ) {
 								let openTaxInvoicePdfCmd = $('<span>' + orders[i].taxinvoice.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
 								$(openTaxInvoicePdfCmd).on('click', (evt)=>{
 									evt.stopPropagation();
-									closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].taxinvoice.Filename, 'ใบกำกับภาษี');
+									//closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].taxinvoice.Filename, 'ใบกำกับภาษี');
+									let report = orders[i].taxinvoice.Report;
+									console.log(report);
+									let reportBox = orderForm.doCreateReportBox(report, 'ใบกำกับภาษี');
+									$(pageHandle.mainContent).slideUp('slow');
+									$(pageHandle.mainBox).append($(reportBox));
+									$(reportBox).slideDown('slow');
 								});
 								let openTaxInvoiceQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
 								$(openTaxInvoiceQrCmd).on('click', (evt)=>{
