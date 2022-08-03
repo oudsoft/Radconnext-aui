@@ -63,11 +63,14 @@ module.exports = function ( jq ) {
 		if ((orderData) && (orderData.invoice)) {
 			orderObj.invoice = orderData.invoice;
 		}
+		if ((orderData) && (orderData.bill)) {
+			orderObj.bill = orderData.bill;
+		}
+		if ((orderData) && (orderData.taxinvoice)) {
+			orderObj.taxinvoice = orderData.taxinvoice;
+		}
 
-		console.log(orderData);
 		console.log(orderObj);
-
-    let dlgHandle = undefined;
 
     $(editCustomerCmd).on('click', async (evt)=>{
 			let customerDlgContent = await customerdlg.doCreateFormDlg({id: shopId}, customerSelectedCallback);
@@ -86,7 +89,7 @@ module.exports = function ( jq ) {
 				$(gooditemDlgContent).find('#SearchKeyInput').css({'width': '280px', 'background': 'url("../../images/search-icon.png") right center / 8% 100% no-repeat'});
 				$(pageHandle.menuContent).empty().append($(gooditemDlgContent).css({'position': 'relative', 'margin-top': '15px'}));
 				$(pageHandle.toggleMenuCmd).click();
-	    });
+	    }).css({'display': 'inline-block', 'width': '80px'});
 		}
 
 		let doShowCloseOrderForm = async function() {
@@ -98,10 +101,8 @@ module.exports = function ( jq ) {
 				if (orderObj.Status == 2) {
 					let middleActionCmdCell = $(closeOrderDlgContent).find('#MiddleActionCmdCell');
 					let createInvoiceCmd = $(middleActionCmdCell).find('#CreateInvoiceCmd');
-					let invoiceBox = $('<div></div>').css({'position': 'relative', 'display': 'inline-block', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '28px', 'border': '2px solid orange', 'margin-top': '8px', 'top': '3px'});
-					let openInvoicePdfCmd = $('<span>' + orderObj.invoice.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
-					$(openInvoicePdfCmd).on('click', async(evt)=>{
-						evt.stopPropagation();
+
+					let textCmdCallback = async function(evt){
 						$(pageHandle.toggleMenuCmd).click();
 						let docParams = {orderId: orderObj.id, shopId: shopId};
 						let docRes = await common.doCallApi('/api/shop/invoice/create/report', docParams);
@@ -117,15 +118,13 @@ module.exports = function ( jq ) {
 						} else if (docRes.status.code == 300) {
 							$.notify("ระบบไม่พบรูปแบบเอกสารใบแจ้งหนี้", "error");
 						}
-					});
-					let openInvoiceQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'relative', 'margin-left': '8px', 'display': 'inline-block', 'bottom': '-6px', 'width': '25px', 'height': 'auto'});
-					$(openInvoiceQrCmd).on('click', (evt)=>{
-						evt.stopPropagation();
+					}
+					let qrCmdCallback = function(evt){
 						let shareCode = orderObj.invoice.Filename.split('.')[0];
 						window.open('/shop/share/?id=' + shareCode, '_blank');
 						$(pageHandle.toggleMenuCmd).click();
-					});
-					$(invoiceBox).append($(openInvoicePdfCmd)).append($(openInvoiceQrCmd));
+					}
+					let invoiceBox = common.doCreateReportDocButtonCmd(orderObj.invoice.No, textCmdCallback, qrCmdCallback);
 					$(middleActionCmdCell).append($(invoiceBox).css({'margin-left': '4px'}));
 				}
 			} else {
@@ -133,36 +132,66 @@ module.exports = function ( jq ) {
 			}
 		}
 
-		let callCreateCloseOrderCmd = common.doCreateTextCmd(' คิดเงิน ', '#F5500E', 'white', '#5D6D7E', '#FF5733');
-		$(callCreateCloseOrderCmd).on('click', async (evt)=>{
-			if (orderObj.customer) {
-				let params = undefined;
-				let orderRes = undefined;
-				if ((orderData) && (orderData.id)) {
-					params = {data: {Items: orderObj.gooditems, Status: orderObj.Status, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, id: orderData.id};
-					orderRes = await common.doCallApi('/api/shop/order/update', params);
-					if (orderRes.status.code == 200) {
-						$.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
-						doShowCloseOrderForm();
+		let callCreateCloseOrderCmd = undefined;
+		if ([1, 2].includes(orderObj.Status)) {
+			callCreateCloseOrderCmd = common.doCreateTextCmd(' คิดเงิน ', '#F5500E', 'white', '#5D6D7E', '#FF5733');
+			$(callCreateCloseOrderCmd).on('click', async (evt)=>{
+				if (orderObj.customer) {
+					let params = undefined;
+					let orderRes = undefined;
+					if ((orderData) && (orderData.id)) {
+						params = {data: {Items: orderObj.gooditems, Status: orderObj.Status, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, id: orderData.id};
+						orderRes = await common.doCallApi('/api/shop/order/update', params);
+						if (orderRes.status.code == 200) {
+							$.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
+							doShowCloseOrderForm();
+						} else {
+							$.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+						}
 					} else {
-						$.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+						params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopId, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
+	          orderRes = await common.doCallApi('/api/shop/order/add', params);
+	          if (orderRes.status.code == 200) {
+	            $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
+							orderObj.id = orderRes.Records[0].id;
+							orderData = orderRes.Records[0];
+							doShowCloseOrderForm();
+	          } else {
+	            $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+	          }
 					}
 				} else {
-					params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopId, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
-          orderRes = await common.doCallApi('/api/shop/order/add', params);
-          if (orderRes.status.code == 200) {
-            $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
-						orderObj.id = orderRes.Records[0].id;
-						orderData = orderRes.Records[0];
-						doShowCloseOrderForm();
-          } else {
-            $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
-          }
-				}
-			} else {
-        $.notify("โปรดระบุข้อมูลลูกค้าก่อนบันทึกออร์เดอร์", "error");
-      }
-    });
+	        $.notify("โปรดระบุข้อมูลลูกค้าก่อนบันทึกออร์เดอร์", "error");
+	      }
+	    }).css({'display': 'inline-block', 'width': '80px'});
+		} else {
+			let report = undefined;
+			let shareCode = undefined;
+			let docNo = undefined;
+			let titleDoc = undefined;
+			if (orderObj.Status == 3) {
+				report = orderObj.bill.Report;
+				shareCode = orderObj.bill.Filename.split('.')[0];
+				docNo = orderObj.bill.No;
+				titleDoc = 'บิลเงินสด/ใบเสร็จรับเงิน';
+			} else if (orderObj.Status == 4) {
+				report = orderObj.taxinvoice.Report;
+				shareCode = orderObj.taxinvoice.Filename.split('.')[0];
+				docNo = orderObj.taxinvoice.No;
+				titleDoc = 'ใบกำกับภาษี';
+			}
+			let textCmdCallback = function(evt){
+				let reportBox = doCreateReportBox(report, titleDoc);
+				$(pageHandle.mainContent).slideUp('slow');
+				$(pageHandle.mainBox).append($(reportBox));
+				$(reportBox).slideDown('slow');
+			}
+			let qrCmdCallback = function(evt){
+				window.open('/shop/share/?id=' + shareCode, '_blank');
+			}
+			callCreateCloseOrderCmd = common.doCreateReportDocButtonCmd(docNo, textCmdCallback, qrCmdCallback);
+			$(callCreateCloseOrderCmd).css({'display': 'inline-block', 'width': '120px', 'background-color': 'green', 'color': 'white'});
+		}
 
     if ((orderObj) && (orderObj.gooditems)){
       let goodItemTable = await doRenderGoodItemTable(orderObj);
@@ -260,15 +289,16 @@ module.exports = function ( jq ) {
 			} else {
 				$.notify("บันทึกใบแจ้งหนี้ไม่สำเร็จ", "error");
 			}
+			$(pageHandle.menuContent).empty();
 		}
 
 		const billCallback = async function(newBillData, paymentData){
 			$(pageHandle.toggleMenuCmd).click();
 			let billParams = {data: newBillData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 			let billRes = await common.doCallApi('/api/shop/bill/add', billParams);
-
 			if (billRes.status.code == 200) {
 				let billId = billRes.Record.id;
+				orderObj.bill = billRes.Record;
 				let paymentParams = {data: paymentData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 				let paymentRes = await common.doCallApi('/api/shop/payment/add', paymentParams);
 				if (paymentRes.status.code == 200) {
@@ -276,13 +306,22 @@ module.exports = function ( jq ) {
 					let docRes = await common.doCallApi('/api/shop/bill/create/report', docParams);
 					console.log(docRes);
 					if (docRes.status.code == 200) {
-						/*
-						closeorderdlg.doOpenReportPdfDlg(docRes.result.link, 'บิลเงินสด/ใบเสร็จรับเงิน', ()=>{
-							$(cancelCmd).click();
-						});
-						*/
 						let report = docRes.result;
-						let reportBox = doCreateReportBox(report, 'บิลเงินสด/ใบเสร็จรับเงิน');
+						let reportBox = doCreateReportBox(report, 'บิลเงินสด/ใบเสร็จรับเงิน', ()=>{
+							let textCmdCallback = function(evt){
+								let reportBox = doCreateReportBox(report, 'บิลเงินสด/ใบเสร็จรับเงิน');
+								$(pageHandle.mainContent).slideUp('slow');
+								$(pageHandle.mainBox).append($(reportBox));
+								$(reportBox).slideDown('slow');
+							}
+							let qrCmdCallback = function(evt){
+								let shareCode = orderObj.bill.Filename.split('.')[0];
+								window.open('/shop/share/?id=' + shareCode, '_blank');
+							}
+							let billCmdBox = common.doCreateReportDocButtonCmd(orderObj.bill.No, textCmdCallback, qrCmdCallback);
+							$(billCmdBox).css({'display': 'inline-block', 'width': '120px', 'background-color': 'green', 'color': 'white'});
+							$(callCreateCloseOrderCmd).parent().empty().append($(billCmdBox));
+						});
 						$(pageHandle.mainContent).slideUp('slow');
 						$(pageHandle.mainBox).append($(reportBox));
 						$(reportBox).slideDown('slow');
@@ -296,6 +335,7 @@ module.exports = function ( jq ) {
 			} else {
 				$.notify("บันทึกบิลไม่สำเร็จ", "error");
 			}
+			$(pageHandle.menuContent).empty();
 		}
 
 		const taxinvoiceCallback = async function(newTaxInvoiceData, paymentData){
@@ -305,6 +345,7 @@ module.exports = function ( jq ) {
 
 			if (taxinvoiceRes.status.code == 200) {
 				let taxinvoiceId = taxinvoiceRes.Record.id;
+				orderObj.taxinvoice = taxinvoiceRes.Record;
 				let paymentParams = {data: paymentData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 				let paymentRes = await common.doCallApi('/api/shop/payment/add', paymentParams);
 				if (paymentRes.status.code == 200) {
@@ -312,13 +353,22 @@ module.exports = function ( jq ) {
 					let docRes = await common.doCallApi('/api/shop/taxinvoice/create/report', docParams);
 					console.log(docRes);
 					if (docRes.status.code == 200) {
-						/*
-						closeorderdlg.doOpenReportPdfDlg(docRes.result.link, 'ใบกำกับภาษี', ()=>{
-							$(cancelCmd).click();
-						});
-						*/
 						let report = docRes.result;
-						let reportBox = doCreateReportBox(report, 'ใบกำกับภาษี');
+						let reportBox = doCreateReportBox(report, 'ใบกำกับภาษี', ()=>{
+							let textCmdCallback = function(evt){
+								let reportBox = doCreateReportBox(report, 'ใบกำกับภาษี');
+								$(pageHandle.mainContent).slideUp('slow');
+								$(pageHandle.mainBox).append($(reportBox));
+								$(reportBox).slideDown('slow');
+							}
+							let qrCmdCallback = function(evt){
+								let shareCode = orderObj.bill.Filename.split('.')[0];
+								window.open('/shop/share/?id=' + shareCode, '_blank');
+							}
+							let taxinvoiceCmdBox = common.doCreateReportDocButtonCmd(orderObj.taxinvoice.No, textCmdCallback, qrCmdCallback);
+							$(taxinvoiceCmdBox).css({'display': 'inline-block', 'width': '120px', 'background-color': 'green', 'color': 'white'});
+							$(callCreateCloseOrderCmd).parent().empty().append($(taxinvoiceCmdBox));
+						});
 						$(pageHandle.mainContent).slideUp('slow');
 						$(pageHandle.mainBox).append($(reportBox));
 						$(reportBox).slideDown('slow');
@@ -332,6 +382,7 @@ module.exports = function ( jq ) {
 			} else {
 				$.notify("บันทึกใบกำกับภาษีไม่สำเร็จ", "error");
 			}
+			$(pageHandle.menuContent).empty();
 		}
   }
 
@@ -460,10 +511,10 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doCreateReportBox = function(report, docTitle){
+	const doCreateReportBox = function(report, docTitle, successCallback){
 		let temps = report.link.split('/');
 		let shareCode = temps[temps.length-1].split('.')[0];
-		let reportBoxStyle = {'position': 'relative', 'width': '100%', 'text-align': 'center', 'top': '40px'};
+		let reportBoxStyle = {'position': 'relative', 'width': '100%', 'text-align': 'center', 'top': '70px'};
 		let reportElemStyle = {'position': 'relative', 'display': 'inline-block', 'cursor': 'pointer', 'margin': '4px', 'padding': '2px', 'border': '1px solid #ddd'};
 		let reportBox = $('<div></div>').css(reportBoxStyle);
 		if (report.qrLink) {
@@ -527,6 +578,9 @@ module.exports = function ( jq ) {
 			} else {
 				$(mainBox).slideUp('slow');
 				$(pageHandle.mainContent).slideDown('slow');
+				if (successCallback) {
+					successCallback()
+				}
 			}
 		}).css({'display': 'inline-block', 'width': '120px', 'float': 'right'});
 		let docNoes = shareCode.split('-');

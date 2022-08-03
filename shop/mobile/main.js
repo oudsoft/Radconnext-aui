@@ -68,7 +68,7 @@ const doCreatePageLayout = function(){
   $(toggleMenuCmd).css({'position': 'fixed', 'top': '1px', 'left': '10px', 'z-index': '49', 'cursor': 'pointer'});
   let mainBox = $('#MainBox');
   $(mainBox).append($(toggleMenuCmd));
-  let mainContent = $('<div></div>').css({'position': 'relative', 'width': '100%'});
+  let mainContent = $('<div id="MainContent"></div>').css({'position': 'relative', 'width': '100%'});
   $(mainBox).append($(mainContent));
   let userInfoBox = doCreateUserInfoBox();
   let menuContent = $('<div id="MenuContent"></div>').css({'position': 'relative', 'width': '100%'});

@@ -92,7 +92,7 @@ module.exports = function ( jq ) {
   }
 
 	const doCreateTextCmd = function(text, bgcolor, textcolor, bordercolor, hovercolor) {
-    let textCmd = $('<span></span>').css({'min-height': '35px', 'line-height': '30px', 'cursor': 'pointer', 'border-radius': '4px', 'padding': '4px'});
+    let textCmd = $('<span></span>').css({'min-height': '35px', 'line-height': '30px', 'cursor': 'pointer', 'border-radius': '4px', 'padding': '4px', 'text-align': 'center'});
 		$(textCmd).text(text);
 		$(textCmd).css({'background-color': bgcolor, 'color': textcolor});
 		if (bordercolor){
@@ -133,6 +133,32 @@ module.exports = function ( jq ) {
 		return s4() + s4() + '-' + s4();
 	}
 
+	const isExistsResource = function(url) {
+    if(url){
+      var req = new XMLHttpRequest();
+      req.open('GET', url, false);
+      req.send();
+      return req.status==200;
+    } else {
+      return false;
+    }
+	}
+
+	const doCreateReportDocButtonCmd = function(text, textCmdCallback, qrCmdCallback) {
+		let reportDocButtonBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'left', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
+		let openReportDocCmd = $('<span>' + text + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
+		$(openReportDocCmd).on('click', (evt)=>{
+			evt.stopPropagation();
+			textCmdCallback(evt);
+		});
+		let openReportQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
+		$(openReportQrCmd).on('click', (evt)=>{
+			evt.stopPropagation();
+			qrCmdCallback(evt);
+		});
+		return $(reportDocButtonBox).append($(openReportDocCmd)).append($(openReportQrCmd));
+	}
+
   return {
 		fileUploadMaxSize,
     doCallApi,
@@ -146,6 +172,8 @@ module.exports = function ( jq ) {
 		doCreateTextCmd,
 		delay,
 		calendarOptions,
-		genUniqueID
+		genUniqueID,
+		isExistsResource,
+		doCreateReportDocButtonCmd
 	}
 }

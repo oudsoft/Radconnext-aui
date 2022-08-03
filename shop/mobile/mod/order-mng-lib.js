@@ -117,16 +117,11 @@ module.exports = function ( jq ) {
 							$(orderBox).append($(cancelOrderCmdBox));
 						} else if (orders[i].Status == 2) {
 							$(orderBox).css({'background-color': 'orange'});
-							let invoiceBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'left', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
-							let openInvoicePdfCmd = $('<span>' + orders[i].invoice.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
-							$(openInvoicePdfCmd).on('click', async(evt)=>{
-								evt.stopPropagation();
-								//closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].invoice.Filename, 'ใบแจ้งหนี้');
+							let textCmdCallback = async function(evt){
 								let docParams = {orderId: orders[i].id, shopId: shopId};
 								let docRes = await common.doCallApi('/api/shop/invoice/create/report', docParams);
 								console.log(docRes);
 								if (docRes.status.code == 200) {
-									//closeorderdlg.doOpenReportPdfDlg(docRes.result.link, 'ใบแจ้งหนี้');
 									let report = docRes.result;
 									let reportBox = orderForm.doCreateReportBox(report, 'ใบแจ้งหนี้');
 									$(pageHandle.mainContent).slideUp('slow');
@@ -136,59 +131,45 @@ module.exports = function ( jq ) {
 								} else if (docRes.status.code == 300) {
 									$.notify("ระบบไม่พบรูปแบบเอกสารใบแจ้งหนี้", "error");
 								}
-							});
-							let openInvoiceQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
-							$(openInvoiceQrCmd).on('click', (evt)=>{
-								evt.stopPropagation();
+							}
+							let qrCmdCallback = function(evt){
 								let shareCode = orders[i].invoice.Filename.split('.')[0];
 								window.open('/shop/share/?id=' + shareCode, '_blank');
-							});
-							$(invoiceBox).append($(openInvoicePdfCmd)).append($(openInvoiceQrCmd));
+							}
+							let invoiceBox = common.doCreateReportDocButtonCmd(orders[i].invoice.No, textCmdCallback, qrCmdCallback);
 							$(orderBox).append($(invoiceBox));
 						} else if ((orders[i].Status == 3) || (orders[i].Status == 4)) {
 							$(orderBox).css({'background-color': 'green'});
 							if (orders[i].bill){
-								let billBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'left', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
-								let openBillPdfCmd = $('<span>' + orders[i].bill.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
-								$(openBillPdfCmd).on('click', (evt)=>{
-									evt.stopPropagation();
-									//closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].bill.Filename, 'บิลเงินสด/ใบเสร็จรับเงิน');
+								let textCmdCallback = function(evt){
 									let report = orders[i].bill.Report;
 									console.log(report);
 									let reportBox = orderForm.doCreateReportBox(report, 'บิลเงินสด/ใบเสร็จรับเงิน');
 									$(pageHandle.mainContent).slideUp('slow');
 									$(pageHandle.mainBox).append($(reportBox));
 									$(reportBox).slideDown('slow');
-								});
-								let openBillQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
-								$(openBillQrCmd).on('click', (evt)=>{
-									evt.stopPropagation();
+								}
+								let qrCmdCallback = function(evt){
 									let shareCode = orders[i].bill.Filename.split('.')[0];
 									window.open('/shop/share/?id=' + shareCode, '_blank');
-								});
-								$(billBox).append($(openBillPdfCmd)).append($(openBillQrCmd));
+								}
+								let billBox = common.doCreateReportDocButtonCmd(orders[i].bill.No, textCmdCallback, qrCmdCallback);
 								$(orderBox).append($(billBox));
 							}
 							if (orders[i].taxinvoice){
-								let taxinvoiceBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'left', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
-								let openTaxInvoicePdfCmd = $('<span>' + orders[i].taxinvoice.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
-								$(openTaxInvoicePdfCmd).on('click', (evt)=>{
-									evt.stopPropagation();
-									//closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].taxinvoice.Filename, 'ใบกำกับภาษี');
+								let textCmdCallback = function(evt){
 									let report = orders[i].taxinvoice.Report;
 									console.log(report);
 									let reportBox = orderForm.doCreateReportBox(report, 'ใบกำกับภาษี');
 									$(pageHandle.mainContent).slideUp('slow');
 									$(pageHandle.mainBox).append($(reportBox));
 									$(reportBox).slideDown('slow');
-								});
-								let openTaxInvoiceQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
-								$(openTaxInvoiceQrCmd).on('click', (evt)=>{
-									evt.stopPropagation();
+								}
+								let qrCmdCallback = function(evt){
 									let shareCode = orders[i].taxinvoice.Filename.split('.')[0];
 									window.open('/shop/share/?id=' + shareCode, '_blank');
-								});
-								$(taxinvoiceBox).append($(openTaxInvoicePdfCmd)).append($($(openTaxInvoiceQrCmd)));
+								}
+								let taxinvoiceBox = common.doCreateReportDocButtonCmd(orders[i].taxinvoice.No, textCmdCallback, qrCmdCallback);
 								$(orderBox).append($(taxinvoiceBox));
 							}
 						} else if (orders[i].Status == 0) {
@@ -199,6 +180,12 @@ module.exports = function ( jq ) {
               let orderData = {customer: orders[i].customer, gooditems: orders[i].Items, id: orders[i].id, Status: orders[i].Status};
 							if (orders[i].invoice) {
 								orderData.invoice = orders[i].invoice;
+							}
+							if (orders[i].bill) {
+								orderData.bill = orders[i].bill;
+							}
+							if (orders[i].taxinvoice) {
+								orderData.taxinvoice = orders[i].taxinvoice;
 							}
               $(orderListBox).remove();
               orderForm.doOpenOrderForm(shopId, workAreaBox, orderData, orderDate, doShowOrderList);
