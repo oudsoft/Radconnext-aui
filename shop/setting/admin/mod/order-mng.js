@@ -720,12 +720,21 @@ module.exports = function ( jq ) {
 			title: 'แก้ไขราคา',
 			msg: $('<div></div>').css({'width': '100%', 'height': '70px', 'margin-top': '20px'}).append($(editLabel)).append($(editInput)),
 			width: '220px',
-			onOk: function(evt) {
+			onOk: async function(evt) {
 				let newValue = $(editInput).val();
 				if(newValue !== '') {
 					$(editInput).css({'border': ''});
-					successCallback(newValue)
-					dlgHandle.closeAlert();
+					let params = {data: {Price: newValue}, id: gooditems[index].id};
+					let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
+					if (menuitemRes.status.code == 200) {
+						$.notify("แก้ไขรายการเมนูสำเร็จ", "success");
+						dlgHandle.closeAlert();
+						successCallback(newValue);
+					} else if (menuitemRes.status.code == 201) {
+						$.notify("ไม่สามารถแก้ไขรายการเมนูได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
+					} else {
+						$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการเมนูได้", "error");
+					}
 				} else {
 					$.notify('ราคาสินค้าต้องไม่ว่าง', 'error');
 					$(editInput).css({'border': '1px solid red'});

@@ -52,6 +52,9 @@ $( document ).ready(function() {
 
   let userdata = JSON.parse(localStorage.getItem('userdata'));
   console.log(userdata);
+  if ((!userdata) || (userdata == null)) {
+    common.doUserLogout();
+  }
 
 	initPage();
 

@@ -485,13 +485,18 @@ module.exports = function ( jq ) {
 							let menugroupRes = await common.doCallApi('/api/shop/menugroup/options/' + goodItems[i].shopId, {});
 			      	let menugroups = menugroupRes.Options;
 			      	localStorage.setItem('menugroups', JSON.stringify(menugroups));
-							let gooditemForm = doCreateGoodItemProperyForm(goodItems[i]);
+							let gooditemForm = doCreateGoodItemProperyForm(orderData.gooditems[i], async (newData)=>{
+								subTotal = Number(orderData.gooditems[i].Price) * Number(orderData.gooditems[i].Qty);
+								$(goodItemSubTotalText).text(common.doFormatNumber(subTotal));
+								total = await doCalOrderTotal(orderData.gooditems);
+								$(totalBox).text(common.doFormatNumber(total));
+							});
 							$(pageHandle.menuContent).empty().append($(gooditemForm).css({'position': 'relative', 'margin-top': '15px', 'width': '91%'}));
 							$(pageHandle.toggleMenuCmd).click();
 						});
 					}
 					total = await doCalOrderTotal(orderData.gooditems);
-					$(totalBox).text(common.doFormatNumber(total))
+					$(totalBox).text(common.doFormatNumber(total));
 					$(summaryBox).empty().append($(totalBox));
 					$(itemListBox).css({'display': 'block', 'overflow': 'auto'});
 					setTimeout(()=>{
@@ -610,7 +615,7 @@ module.exports = function ( jq ) {
 		return $(mainBox).append($(toggleReportBox)).append($(reportBox));
 	}
 
-	const doCreateGoodItemProperyForm = function(gooditemData) {
+	const doCreateGoodItemProperyForm = function(gooditemData, successCallback) {
 		let gooditemForm = gooditem.doCreateNewMenuitemForm(gooditemData);
 		let gooitemImage = $('<img/>').attr('src', gooditemData.MenuPicture).css({'width': '100px', 'height': 'auto'}).on('click', (evt)=>{window.open(gooditemData.MenuPicture, '_blank');});
 		let gooitemPictureCell = $('<td colspan="2" align="center"></td>').append($(gooitemImage));
@@ -621,12 +626,15 @@ module.exports = function ( jq ) {
 			if (editMenuitemFormObj) {
 				let hasValue = editMenuitemFormObj.hasOwnProperty('MenuName');
 				if (hasValue){
+					gooditemData.MenuName = editMenuitemFormObj.MenuName;
+					gooditemData.Price = editMenuitemFormObj.Price;
+					gooditemData.Unit = editMenuitemFormObj.Unit;
 					let params = {data: editMenuitemFormObj, id: gooditemData.id};
 					let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
 					if (menuitemRes.status.code == 200) {
 						$.notify("แก้ไขรายการเมนูสำเร็จ", "success");
-						$.notify("การแก้ไขข้อมูลจะมีผลกับการนำรายการเมนูนี้ไปงานครั้งถัดไป", "info");
 						$(cancelCmd).click();
+						successCallback(editMenuitemFormObj);
 					} else if (menuitemRes.status.code == 201) {
 						$.notify("ไม่สามารถแก้ไขรายการเมนูได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
 					} else {
