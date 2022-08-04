@@ -32,6 +32,10 @@ module.exports = function ( jq ) {
 	const doUserLogout = function() {
 	  localStorage.removeItem('token');
 		localStorage.removeItem('userdata');
+		localStorage.removeItem('customers');
+		localStorage.removeItem('menugroups');
+		localStorage.removeItem('menuitems');
+		//localStorage.removeItem('userdata');
 	  let url = '/shop/index.html';
 	  window.location.replace(url);
 	}

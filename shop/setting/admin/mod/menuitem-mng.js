@@ -174,9 +174,9 @@ module.exports = function ( jq ) {
 		let inputField = $('<td width="*" align="left"></td>').css({'padding': '5px'});
 		let inputValue = $('<select id="GroupId"></select>');
 		let menugroups = JSON.parse(localStorage.getItem('menugroups'));
-		//console.log(menugroups);
+		console.log(menugroups);
 		menugroups.forEach((item, i) => {
-			console.log(item);
+			//console.log(item);
 			$(inputValue).append($('<option value="' + item.Value + '">' + item.DisplayText + '<option>'))
 		});
 		$(inputField).append($(inputValue));
@@ -318,6 +318,8 @@ module.exports = function ( jq ) {
   }
 
   return {
-    doShowMenuitemItem
+    doShowMenuitemItem,
+		doCreateNewMenuitemForm,
+		doVerifyMenuitemForm
   }
 }

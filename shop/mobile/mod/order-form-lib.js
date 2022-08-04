@@ -7,6 +7,7 @@ module.exports = function ( jq ) {
 	const customerdlg = require('../../setting/admin/mod/customer-dlg.js')($);
 	const gooditemdlg = require('../../setting/admin/mod/gooditem-dlg.js')($);
 	const closeorderdlg = require('../../setting/admin/mod/closeorder-dlg.js')($);
+	const gooditem = require('../../setting/admin/mod/menuitem-mng.js')($);
 
   let pageHandle = undefined;
 
@@ -435,6 +436,7 @@ module.exports = function ( jq ) {
 						let deleteGoodItemCmd = common.doCreateImageCmd('../../images/cross-red-icon.png', 'ลบรายการ');
 						$(increaseBtnCmd).css({'width': '22px', 'height': 'auto', 'margin-left': '8px'});
 						$(increaseBtnCmd).on('click', async(evt)=>{
+							evt.stopPropagation();
 							let oldQty = Number($(goodItemQtyBox).text());
 							let newQty = oldQty + 1;
 							$(goodItemQtyBox).text(common.doFormatQtyNumber(newQty));
@@ -445,6 +447,7 @@ module.exports = function ( jq ) {
 							$(totalBox).text(common.doFormatNumber(newTotal));
 						});
 						$(decreaseBtnCmd).on('click', async(evt)=>{
+							evt.stopPropagation();
 							let oldQty = Number($(goodItemQtyBox).text());
 							let newQty = oldQty -1;
 							if (newQty > 0) {
@@ -457,6 +460,7 @@ module.exports = function ( jq ) {
 							}
 						});
 						$(deleteGoodItemCmd).on('click', async (evt)=>{
+							evt.stopPropagation();
 							$(goodItemBox).remove();
 							let newGoodItems = await doDeleteGoodItem(i, orderData);
 							orderData.gooditems = newGoodItems;
@@ -466,10 +470,25 @@ module.exports = function ( jq ) {
 
 						$(decreaseBtnCmd).css({'width': '22px', 'height': 'auto', 'margin-left': '4px'});
 						$(deleteGoodItemCmd).css({'width': '32px', 'height': 'auto', 'margin-left': '8px'});
-						$(goodItemQtyUnitBox).append($(goodItemQtyBox)).append($(goodItemUnitBox)).append($(decreaseBtnCmd)).append($(increaseBtnCmd));
-						$($(goodItemSubTotalBox)).append($(goodItemSubTotalText)).append($(deleteGoodItemCmd));
+						$(goodItemQtyUnitBox).append($(goodItemQtyBox)).append($(goodItemUnitBox));
+						if ([1, 2].includes(orderData.Status)) {
+							$(goodItemQtyUnitBox).append($(decreaseBtnCmd)).append($(increaseBtnCmd));
+						}
+						$(goodItemSubTotalBox).append($(goodItemSubTotalText));
+						if ([1, 2].includes(orderData.Status)) {
+							$(goodItemSubTotalBox).append($(deleteGoodItemCmd));
+						}
 						$(goodItemBox).append($(goodItemImg)).append($(goodItemNameBox)).append($(goodItemQtyUnitBox)).append($(goodItemSubTotalBox));
 						$(itemListBox).append($(goodItemBox));
+						$(goodItemBox).on('click', async(evt)=>{
+							evt.stopPropagation();
+							let menugroupRes = await common.doCallApi('/api/shop/menugroup/options/' + goodItems[i].shopId, {});
+			      	let menugroups = menugroupRes.Options;
+			      	localStorage.setItem('menugroups', JSON.stringify(menugroups));
+							let gooditemForm = doCreateGoodItemProperyForm(goodItems[i]);
+							$(pageHandle.menuContent).empty().append($(gooditemForm).css({'position': 'relative', 'margin-top': '15px', 'width': '91%'}));
+							$(pageHandle.toggleMenuCmd).click();
+						});
 					}
 					total = await doCalOrderTotal(orderData.gooditems);
 					$(totalBox).text(common.doFormatNumber(total))
@@ -589,6 +608,41 @@ module.exports = function ( jq ) {
 		$(toggleReportBox).append($(docTitleBox)).append($(toggleReportBoxCmd).css({'text-align': 'center'}));
 		let mainBox = $('<div></div>').css({'position': 'relative', 'width': '100%', 'top': '18px', 'diaplay': 'none'});
 		return $(mainBox).append($(toggleReportBox)).append($(reportBox));
+	}
+
+	const doCreateGoodItemProperyForm = function(gooditemData) {
+		let gooditemForm = gooditem.doCreateNewMenuitemForm(gooditemData);
+		let gooitemImage = $('<img/>').attr('src', gooditemData.MenuPicture).css({'width': '100px', 'height': 'auto'}).on('click', (evt)=>{window.open(gooditemData.MenuPicture, '_blank');});
+		let gooitemPictureCell = $('<td colspan="2" align="center"></td>').append($(gooitemImage));
+		let gooitemPictureRow = $('<tr></tr>').append($(gooitemPictureCell));
+		let saveCmd = $('<input type="button" value=" บันทึก " class="action-btn"/>');
+		$(saveCmd).on('click', async(evt)=>{
+			let editMenuitemFormObj = gooditem.doVerifyMenuitemForm();
+			if (editMenuitemFormObj) {
+				let hasValue = editMenuitemFormObj.hasOwnProperty('MenuName');
+				if (hasValue){
+					let params = {data: editMenuitemFormObj, id: gooditemData.id};
+					let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
+					if (menuitemRes.status.code == 200) {
+						$.notify("แก้ไขรายการเมนูสำเร็จ", "success");
+						$.notify("การแก้ไขข้อมูลจะมีผลกับการนำรายการเมนูนี้ไปงานครั้งถัดไป", "info");
+						$(cancelCmd).click();
+					} else if (menuitemRes.status.code == 201) {
+						$.notify("ไม่สามารถแก้ไขรายการเมนูได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
+					} else {
+						$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการเมนูได้", "error");
+					}
+				}
+			}
+		});
+		let cancelCmd = $('<input type="button" value=" กลับ "/>').css({'margin-left': '10px'});
+		$(cancelCmd).on('click', async(evt)=>{
+			$(pageHandle.toggleMenuCmd).click();
+			$(pageHandle.menuContent).empty();
+		});
+		let gooitemCmdCell = $('<td colspan="2" align="center"></td>').append($(saveCmd)).append($(cancelCmd));
+		let gooitemCmdRow = $('<tr></tr>').append($(gooitemCmdCell));
+		return $(gooditemForm).prepend($(gooitemPictureRow)).append($(gooitemCmdRow));
 	}
 
   return {
