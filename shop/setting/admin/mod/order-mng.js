@@ -464,6 +464,20 @@ module.exports = function ( jq ) {
           let goodItems = orderData.gooditems;
 					let itenNoCells = [];
           for (let i=0; i < goodItems.length; i++) {
+						let priceFrag = $('<span></span>').text(common.doFormatNumber(Number(goodItems[i].Price)));
+						if ([1, 2].includes(orderData.Status)) {
+							$(priceFrag).css({'cursor': 'pointer', 'text-decoration': 'underline', 'text-decoration-style': 'dotted'})
+							$(priceFrag).on('click', (evt)=>{
+								doEditOnTheFly(evt, orderData.gooditems, i, async(newPrice)=>{
+									orderData.gooditems[i].Price = newPrice;
+									$(priceFrag).text(common.doFormatNumber(Number(orderData.gooditems[i].Price)));
+									subTotal = Number(orderData.gooditems[i].Price) * Number(orderData.gooditems[i].Qty);
+									$(subTotalCell).empty().append($('<span>' +  common.doFormatNumber(subTotal) + '</span>').css({'margin-right': '4px'}));
+									total = await doCalOrderTotal(orderData.gooditems);
+				          $(totalValueCell).empty().append($('<span><b>' + common.doFormatNumber(total) + '</b></span>').css({'margin-right': '4px'}));
+								});
+							});
+						}
             let goodItemRow = $('<tr></tr>');
 						let itenNoCell = $('<td align="center">' + (i+1) + '</td>');
             $(goodItemRow).append($(itenNoCell));
@@ -471,7 +485,7 @@ module.exports = function ( jq ) {
             let goodItemQtyCell = $('<td align="center">' + common.doFormatQtyNumber(goodItems[i].Qty) + '</td>');
             $(goodItemRow).append($(goodItemQtyCell));
             $(goodItemRow).append($('<td align="center">' + goodItems[i].Unit + '</td>'));
-            $(goodItemRow).append($('<td align="center">' + common.doFormatNumber(Number(goodItems[i].Price)) + '</td>'));
+            $(goodItemRow).append($('<td align="center"></td>').append($(priceFrag)));
             let subTotal = Number(goodItems[i].Price) * Number(goodItems[i].Qty);
             let subTotalCell = $('<td align="right"></td>');
 						$(subTotalCell).append($('<span>' +  common.doFormatNumber(subTotal) + '</span>').css({'margin-right': '4px'}))
@@ -616,7 +630,7 @@ module.exports = function ( jq ) {
 							$(orderBox).css({'background-color': 'orange'});
 							let invoiceBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'left', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
 							let openInvoicePdfCmd = $('<span>' + orders[i].invoice.No + '</span>').css({'font-weight': 'bold', 'margin-left': '5px'});
-							$(openInvoicePdfCmd).on('click', (evt)=>{
+							$(openInvoicePdfCmd).on('click', async (evt)=>{
 								evt.stopPropagation();
 								//closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].invoice.Filename, 'ใบแจ้งหนี้');
 								let docParams = {orderId: orders[i].id, shopId: shopId};
@@ -630,7 +644,6 @@ module.exports = function ( jq ) {
 								} else if (docRes.status.code == 300) {
 									$.notify("ระบบไม่พบรูปแบบเอกสารใบแจ้งหนี้", "error");
 								}
-
 							});
 							let openInvoiceQrCmd = $('<img src="/shop/img/usr/myqr.png"/>').css({'position': 'absolute', 'margin-left': '8px', 'margin-top': '2px', 'width': '25px', 'height': 'auto'});
 							$(openInvoiceQrCmd).on('click', (evt)=>{
@@ -699,6 +712,32 @@ module.exports = function ( jq ) {
       }
     });
   }
+
+	const doEditOnTheFly = function(event, gooditems, index, successCallback){
+		let editInput = $('<input type="number"/>').val(common.doFormatNumber(Number(gooditems[index].Price))).css({'width': '100px', 'margin-left': '20px'});
+		let editLabel = $('<label>ราคา:</label>').attr('for', $(editInput)).css({'width': '100%'})
+		let editDlgOption = {
+			title: 'แก้ไขราคา',
+			msg: $('<div></div>').css({'width': '100%', 'height': '70px', 'margin-top': '20px'}).append($(editLabel)).append($(editInput)),
+			width: '220px',
+			onOk: function(evt) {
+				let newValue = $(editInput).val();
+				if(newValue !== '') {
+					$(editInput).css({'border': ''});
+					successCallback(newValue)
+					dlgHandle.closeAlert();
+				} else {
+					$.notify('ราคาสินค้าต้องไม่ว่าง', 'error');
+					$(editInput).css({'border': '1px solid red'});
+				}
+			},
+			onCancel: function(evt){
+				dlgHandle.closeAlert();
+			}
+		}
+		let dlgHandle = $('body').radalert(editDlgOption);
+		return dlgHandle;
+	}
 
   return {
     doShowOrderList,
