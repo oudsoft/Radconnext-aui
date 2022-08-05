@@ -142,7 +142,7 @@ module.exports = function ( jq ) {
 		if ([1, 2].includes(orderObj.Status)) {
 			addNewGoodItemCmd = common.doCreateTextCmd('เพิ่มรายการ', 'green', 'white');
 	    $(addNewGoodItemCmd).on('click', async (evt)=>{
-	      dlgHandle = await doOpenGoodItemMngDlg(shopData, gooditemSelectedCallback);
+	      dlgHandle = await doOpenGoodItemMngDlg(shopData, orderObj.gooditems, gooditemSelectedCallback);
 	    });
 		}
 
@@ -257,9 +257,11 @@ module.exports = function ( jq ) {
 			lastCell = $(goodItemTable).children(":last").children(":last");
 			$(lastCell).append($(callCreateCloseOrderCmd));
       $(itemlistWorkingBox).empty().append($(goodItemTable));
+			/*
       if (dlgHandle) {
         dlgHandle.closeAlert();
       }
+			*/
     }
 
 		const invoiceCallback = async function(newInvoiceData){
@@ -376,14 +378,14 @@ module.exports = function ( jq ) {
     });
   }
 
-  const doOpenGoodItemMngDlg = function(shopData, callback){
+  const doOpenGoodItemMngDlg = function(shopData, gooditemSeleted, callback){
     return new Promise(async function(resolve, reject) {
-      const gooditemDlgContent = await gooditemdlg.doCreateFormDlg(shopData, callback);
+      const gooditemDlgContent = await gooditemdlg.doCreateFormDlg(shopData, gooditemSeleted, callback);
       $(gooditemDlgContent).css({'margin-top': '10px'});
       const gooditemformoption = {
   			title: 'เลือกรายการสินค้า',
   			msg: $(gooditemDlgContent),
-  			width: '720px',
+  			width: '580px',
 				cancelLabel: ' ปิด ',
   			onOk: async function(evt) {
           gooditemFormBoxHandle.closeAlert();
@@ -715,6 +717,11 @@ module.exports = function ( jq ) {
 
 	const doEditOnTheFly = function(event, gooditems, index, successCallback){
 		let editInput = $('<input type="number"/>').val(common.doFormatNumber(Number(gooditems[index].Price))).css({'width': '100px', 'margin-left': '20px'});
+		$(editInput).on('keyup', (evt)=>{
+			if (evt.keyCode == 13) {
+				$(dlgHandle.okCmd).click();
+			}
+		});
 		let editLabel = $('<label>ราคา:</label>').attr('for', $(editInput)).css({'width': '100%'})
 		let editDlgOption = {
 			title: 'แก้ไขราคา',

@@ -86,7 +86,7 @@ module.exports = function ( jq ) {
 		if ([1, 2].includes(orderObj.Status)) {
 			addNewGoodItemCmd = common.doCreateTextCmd('เพิ่มรายการ', 'green', 'white');
 	    $(addNewGoodItemCmd).on('click', async (evt)=>{
-				let gooditemDlgContent = await gooditemdlg.doCreateFormDlg({id: shopId}, gooditemSelectedCallback);
+				let gooditemDlgContent = await gooditemdlg.doCreateFormDlg({id: shopId}, orderObj.gooditems, gooditemSelectedCallback);
 				$(gooditemDlgContent).find('#SearchKeyInput').css({'width': '280px', 'background': 'url("../../images/search-icon.png") right center / 8% 100% no-repeat'});
 				$(pageHandle.menuContent).empty().append($(gooditemDlgContent).css({'position': 'relative', 'margin-top': '15px'}));
 				$(pageHandle.toggleMenuCmd).click();
@@ -263,7 +263,7 @@ module.exports = function ( jq ) {
 			let closeOrderCmdBox = $(goodItemTable).find('#CloseOrderCmdBox');
 			$(closeOrderCmdBox).append($(callCreateCloseOrderCmd));
       $(itemlistWorkingBox).empty().append($(goodItemTable));
-			$(pageHandle.toggleMenuCmd).click();
+			//$(pageHandle.toggleMenuCmd).click();
     }
 
 		const invoiceCallback = async function(newInvoiceData){

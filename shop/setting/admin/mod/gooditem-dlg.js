@@ -5,7 +5,7 @@ module.exports = function ( jq ) {
 	//const login = require('./login.js')($);
   const common = require('../../../home/mod/common-lib.js')($);
 
-  const doCreateFormDlg = function(shopData, successCallback) {
+  const doCreateFormDlg = function(shopData, gooditemSeleted, successCallback) {
     return new Promise(async function(resolve, reject) {
       let menugroups = JSON.parse(localStorage.getItem('menugroups'));
       let menuitems = JSON.parse(localStorage.getItem('menuitems'));
@@ -19,10 +19,10 @@ module.exports = function ( jq ) {
         let key = $(searchKeyInput).val();
         if (key !== ''){
           if (key === '*') {
-            gooditemResult = await doShowList(menuitems, successCallback);
+            gooditemResult = await doShowList(menuitems, gooditemSeleted, successCallback);
           } else {
             let gooditemFilter = await doFilterGooditem(menuitems, key);
-            gooditemResult = await doShowList(gooditemFilter, successCallback);
+            gooditemResult = await doShowList(gooditemFilter, gooditemSeleted, successCallback);
           }
           $(gooditemListBox).empty().append($(gooditemResult));
         }
@@ -37,7 +37,7 @@ module.exports = function ( jq ) {
           $(newGooditemForm).remove();
           $(searchInputBox).show();
           $(gooditemListBox).show();
-          gooditemResult = await doShowList(gooditems, successCallback);
+          gooditemResult = await doShowList(gooditems, gooditemSeleted, successCallback);
           $(gooditemListBox).empty().append($(gooditemResult));
         }, ()=>{
 					$(newGooditemForm).remove();
@@ -47,7 +47,7 @@ module.exports = function ( jq ) {
         $(wrapperBox).append($(newGooditemForm))
       });
       $(searchInputBox).append($(searchKeyInput)).append($(addGoodItemCmd));
-      gooditemResult = await doShowList(menuitems, successCallback);
+      gooditemResult = await doShowList(menuitems, gooditemSeleted, successCallback);
       $(gooditemListBox).empty().append($(gooditemResult));
       $(wrapperBox).append($(searchInputBox)).append($(gooditemListBox));
       resolve($(wrapperBox));
@@ -70,50 +70,56 @@ module.exports = function ( jq ) {
     });
   }
 
-  const doShowList = function(results, successCallback){
+  const doShowList = function(results, gooditemSeleted, successCallback){
     return new Promise(async function(resolve, reject) {
       let gooditemTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
       let	promiseList = new Promise(async function(resolve2, reject2){
         for (let i=0; i < results.length; i++){
-          let resultRow = $('<tr></tr>').css({'cursor': 'pointer', 'padding': '4px'});
-          $(resultRow).hover(()=>{
-            $(resultRow).css({'background-color': 'grey', 'color': 'white'});
-          },()=>{
-            $(resultRow).css({'background-color': '#ddd', 'color': 'black'});
-          });
-          let qtyInput = $('<input type="text" value="1" tabindex="3"/>').css({'width': '20px'});
-					$(qtyInput).on('click', (evt)=>{
-						evt.stopPropagation();
+					let itemOnOrders = gooditemSeleted.filter((item)=>{
+						return (item.id == results[i].id);
 					});
-          $(qtyInput).on('keyup', (evt)=>{
-            if (evt.keyCode == 13) {
-              $(resultRow).click();
-            }
-          });
-          $(resultRow).on('click', (evt)=>{
-            let qtyValue = $(qtyInput).val();
-            if (qtyValue > 0) {
-              $(qtyInput).css({'border': ''});
-              let applyResult = results[i];
-              applyResult.Qty = qtyValue;
-              successCallback(applyResult);
-            } else {
-              $(qtyInput).css({'border': '1px solid red'});
-            }
-          });
-          let pictureCell = $('<td width="10%" align="center"></td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
-          if (results[i].MenuPicture){
-            let picture = $('<img src="' + results[i].MenuPicture + '"/>').css({'width': '40px', 'height': 'auto'});
-            $(pictureCell).append($(picture));
-          }
-          let nameCell = $('<td width="30%" align="left">' + results[i].MenuName + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
-          let qtyCell = $('<td width="10%" align="left"></td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
-          let priceCell = $('<td width="10%" align="left">' + common.doFormatNumber(results[i].Price) + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
-          let unitCell = $('<td width="15%" align="left">' + results[i].Unit + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
-          let groupCell = $('<td width="*" align="left">' + results[i].menugroup.GroupName + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
-          $(qtyCell).append($(qtyInput)).append($('<span>*</spam>').css({'color': 'red'}));
-          $(resultRow).append($(pictureCell)).append($(nameCell)).append($(qtyCell)).append($(priceCell)).append($(unitCell)).append($(groupCell));
-          $(gooditemTable).append($(resultRow));
+					if (itemOnOrders.length == 0) {
+	          let resultRow = $('<tr></tr>').css({'cursor': 'pointer', 'padding': '4px'});
+	          $(resultRow).hover(()=>{
+	            $(resultRow).css({'background-color': 'grey', 'color': 'white'});
+	          },()=>{
+	            $(resultRow).css({'background-color': '#ddd', 'color': 'black'});
+	          });
+	          let qtyInput = $('<input type="text" value="1" tabindex="3"/>').css({'width': '20px'});
+						$(qtyInput).on('click', (evt)=>{
+							evt.stopPropagation();
+						});
+	          $(qtyInput).on('keyup', (evt)=>{
+	            if (evt.keyCode == 13) {
+	              $(resultRow).click();
+	            }
+	          });
+	          $(resultRow).on('click', (evt)=>{
+	            let qtyValue = $(qtyInput).val();
+	            if (qtyValue > 0) {
+	              $(qtyInput).css({'border': ''});
+	              let applyResult = results[i];
+	              applyResult.Qty = qtyValue;
+								$(resultRow).remove();
+	              successCallback(applyResult);
+	            } else {
+	              $(qtyInput).css({'border': '1px solid red'});
+	            }
+	          });
+	          let pictureCell = $('<td width="10%" align="center"></td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
+	          if (results[i].MenuPicture){
+	            let picture = $('<img src="' + results[i].MenuPicture + '"/>').css({'width': '40px', 'height': 'auto'});
+	            $(pictureCell).append($(picture));
+	          }
+	          let nameCell = $('<td width="30%" align="left">' + results[i].MenuName + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
+	          let qtyCell = $('<td width="10%" align="left"></td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
+	          let priceCell = $('<td width="10%" align="left">' + common.doFormatNumber(results[i].Price) + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
+	          let unitCell = $('<td width="15%" align="left">' + results[i].Unit + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
+	          let groupCell = $('<td width="*" align="left">' + results[i].menugroup.GroupName + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
+	          $(qtyCell).append($(qtyInput)).append($('<span>*</spam>').css({'color': 'red'}));
+	          $(resultRow).append($(pictureCell)).append($(nameCell)).append($(qtyCell)).append($(priceCell)).append($(unitCell)).append($(groupCell));
+	          $(gooditemTable).append($(resultRow));
+					}
         }
         setTimeout(()=>{
           resolve2($(gooditemTable));
