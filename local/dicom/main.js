@@ -36,7 +36,7 @@ $( document ).ready(function() {
           if (userdata.usertypeId == 2) {
 			       doLoadMainPage();
              wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
-             submain.doCreateRegisterVoIP(userdata);
+             //submain.doCreateRegisterVoIP(userdata);
            } else {
              submain.doNotAllowAccessPage();
            }

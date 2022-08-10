@@ -41,6 +41,7 @@ $( document ).ready(function() {
     			  doLoadMainPage();
             wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
             doSetupAutoReadyAfterLogin();
+            /*
             if (userdata.userinfo.User_SipPhone){
               let sipPhoneNumber = userdata.userinfo.User_SipPhone;
               let sipPhoneSecret = userdata.userinfo.User_SipSecret;
@@ -53,6 +54,7 @@ $( document ).ready(function() {
               let mySipPhone = $(mySipPhoneIncomeBox).sipphoneincome(sipPhoneOptions);
               $('body').append($(mySipPhoneIncomeBox));
             }
+            */
           } else {
             //$.notify('บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้ โปรด Login ใหม่เพื่อเปลี่ยนบัญชีใช้งาน', 'error');
             alert('บัญชีใช้งานของคุณไม่สามารถเข้าใช้งานหน้านี้ได้ โปรด Login ใหม่เพื่อเปลี่ยนบัญชีใช้งาน');
@@ -436,7 +438,7 @@ function doLoadDefualtPage() {
       }
     });
     */
-    
+
     if (loadRes.newList.Records.length > 0 ) {
       $('#NewCaseCmd').click();
     } else if (loadRes.accList.Records.length > 0) {

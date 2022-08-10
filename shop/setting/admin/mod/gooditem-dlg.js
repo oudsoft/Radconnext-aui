@@ -100,6 +100,7 @@ module.exports = function ( jq ) {
 	              $(qtyInput).css({'border': ''});
 	              let applyResult = results[i];
 	              applyResult.Qty = qtyValue;
+								applyResult.ItemStatus = 'New';
 								$(resultRow).remove();
 	              successCallback(applyResult);
 	            } else {
