@@ -5,7 +5,8 @@ module.exports = function ( jq ) {
 	const apiconnector = require('./apiconnect.js')($);
 	const util = require('./utilmod.js')($);
 	const common = require('./commonlib.js')($);
-	const newcase = require('./createnewcase.js')($);
+	//const newcase = require('./createnewcase.js')($);
+	const casecreator = require('../../local/dicom/mod//case-creator.js')($);
 	const casecounter = require('./casecounter.js')($);
 
 	const defualtPacsLimit = '30';
@@ -482,9 +483,11 @@ module.exports = function ( jq ) {
 						$(caseStatusCol).append($(clockCountdownDiv));
 					} else {
 						//Warning Case Please Cancel Case by Cancel Cmd.
+						/*
 						let taskWarningBox = $('<div style="position: relative; width: 100%; text-align: center; color: red;"></div>');
 						$(taskWarningBox).append($('<span>กรุณาส่งใหม่</span>'));
 						$(caseStatusCol).append($(taskWarningBox));
+						*/
 					}
 				}
 				let commandCol = $('<td align="center"></td>');
@@ -692,12 +695,15 @@ module.exports = function ( jq ) {
 			defualtValue.headerCreateCase = 'แก้ไขเคส';
 			defualtValue.createdAt = response.case.createdAt;
 
-			let orthancRes = await common.doGetOrthancStudyDicom(defualtValue.studyID);
-			let seriesList = orthancRes.Series;
-			let patientName = orthancRes.PatientMainDicomTags.PatientName;
+			//let orthancRes = await common.doGetOrthancStudyDicom(defualtValue.studyID);
+			let studyTags = await common.doGetSeriesList(defualtValue.studyID)
+			let seriesList = studyTags.Series;
+			let patientName = studyTags.PatientMainDicomTags.PatientName;
 			let allSeries = seriesList.length;
-			let allImageInstances = await newcase.doCallCountInstanceImage(seriesList, patientName);
-			newcase.doCreateNewCaseFirstStep(defualtValue, allSeries, allImageInstances);
+			//let allImageInstances = await newcase.doCallCountInstanceImage(seriesList, patientName);
+			let allImageInstances = await common.doCountImageLocalDicom(defualtValue.studyID);
+			//newcase.doCreateNewCaseFirstStep(defualtValue, allSeries, allImageInstances);
+			casecreator.doCreateNewCaseFirstStep(defualtValue, allSeries, allImageInstances);
 			/*
   		//doOpenEditCase(defualtValue);
 			*/

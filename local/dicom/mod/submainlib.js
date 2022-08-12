@@ -203,7 +203,13 @@ module.exports = function ( jq ) {
 	  $(radAlertBox.cancelCmd).hide();
 	}
 
-	const onNewDicomTransferTrigger = function(evt) {
+	const onNewDicomTransferTrigger = async function(evt) {
+		let trigerData = evt.detail.data;
+		let studyID = trigerData.dicom.ID;
+		let localOrthancRes = await common.doCallApi('/api/cases/newcase/trigger', {studyID: studyID});
+		console.log('==onNewDicomTransferTrigger==');
+		console.log(localOrthancRes);
+		$('body').loading('stop');
 		let msgBox = doCreateCustomNotify();
 		$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
 	}
@@ -211,7 +217,7 @@ module.exports = function ( jq ) {
 	const onNewReportTrigger = async function(evt) {
 		let trigerData = evt.detail.data;
 		let localOrthancRes = await common.doCallLocalApi('/api/orthanc/store/dicom', trigerData);
-		console.log('==localOrthancRes==');
+		console.log('==onNewReportTrigger==');
 		console.log(localOrthancRes);
 		$('body').loading('stop');
 	}
@@ -220,7 +226,7 @@ module.exports = function ( jq ) {
 		let trigerData = evt.detail.data;
 		console.log(trigerData);
 		let localOrthancRes = await common.doCallLocalApi('/api/orthanc/rezip/dicom', trigerData);
-		console.log('==localOrthancRes==');
+		console.log('==onRezipTrigger==');
 		console.log(localOrthancRes);
 		$('body').loading('stop');
 	}
