@@ -35,14 +35,15 @@ module.exports = function ( jq ) {
 		});
 	}
 
-	const doDownloadDicom = function(studyID, hospitalId, casedate, casetime) {
+	const doDownloadDicom = function(caseDicomZipFilename) {
 		return new Promise(async function(resolve, reject) {
+			/*
 			let fullNameENRes = await common.getPatientFullNameEN(casePatientId);
 			let patientFullNameEN = fullNameENRes.fullNameEN;
 			let frags = patientFullNameEN.split(' ');
 			patientFullNameEN = frags.join('_');
 			patientFullNameEN = patientFullNameEN.trim();
-			let currentTime = new Date().toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+			//let currentTime = new Date().toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/  /*, "$1");
 			currentTime = currentTime.split(':').join('');
 			let dicomFilename = patientFullNameEN + '-' + casedate + '-' + casetime + '-' + currentTime + '.zip';
 			apiconnector.doCallDownloadDicom(studyID, hospitalId).then((response) => {
@@ -57,6 +58,17 @@ module.exports = function ( jq ) {
 					resolve(response);
 				}, 3000);
 	  	});
+			*/
+			let dicomZipLink = '/img/usr/zip/' + caseDicomZipFilename;
+			let pom = document.createElement('a');
+			pom.setAttribute('target', "_blank");
+			pom.setAttribute('href', dicomZipLink);
+			pom.setAttribute('download', caseDicomZipFilename);
+			setTimeout(()=>{
+				pom.click();
+				downloadDicomList.push(dicomFilename);
+				resolve(response);
+			}, 1000);
 		});
 	}
 
@@ -857,14 +869,16 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doCreateDicomCmdBox = function(orthancStudyID, studyInstanceUID, casedate, casetime, hospitalId){
+	//const doCreateDicomCmdBox = function(orthancStudyID, studyInstanceUID, casedate, casetime, hospitalId){
+	const doCreateDicomCmdBox = function(caseDicomZipFilename){
 		let dicomCmdBox = $('<div></div>');
 		let downloadCmd = $('<span class="action-btn">Download</span>');
 		$(downloadCmd).css(commandButtonStyle);
 		$(downloadCmd).appendTo($(dicomCmdBox));
 		$(downloadCmd).on('click', async (evt)=>{
 			//$('body').loading('start');
-			let downloadRes = await doDownloadDicom(orthancStudyID, hospitalId, casedate, casetime);
+			//let downloadRes = await doDownloadDicom(orthancStudyID, hospitalId, casedate, casetime);
+			let downloadRes = await doDownloadDicom(caseDicomZipFilename);
 			//$('body').loading('stop');
 		});
 		/*
@@ -986,7 +1000,8 @@ module.exports = function ( jq ) {
 
 					let casedateDisplay = util.formatStudyDate(casedate);
 					//console.log(casedateDisplay);
-					let dicomCmdBox = doCreateDicomCmdBox(backward.Case_OrthancStudyID, backward.Case_StudyInstanceUID, casedate, casetime, backward.hospitalId);
+					//let dicomCmdBox = doCreateDicomCmdBox(backward.Case_OrthancStudyID, backward.Case_StudyInstanceUID, casedate, casetime, backward.hospitalId);
+					let dicomCmdBox = doCreateDicomCmdBox(backward.Case_DicomZipFilename);
 					let patientHRBackwardBox = await doCreateHRBackwardBox(patientFullName, backward.Case_PatientHRLink, casedate);
 					let responseBackwardBox = undefined;
 					const caseSuccessStatusIds = [5, 6, 10, 11, 12, 13, 14];
