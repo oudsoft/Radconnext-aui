@@ -124,6 +124,7 @@ const doLoadMainPage = function(){
   document.addEventListener("triggercasecounter", casecounter.onCaseChangeStatusTrigger);
   document.addEventListener("triggerconsultcounter", casecounter.onConsultChangeStatusTrigger);
   document.addEventListener("triggernewdicom", submain.onNewDicomTransferTrigger);
+  document.addEventListener("triggerupdatedicom", submain.onUpdateDicomTransferTrigger);
   document.addEventListener("triggercasemisstake", submain.onCaseMisstakeNotifyTrigger);
   document.addEventListener("triggernewreport", submain.onNewReportTrigger);
   document.addEventListener("triggerrezip", submain.onRezipTrigger);

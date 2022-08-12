@@ -214,6 +214,18 @@ module.exports = function ( jq ) {
 		$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
 	}
 
+	const onUpdateDicomTransferTrigger = async function(evt) {
+		let trigerData = evt.detail.data;
+		let isChangeRadio = trigerData.isChangeRadio;
+		let caseId = trigerData.caseId;
+		let localOrthancRes = await common.doCallApi('/api/cases/updatecase/trigger', {studyID: studyID});
+		console.log('==onUpdateDicomTransferTrigger==');
+		console.log(localOrthancRes);
+		$('body').loading('stop');
+		let msgBox = doCreateCustomNotify();
+		$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
+	}
+
 	const onNewReportTrigger = async function(evt) {
 		let trigerData = evt.detail.data;
 		let localOrthancRes = await common.doCallLocalApi('/api/orthanc/store/dicom', trigerData);
@@ -241,6 +253,7 @@ module.exports = function ( jq ) {
 		doCreateCustomNotify,
 		onCaseMisstakeNotifyTrigger,
 		onNewDicomTransferTrigger,
+		onUpdateDicomTransferTrigger,
 		onNewReportTrigger,
 		onRezipTrigger
   }

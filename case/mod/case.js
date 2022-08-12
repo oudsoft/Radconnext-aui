@@ -673,7 +673,6 @@ module.exports = function ( jq ) {
 		let rqParams = { username: username, id: caseid }
 		let apiUrl = '/api/cases/select/' + caseid;
 		try {
-
 			let apiRes = await common.doCallApi(apiUrl, rqParams);
 			console.log(apiRes);
 			let response = apiRes.Records[0];

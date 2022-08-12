@@ -952,7 +952,7 @@ module.exports = function ( jq ) {
 							let isActive = $('#CaseMainCmd').hasClass('NavActive');
 							if (!isActive) {
 								let hrPatientFiles = caseData.Case_PatientHRLink;
-								doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue);
+								doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, false);
 								$('#CaseMainCmd').click();
 							}
 							$('#NewStatusSubCmd').click(); // <- Tech Page
@@ -975,10 +975,13 @@ module.exports = function ( jq ) {
 		}
 	}
 
-  function doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue){
+  const doTransferDicomZip = function(dicomZipFileName, hrPatientFiles, defualtValue, isChangeRadio) {
     return new Promise(async function(resolve, reject) {
       let transerDicomUrl = '/api/orthanc/transfer/dicom';
-      let transferParams = {DicomZipFileName: dicomZipFileName, StudyTags: defualtValue.studyTags, HrPatientFiles: hrPatientFiles, oldHrPatientFiles: defualtValue.pn_history};
+      let transferParams = {DicomZipFileName: dicomZipFileName, StudyTags: defualtValue.studyTags, HrPatientFiles: hrPatientFiles, OldHrPatientFiles: defualtValue.pn_history, ChangeRadioOption: isChangeRadio};
+			if (defualtValue.caseId) {
+				transferParams.caseId = defualtValue.caseId;
+			}
 			console.log(transferParams);
 			resolve();
       let transerDicomRes = await common.doCallLocalApi(transerDicomUrl, transferParams);
@@ -990,7 +993,7 @@ module.exports = function ( jq ) {
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
 		const hospitalId = userdata.hospitalId;
 		const userId = userdata.id
-		const goToNextPage = function(statusId, dicomZipFileName, hrPatientFiles, defualtValue){
+		const goToNextPage = function(statusId, dicomZipFileName, hrPatientFiles, defualtValue, isChangeRadio, caseId){
 			if (statusId == 1) {
 				$('#NewStatusSubCmd').click();
 			} else if ((statusId == 2) || (statusId == 8)) {
@@ -1000,7 +1003,7 @@ module.exports = function ( jq ) {
 			} else if ((statusId == 3)||(statusId == 4)||(statusId == 7)) {
 				$('#NegativeStatusSubCmd').click();
 			}
-			doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue);
+			doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, isChangeRadio);
 		}
 
 		let updateCaseData = await doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId);
@@ -1034,12 +1037,12 @@ module.exports = function ( jq ) {
 						console.log(caseChangeStatusRes);
 						$.notify("บันทึกการแก้ไขเคสและปรับสถานะเคสเป็นเคสใหม่เรียบร้อยแล้ว", "success");
 						let hrPatientFiles = casedata.Case_PatientHRLink;
-						goToNextPage(defualtValue.status, dicomZipFileName, hrPatientFiles, defualtValue);
+						goToNextPage(defualtValue.status, dicomZipFileName, hrPatientFiles, defualtValue, true);
 					});
 				} else {
 					$.notify("บันทึกการแก้ไขเคสเรียบร้อยแล้ว", "success");
 					let hrPatientFiles = casedata.Case_PatientHRLink;
-					goToNextPage(defualtValue.status, dicomZipFileName, hrPatientFiles, defualtValue);
+					goToNextPage(defualtValue.status, dicomZipFileName, hrPatientFiles, defualtValue, false);
 				}
 			} else {
 				$.notify("เกิดความผิดพลาด ไม่สามารถบันทึกการแก้ไขเคสได้ในขณะนี้", "error");
