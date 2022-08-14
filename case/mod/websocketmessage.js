@@ -43,16 +43,6 @@ module.exports = function ( jq, wsm ) {
 				document.dispatchEvent(event);
 			}
 		//} else if (data.type == 'refreshconsult') {
-		} else if (data.type == 'newdicom') {
-			let eventName = 'triggernewdicom'
-			let triggerData = {dicom : data.dicom};
-			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: triggerData}});
-			document.dispatchEvent(event);
-		} else if (data.type == 'updatedicom') {
-			let eventName = 'triggerupdatedicom'
-			let triggerData = {dicom : data.dicom};
-			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: triggerData}});
-			document.dispatchEvent(event);
 		} else if (data.type == 'casemisstake') {
 			let eventName = 'triggercasemisstake'
 			let triggerData = {msg : data.msg, from: data.from};

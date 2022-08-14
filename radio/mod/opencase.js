@@ -319,28 +319,18 @@ module.exports = function ( jq ) {
 			let startPointText = '<!--StartFragment-->'
 			let endPointText = '<!--EndFragment-->';
 			let tempToken = responseText.replace('\n', '');
-			let startPosition = tempToken.indexOf(startPointText);
-			let output = undefined;
-			if (startPosition >= 0) {
-				let endPosition = tempToken.indexOf(endPointText);
-				output = responseText.slice((startPosition+20), (endPosition));
-				responseText = toAsciidoc(output);
-			} else {
-				output = responseText;
-			}
-			//await doBackupDraft(caseId, responseHTML);
-			let draftbackup = {caseId: caseId, content: output, backupAt: new Date()};
+			tempToken = tempToken.split(startPointText).join('');
+			tempToken = tempToken.split(endPointText).join('');
+			let draftbackup = {caseId: caseId, content: tempToken, backupAt: new Date()};
 			localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
+			responseText = toAsciidoc(tempToken);
 			let rsW = saveNewResponseData.resultFormat.width;
 			console.log(rsW);
 			let fnS = saveNewResponseData.resultFormat.fontsize;
 			console.log(fnS);
-			let rsH = doCalResultHeigth(responseText, rsW, fnS);
+			let rsH = doCalResultHeigth(tempToken, rsW, fnS);
 			console.log(rsH);
-			//const contentWidth = 1240;
-			//let rsH = doCalResultHeigth(responseHTML, contentWidth);
-			let saveData = {Response_HTML: responseHTML, Response_Text: responseText, Response_Type: responsetype, reporttype: reporttype, Response_A4Height: rsH};
-			//console.log(saveData);
+			let saveData = {Response_HTML: tempToken, Response_Text: responseText, Response_Type: responsetype, reporttype: reporttype, Response_A4Height: rsH};
 			let casedate = saveNewResponseData.casedate;
 			let casetime = saveNewResponseData.casetime;
 			let patientFullName = saveNewResponseData.patientFullName;
@@ -361,6 +351,7 @@ module.exports = function ( jq ) {
 				$('body').loading('start');
 				console.log(params);
 				let saveResponseRes = await doCallSaveResult(params);
+				//Uri = '/api/uicommon/radio/saveresult';
 				console.log(saveResponseRes);
 				//if ((saveResponseRes.status.code == 200) && (saveResponseRes.responseId)){
 				if ((saveResponseRes.status.code == 200) || (saveResponseRes.status.code == 203)) {
@@ -624,16 +615,12 @@ module.exports = function ( jq ) {
 			let startPointText = '<!--StartFragment-->'
 			let endPointText = '<!--EndFragment-->';
 			let tempToken = responseHTML.replace('\n', '');
-			let startPosition = tempToken.indexOf(startPointText);
-			let responseText = undefined;
-			if (startPosition >= 0) {
-				let endPosition = tempToken.indexOf(endPointText);
-				let output = responseHTML.slice((startPosition+20), (endPosition));
-				responseText = toAsciidoc(output);
-			} else {
-				responseText = toAsciidoc(responseHTML)
-			}
-			let saveData = {Response_HTML: responseHTML, Response_Text: responseText, Response_Type: type};
+			tempToken = tempToken.split(startPointText).join('');
+			tempToken = tempToken.split(endPointText).join('');
+			let draftbackup = {caseId: caseId, content: tempToken, backupAt: new Date()};
+			localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
+			responseText = toAsciidoc(tempToken);
+			let saveData = {Response_HTML: tempToken, Response_Text: responseText, Response_Type: type};
 			let params = {caseId: caseId, userId: userId, data: saveData, responseId: caseResponseId, reporttype: type};
 			let saveResponseRes = await doCallSaveResponse(params);
 			resolve(saveResponseRes);

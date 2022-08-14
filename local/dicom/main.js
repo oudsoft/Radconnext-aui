@@ -21,7 +21,7 @@ const consult = require('../../case/mod/consult.js')($);
 const portal = require('../../case/mod/portal-lib.js')($);
 const cases = require('../../case/mod/case.js')($);
 
-var wsm, sipUA;
+var wsm, wsl, sipUA;
 
 $( document ).ready(function() {
   const initPage = function() {
@@ -36,6 +36,7 @@ $( document ).ready(function() {
           if (userdata.usertypeId == 2) {
 			       doLoadMainPage();
              wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
+             wsl = util.doConnectWebsocketLocal(userdata.username);
              //submain.doCreateRegisterVoIP(userdata);
            } else {
              submain.doNotAllowAccessPage();

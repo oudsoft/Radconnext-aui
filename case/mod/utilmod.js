@@ -338,7 +338,7 @@ module.exports = function ( jq ) {
 	  const port = window.location.port;
 	  const paths = window.location.pathname.split('/');
 	  const rootname = paths[1];
-
+		/*
 		let wsProtocol = 'ws://';
 		if (protocol == 'https:') {
 			wsProtocol = 'wss://';
@@ -348,7 +348,9 @@ module.exports = function ( jq ) {
 		if (hostname == 'localhost') {
 			wsUrl = 'wss://radconnext.info/' + username + '/' + hospitalId + '?type=' + connecttype;
 		}
+		*/
 
+		let wsUrl = 'wss://radconnext.info/' + username + '/' + hospitalId + '?type=' + connecttype;
 	  wsm = new WebSocket(wsUrl);
 		wsm.onopen = function () {
 			//console.log('Master Websocket is connected to the signaling server')
@@ -417,6 +419,16 @@ module.exports = function ( jq ) {
 			wsm.send(JSON.stringify(data.data));
 		} else if (data.type == 'run') {
 			wsm.send(JSON.stringify(data.data));
+		} else if (data.type == 'newdicom') {
+			let eventName = 'triggernewdicom'
+			let triggerData = {dicom : data.dicom};
+			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: triggerData}});
+			document.dispatchEvent(event);
+		} else if (data.type == 'updatedicom') {
+			let eventName = 'triggerupdatedicom'
+			let triggerData = {dicom : data.dicom};
+			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: triggerData}});
+			document.dispatchEvent(event);			
 		}
 	}
 
