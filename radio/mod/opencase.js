@@ -517,7 +517,7 @@ module.exports = function ( jq ) {
 			if ((saveResponseRes.status.code == 200) || (saveResponseRes.status.code == 203)){
 				$.notify("ส่งผลอ่าน - Success", "success");
 				$('body').loading('stop');
-				if (saveNewResponseData.previewOption === 1){
+				if (saveResponseData.previewOption === 1){
 					$('#quickreply').empty();
 					$('#quickreply').removeAttr('style');
 					$("#dialog").empty();
@@ -539,7 +539,7 @@ module.exports = function ( jq ) {
 				}
 			} else {
 				$.notify("ไม่สามารถส่งผลอ่าน - Error โปรดติดต่อผู้ดูแลระบบ", "error");
-				doReportBugOpenCase({params: params, url: 'doCallSubmitResult'}, 'ไม่พบหมายเลขเคสของคุณ');
+				doReportBugOpenCase({params: params, url: '/api/uicommon/radio/submitresult'}, 'ไม่พบหมายเลขเคสของคุณ');
 				$('body').loading('stop');
 				reject({errer: 'Submit Case Result Error'});
 			}
