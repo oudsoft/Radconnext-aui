@@ -150,6 +150,7 @@ module.exports = function ( jq ) {
 		const doCloseDialog = function(){
 			$(modalDialog).parent().empty();
 			$(modalDialog).parent().removeAttr('style');
+			$('#AcceptedCaseCmd').click();
 		}
 
 		$(closeCmd).on('click', (evt)=>{
@@ -517,25 +518,23 @@ module.exports = function ( jq ) {
 			if ((saveResponseRes.status.code == 200) || (saveResponseRes.status.code == 203)){
 				$.notify("ส่งผลอ่าน - Success", "success");
 				$('body').loading('stop');
+				$('#quickreply').empty();
+				$('#quickreply').removeAttr('style');
+				$("#dialog").empty();
 				if (saveResponseData.previewOption === 1){
-					$('#quickreply').empty();
-					$('#quickreply').removeAttr('style');
-					$("#dialog").empty();
 					resolve(saveResponseRes);
 					$('#AcceptedCaseCmd').click();
 				} else {
-					let pdfReportLink = saveResponseRes.reportLink + '?t=' + common.genUniqueID();
-					let pdfReportPages = saveResponseRes.reportPages;
+					let pdfReportLink = saveResponseData.reportPdfLinkPath + '?t=' + common.genUniqueID();
 					console.log(pdfReportLink);
-					console.log(pdfReportPages);
 					/*
 					saveNewResponseData.reportPdfLinkPath = saveResponseRes.reportLink;
 					saveNewResponseData.reportPages = pdfReportPages;
 					*/
 					let resultPDFDialog = doCreateResultPDFDialog(caseId, pdfReportLink);
 					$(resultPDFDialog).css({'margin': '20px auto'});
-					$("#dialog").empty();
 					$("#dialog").append($(resultPDFDialog));
+					resolve(pdfReportLink);
 				}
 			} else {
 				$.notify("ไม่สามารถส่งผลอ่าน - Error โปรดติดต่อผู้ดูแลระบบ", "error");
