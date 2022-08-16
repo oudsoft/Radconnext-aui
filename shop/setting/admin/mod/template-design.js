@@ -377,40 +377,87 @@ module.exports = function ( jq ) {
 				let newRatio = doCalRatio(paperSize);
 
 				let wrapperBox = $("<div></div>");
-		    $(wrapperBox).css({"position": "relative", "height": "100vh"});
-				if (paperSize == 1){
-					renderRatio = wrapperBoxWidth / reportWrapperWidth;
-					newHeight = constant.A4Height * newRatio;
-					$(wrapperBox).css({'margin-left': '0px', 'width': '100%'});
-				}  else if (paperSize == 2){
-					renderRatio = reportWrapperWidth / wrapperBoxWidth;
-					newHeight = constant.SlipHeight * newRatio;
-					let adjustLeft = (wrapperBoxWidth - constant.SlipWidth) / 2;
-					$(wrapperBox).css({'margin-left': adjustLeft+'px', 'width': reportWrapperWidth+'px'});
-				}
+			  $(wrapperBox).css({"position": "relative", "height": "100vh"});
 
-				let maxTop = await doRenderElement(shopData, wrapperBox, templateDesignElements, renderRatio, paperSize);
-				//console.log(maxTop);
-				maxTop = (Number(maxTop) * renderRatio);
-				//console.log(maxTop);
-				$(wrapperBox).css({'height': maxTop+'px', 'max-height': maxTop + 'px'});
-				//$(wrapperBox).css({'height': 'auto'});
+				let doCreatGUIView = async function() {
+					$(wrapperBox).empty();
+					if (paperSize == 1){
+						renderRatio = wrapperBoxWidth / reportWrapperWidth;
+						newHeight = constant.A4Height * newRatio;
+						$(wrapperBox).css({'margin-left': '0px', 'width': '100%'});
+					}  else if (paperSize == 2){
+						renderRatio = reportWrapperWidth / wrapperBoxWidth;
+						newHeight = constant.SlipHeight * newRatio;
+						let adjustLeft = (wrapperBoxWidth - constant.SlipWidth) / 2;
+						$(wrapperBox).css({'margin-left': adjustLeft+'px', 'width': reportWrapperWidth+'px'});
+					}
+
+					let maxTop = await doRenderElement(shopData, wrapperBox, templateDesignElements, renderRatio, paperSize);
+					maxTop = (Number(maxTop) * renderRatio) + 20;
+					$(wrapperBox).css({'height': maxTop+'px', 'max-height': maxTop + 'px'});
+				}
+				let doCreatJSONView = function() {
+					$.fn.json_beautify = function() {
+				    this.each(function(){
+			        var el = $(this);
+	            var obj = JSON.parse(el.val());
+	            var pretty = JSON.stringify(obj, undefined, 4);
+			        el.val(pretty);
+				    });
+					};
+					let textArea = $('<textarea cols="81" rows="25"></textarea>').css({'font-size': '26px'});
+					$(textArea).val(JSON.stringify(templateDesignElements));
+					$(textArea).json_beautify();
+					$(wrapperBox).empty().append($(textArea));
+				}
 
 				const radalertoption = {
 		      title: 'ตัวอย่างเอกสาร',
 		      msg: $(wrapperBox),
 		      width: wrapperBoxWidth + 'px',
+					okLabel:  'มุมมองเท็กซ์',
+					cancelLabel: 'ตกลง',
 		      onOk: function(evt) {
+						let isJSONView = $(wrapperBox).find('textarea');
+						if ($(isJSONView).length > 0) {
+							let jsonVal = $(isJSONView).val();
+							try {
+								templateDesignElements = JSON.parse(jsonVal);
+							} catch(err) {
+								console.log(err);
+							}
+							doCreatGUIView();
+							$(radAlertBox.okCmd).val('มุมมองเท็กซ์');
+						} else {
+							doCreatJSONView();
+							$(radAlertBox.okCmd).val('มุมมองกราฟฟิก');
+						}
+		      },
+					onCancel: function(evt){
+						let isJSONView = $(wrapperBox).find('textarea');
+						if ($(isJSONView).length > 0) {
+							let jsonVal = $(isJSONView).val();
+							try {
+								templateDesignElements = JSON.parse(jsonVal);
+								let newTemplateDesignElements = [{Content: templateDesignElements}];
+								doShowTemplateLoaded(shopData, newTemplateDesignElements, templateNameInput, paperSizeSelector, wrapper);
+							} catch(err) {
+								console.log(err);
+							}
+						}
 	          radAlertBox.closeAlert();
-		      }
+					}
 		    }
+
+				doCreatGUIView();
 				let radAlertBox = $('body').radalert(radalertoption);
-		    $(radAlertBox.cancelCmd).hide();
+		    //$(radAlertBox.cancelCmd).hide();
 
 				$(radAlertBox.handle).draggable({
 					containment: "parent"
 				});
 			});
+
 			$(saveNewTemplateCmd).on('click', async(evt)=>{
 				let paperSize = $(paperSizeSelector).val();
 				let templateDesignElements = await doCollectElement(paperSize);

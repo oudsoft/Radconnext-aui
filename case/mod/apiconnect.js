@@ -111,7 +111,7 @@ module.exports = function ( jq ) {
 		});
 	}
 
-	const doCallApiByProxy = function (apiname, params) {
+	const doCallApiByProxy = function (proxyUrl, params) {
 		return new Promise(function(resolve, reject) {
 			$.post(proxyUrl, params, function(data){
 				resolve(data);

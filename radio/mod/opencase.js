@@ -125,13 +125,13 @@ module.exports = function ( jq ) {
   	});
   }
 
-	const doCreateResultPDFDialog = function(caseId, pdfReportLink, createNewResultData, okCmdClickCallback){
+	const doCreateResultPDFDialog = function(caseId, pdfReportLink /*, createNewResultData, okCmdClickCallback*/){
 		const dialogHLBarCss = {'position': 'relative', 'width': '99.4%', 'background-color': common.headBackgroundColor, 'color': 'white', 'text-align': 'center', 'border': '1px solid grey', 'margin-top': '4px'};
 		const modalDialog = $('<div></div>');
 		$(modalDialog).css(common.quickReplyDialogStyle);
 		const contentDialog = $('<div></div>');
 
-		let dialogTitle = $('<h3>ผลอ่านพร้อมส่ง</h3>');
+		let dialogTitle = $('<h3>ผลอ่าน</h3>');
 		let dialogHeader = $('<div></div>');
 		$(dialogHeader).append($(dialogTitle));
 		$(dialogHeader).css(dialogHLBarCss);
@@ -141,10 +141,10 @@ module.exports = function ( jq ) {
 		$(dialogContent).append($(embetObject));
 		$(dialogContent).css({'position': 'relative', 'width': '100%'});
 
-		let okCmd = $('<input type="button" value="  ส่งผลอ่าน  " class="action-btn"/>');
-		let cancelCmd = $('<input type="button" value="  แก้ไข  " style="margin-left: 10px;"/>');
+		//let okCmd = $('<input type="button" value="  ส่งผลอ่าน  " class="action-btn"/>');
+		let closeCmd = $('<input type="button" value="  ปิด  " style="margin-left: 10px;"/>');
 		let dialogFooter = $('<div></div>');
-		$(dialogFooter).append($(okCmd)).append($(cancelCmd));
+		$(dialogFooter)/*.append($(okCmd))*/.append($(closeCmd));
 		$(dialogFooter).css(dialogHLBarCss);
 
 		const doCloseDialog = function(){
@@ -152,16 +152,17 @@ module.exports = function ( jq ) {
 			$(modalDialog).parent().removeAttr('style');
 		}
 
-		$(cancelCmd).on('click', (evt)=>{
+		$(closeCmd).on('click', (evt)=>{
 			doCloseDialog();
 		});
 
+		/*
 		$(okCmd).data('saveResponseData', createNewResultData);
 		$(okCmd).on('click', (evt)=>{
 			okCmdClickCallback(evt);
 			doCloseDialog();
 		});
-
+		*/
 		$(contentDialog).append($(dialogHeader)).append($(dialogContent)).append($(dialogFooter));
 		$(contentDialog).css(common.quickReplyContentStyle);
 		return $(modalDialog).append($(contentDialog))
@@ -301,35 +302,39 @@ module.exports = function ( jq ) {
 
 	const onCreateNewResponseCmdClick = async function(evt) {
 		let responseHTML = $('#SimpleEditor').val();
-		//console.log($(responseHTML));
 		if ((responseHTML) && (responseHTML !== '')) {
 			const createNewResponseCmd = $(evt.currentTarget);
 			const saveNewResponseData = $(createNewResponseCmd).data('createNewResponseData');
 			console.log(saveNewResponseData);
-
 	    const userdata = JSON.parse(localStorage.getItem('userdata'));
+
+			/*
+			ต้องทดสอบการ Paste จาก MS Word แบบละเียดอีกที
+			*/
+			const startPointText = '<!--StartFragment-->'
+			const endPointText = '<!--EndFragment-->';
 
 			let responsetype = 'draft';
 			let caseId = saveNewResponseData.caseId;
 			let reporttype = saveNewResponseData.reporttype;
 			let userId = userdata.id;
 
-			//let responseText = toAsciidoc(responseHTML);
 			let responseText = responseHTML;
-			let startPointText = '<!--StartFragment-->'
-			let endPointText = '<!--EndFragment-->';
 			let tempToken = responseText.replace('\n', '');
+			let startPosition = tempToken.indexOf(startPointText);
+			if (startPosition >= 0) {
+				let endPosition = tempToken.indexOf(endPointText);
+				tempToken = tempToken.slice((startPosition+20), (endPosition));
+			}
 			tempToken = tempToken.split(startPointText).join('');
 			tempToken = tempToken.split(endPointText).join('');
 			let draftbackup = {caseId: caseId, content: tempToken, backupAt: new Date()};
 			localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
 			responseText = toAsciidoc(tempToken);
 			let rsW = saveNewResponseData.resultFormat.width;
-			console.log(rsW);
 			let fnS = saveNewResponseData.resultFormat.fontsize;
-			console.log(fnS);
 			let rsH = doCalResultHeigth(tempToken, rsW, fnS);
-			console.log(rsH);
+			console.log(rsW, fnS, rsH);
 			let saveData = {Response_HTML: tempToken, Response_Text: responseText, Response_Type: responsetype, reporttype: reporttype, Response_A4Height: rsH};
 			let casedate = saveNewResponseData.casedate;
 			let casetime = saveNewResponseData.casetime;
@@ -346,92 +351,32 @@ module.exports = function ( jq ) {
 				pdfFileName: fileName
 			};
 
-			if (saveNewResponseData.previewOption === 1){
-				//Save with Radio Preview PDF
-				$('body').loading('start');
-				console.log(params);
-				let saveResponseRes = await doCallSaveResult(params);
-				//Uri = '/api/uicommon/radio/saveresult';
-				console.log(saveResponseRes);
-				//if ((saveResponseRes.status.code == 200) && (saveResponseRes.responseId)){
-				if ((saveResponseRes.status.code == 200) || (saveResponseRes.status.code == 203)) {
-					/*
-					caseResponseId = saveResponseRes.responseId;
-					if (!caseResponseId) {
-						$.notify("ไม่สามารถส่งผลอ่าน - Error โปรดติดต่อผู้ดูแลระบบ", "error");
-					}
-					*/
-					if (saveResponseRes.responseId){
-						//is draft save
-						caseResponseId = saveResponseRes.responseId;
-					} else {
-						$.notify('This Response Save without Id', 'error')
-					}
-
-					let pdfReportLink = saveResponseRes.reportLink + '?t=' + common.genUniqueID();
-					let pdfReportPages = saveResponseRes.reportPages;
-					console.log(pdfReportLink);
-					console.log(pdfReportPages);
-					saveNewResponseData.reportPdfLinkPath = saveResponseRes.reportLink;
-					saveNewResponseData.reportPages = pdfReportPages;
-					let resultPDFDialog = doCreateResultPDFDialog(caseId, pdfReportLink, saveNewResponseData, onSaveResponseCmdClick);
-					$(resultPDFDialog).css({'margin': '20px auto'});
-					$("#dialog").append($(resultPDFDialog));
-					$.notify("สร้าง Preview ผลอ่าน – Success", "success");
-					$('body').loading('stop');
-				} else {
-	        const { getFomateDateTime } = require('../../case/mod/utilmod.js')($);
-	        let dt = new Date();
-	        let bugDataReport = $('<div></div>');
-	        $(bugDataReport).append($('<h2 style="text-align: center;"><b>ERROR REPORT</b></h2>'));
-	        $(bugDataReport).append('<h3>ERROR MESSAGE : ' + JSON.stringify(saveResponseRes) + '</h3>');
-	        $(bugDataReport).append($('<h3>API : /api/uicommon/radio/saveresult</h3>'));
-	        $(bugDataReport).append($('<h3>METHOD : POST</h3>'));
-	        $(bugDataReport).append($('<h3>Date-Time : ' + getFomateDateTime(dt) + '</h3>'));
-	        $(bugDataReport).append($('<h5>User Data : ' + JSON.stringify(userdata) + '</h5>'));
-	        let bugParams = {email: apiconnector.adminEmailAddress, bugreport: bugDataReport.html()};
-	        apiconnector.doCallReportBug(bugParams).then((reportRes)=>{
-	          if (reportRes.status.code == 200) {
-	            $.notify('ระบบฯ ได้รวบรวมข้อผิดพลาดที่เกิดขึ้นส่งไปให้ผู้ดูแลระบบทางอีเมล์แล้ว', 'warning');
-	            //มีข้อผิดพลาด กรุณาแจ้งผู้ดูแลระบบ
-	          } else if (reportRes.status.code == 500) {
-	            $.notify('การรายงานข้อผิดพลาดทางอีเมล์เกิดข้อผิดพลาด @API', 'error');
-	          } else {
-	            $.notify('การรายงานข้อผิดพลาดทางอีเมล์เกิดข้อผิดพลาด @ไม่ทราบสาเหตุ', 'error');
-						}
-						$('body').loading('stop');
-					});
+			if ((params.caseId) && (Number(params.caseId) > 0)) {
+				if (!caseResponseId){
+					let saveDraftResponseData = {type: 'draft', caseId: caseId};
+					saveDraftRes = await doSaveDraft(saveDraftResponseData);
+					caseResponseId = saveDraftRes.result.responseId;
+					params.responseId = caseResponseId;
 				}
+				saveNewResponseData.responseid = caseResponseId;
+				saveNewResponseData.reportPdfLinkPath = '/img/usr/pdf/' + fileName;
+
+				doCreateResultManagementDialog(saveNewResponseData);
+				//let saveResponseRes = doCallSaveResult(params);
+				//->ตรงนี้คืออะไร
+				//-> ตรงนี้คือการสั่งให้เซิร์ฟเวอร์สร้างผลอ่าน pdf ไว้ก่อนล่วงหน้า
+
+				let saveResponseApiURL = '/api/uicommon/radio/saveresponse';
+				$.post(saveResponseApiURL, params, function(saveResponseRes){
+					console.log(saveResponseRes);
+				}).catch((err) => {
+					console.log(err);
+					$.notify("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ โปรดแจ้งผู้ดูแลระบบ", "error");
+					doReportBugOpenCase({params: params, url: saveResponseApiURL}, 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร');
+				});
 			} else {
-				//Save without Radio Preview PDF
-				if ((params.caseId) && (Number(params.caseId) > 0)) {
-					if (!caseResponseId){
-						let saveDraftResponseData = {type: 'draft', caseId: caseId};
-						saveDraftRes = await doSaveDraft(saveDraftResponseData);
-						console.log(saveDraftRes);
-						caseResponseId = saveDraftRes.result.responseId;
-						params.responseId = caseResponseId;
-					}
-
-					saveNewResponseData.responseid = caseResponseId;
-					saveNewResponseData.reportPdfLinkPath = '/img/usr/pdf/' + fileName;
-
-					doCreateResultManagementDialog(saveNewResponseData);
-					//let saveResponseRes = doCallSaveResult(params);
-					//->ตรงนี้คืออะไร
-					//-> ตรงนี้คือการสั่งให้เซิร์ฟเวอร์สร้างผลอ่าน pdf ไว้ก่อนล่วงหน้า
-
-					let saveResponseApiURL = '/api/uicommon/radio/saveresponse';
-					$.post(saveResponseApiURL, params, function(saveResponseRes){
-						console.log(saveResponseRes);
-					}).catch((err) => {
-						console.log(err);
-						$.notify("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ โปรดแจ้งผู้ดูแลระบบ", "error");
-					});
-
-				} else {
-					alert('ข้อมูลที่ต้องการบันทึกไม่ถูกต้อง ไม่พบหมายเลขเคสของคุณ');
-				}
+				$.notify('ข้อมูลที่ต้องการบันทึกไม่ถูกต้อง ไม่พบหมายเลขเคสของคุณ', 'error');
+				doReportBugOpenCase({params: params, url: saveResponseApiURL}, 'ไม่พบหมายเลขเคสของคุณ');
 			}
 		} else {
 			$.notify("ผลอ่านว่างเปล่า ไม่สามารถบันทึกได้", "warn");
@@ -517,18 +462,12 @@ module.exports = function ( jq ) {
 		$(preliminarySaveTypeOptionRow).on('click', onPreliminarySaveOptionCmdClick);
 	}
 
-	const onSaveResponseCmdClick = function(evt){
-		const saveResponseCmd = $(evt.currentTarget);
-		const saveResponseData = $(saveResponseCmd).data('saveResponseData');
-		doCreateResultManagementDialog(saveResponseData);
-	}
-
 	const onNormalSaveOptionCmdClick = async function(evt) {
 		const responseType = 'normal';
 		const reportType = 'normal';
 		const normalSaveResponseCmd = $(evt.currentTarget);
 		const saveResponseData = $(normalSaveResponseCmd).data('saveResponseData');
-		await doSaveResponse(responseType, reportType, saveResponseData)
+		await doSubmitResult(responseType, reportType, saveResponseData)
 	}
 
 	const onAttentionSaveOptionCmdClick = async function(evt) {
@@ -536,7 +475,7 @@ module.exports = function ( jq ) {
 		const reportType = 'attention';
 		const normalSaveResponseCmd = $(evt.currentTarget);
 		const saveResponseData = $(normalSaveResponseCmd).data('saveResponseData');
-		await doSaveResponse(responseType, reportType, saveResponseData)
+		await doSubmitResult(responseType, reportType, saveResponseData)
 	}
 
 	const onCriticalSaveOptionCmdClick = async function(evt) {
@@ -544,7 +483,7 @@ module.exports = function ( jq ) {
 		const reportType = 'cristical';
 		const normalSaveResponseCmd = $(evt.currentTarget);
 		const saveResponseData = $(normalSaveResponseCmd).data('saveResponseData');
-		await doSaveResponse(responseType, reportType, saveResponseData)
+		await doSubmitResult(responseType, reportType, saveResponseData)
 	}
 
 	const onPreliminarySaveOptionCmdClick = async function(evt) {
@@ -552,10 +491,10 @@ module.exports = function ( jq ) {
 		const reportType = 'preliminary';
 		const normalSaveResponseCmd = $(evt.currentTarget);
 		const saveResponseData = $(normalSaveResponseCmd).data('saveResponseData');
-		await doSaveResponse(responseType, reportType, saveResponseData)
+		await doSubmitResult(responseType, reportType, saveResponseData)
 	}
 
-	function doSaveResponse(responseType, reportType, saveResponseData){
+	const doSubmitResult = function(responseType, reportType, saveResponseData){
 		return new Promise(async function(resolve, reject) {
 			$('body').loading('start');
 	    const userdata = JSON.parse(localStorage.getItem('userdata'));
@@ -572,38 +511,42 @@ module.exports = function ( jq ) {
 			};
 
 			let saveResponseRes = await doCallSubmitResult(params);
+			//Uri = '/api/uicommon/radio/submitresult';
 			console.log(saveResponseRes);
 
-			$('#quickreply').empty();
-			$('#quickreply').removeAttr('style');
-			$("#dialog").empty();
-
 			if ((saveResponseRes.status.code == 200) || (saveResponseRes.status.code == 203)){
-				caseResponseId = undefined;
-				//doCloseDialog();
 				$.notify("ส่งผลอ่าน - Success", "success");
 				$('body').loading('stop');
-				/* Clear DicomZip Sync Table */
-				/*
-				let dicomzipsync = JSON.parse(localStorage.getItem('dicomzipsync'));
-				let anotherDicomSync = await dicomzipsync.filter((dicom)=>{
-					if (dicom.caseId != caseId){
-						return dicom;
-					}
-				});
-				localStorage.setItem('dicomzipsync', JSON.stringify(anotherDicomSync));
-				*/
-				resolve(saveResponseRes);
-				$('#AcceptedCaseCmd').click();
+				if (saveNewResponseData.previewOption === 1){
+					$('#quickreply').empty();
+					$('#quickreply').removeAttr('style');
+					$("#dialog").empty();
+					resolve(saveResponseRes);
+					$('#AcceptedCaseCmd').click();
+				} else {
+					let pdfReportLink = saveResponseRes.reportLink + '?t=' + common.genUniqueID();
+					let pdfReportPages = saveResponseRes.reportPages;
+					console.log(pdfReportLink);
+					console.log(pdfReportPages);
+					/*
+					saveNewResponseData.reportPdfLinkPath = saveResponseRes.reportLink;
+					saveNewResponseData.reportPages = pdfReportPages;
+					*/
+					let resultPDFDialog = doCreateResultPDFDialog(caseId, pdfReportLink);
+					$(resultPDFDialog).css({'margin': '20px auto'});
+					$("#dialog").empty();
+					$("#dialog").append($(resultPDFDialog));
+				}
 			} else {
 				$.notify("ไม่สามารถส่งผลอ่าน - Error โปรดติดต่อผู้ดูแลระบบ", "error");
+				doReportBugOpenCase({params: params, url: 'doCallSubmitResult'}, 'ไม่พบหมายเลขเคสของคุณ');
 				$('body').loading('stop');
-				reject({errer: 'Save Case Response Error'});
+				reject({errer: 'Submit Case Result Error'});
 			}
 		});
 	}
 
-	function doSaveDraft(saveDraftResponseData) {
+	const doSaveDraft = function(saveDraftResponseData) {
 		return new Promise(async function(resolve, reject) {
 			let type = saveDraftResponseData.type;
 			/*
@@ -615,6 +558,11 @@ module.exports = function ( jq ) {
 			let startPointText = '<!--StartFragment-->'
 			let endPointText = '<!--EndFragment-->';
 			let tempToken = responseHTML.replace('\n', '');
+			let startPosition = tempToken.indexOf(startPointText);
+			if (startPosition >= 0) {
+				let endPosition = tempToken.indexOf(endPointText);
+				tempToken = tempToken.slice((startPosition+20), (endPosition));
+			}
 			tempToken = tempToken.split(startPointText).join('');
 			tempToken = tempToken.split(endPointText).join('');
 			let draftbackup = {caseId: caseId, content: tempToken, backupAt: new Date()};
@@ -1509,7 +1457,8 @@ module.exports = function ( jq ) {
 	const doCallSubmitResult = function(params){
 		return new Promise(function(resolve, reject) {
 			var apiUri = '/api/uicommon/radio/submitresult';
-			apiconnector.doCallApi(apiUri, params).then((response)=>{
+			//apiconnector.doCallApi(apiUri, params).then((response)=>{
+			apiconnector.doCallApiDirect(apiUri, params).then((response)=>{
 				localStorage.removeItem('draftbackup');
 				resolve(response);
 			}).catch((err) => {
@@ -1709,6 +1658,30 @@ module.exports = function ( jq ) {
 		return caseResponseId;
 	}
 
+ doReportBugOpenCase = function(msgJSON, apiErrorURL) {
+		const { getFomateDateTime } = require('../../case/mod/utilmod.js')($);
+		let dt = new Date();
+		let bugDataReport = $('<div></div>');
+		$(bugDataReport).append($('<h2 style="text-align: center;"><b>ERROR REPORT</b></h2>'));
+		$(bugDataReport).append('<h3>ERROR MESSAGE : ' + JSON.stringify(msgJSON) + '</h3>');
+		$(bugDataReport).append($('<h3>API : ' + apiErrorURL + '</h3>'));
+		$(bugDataReport).append($('<h3>METHOD : POST</h3>'));
+		$(bugDataReport).append($('<h3>Date-Time : ' + getFomateDateTime(dt) + '</h3>'));
+		$(bugDataReport).append($('<h5>User Data : ' + JSON.stringify(userdata) + '</h5>'));
+		let bugParams = {email: apiconnector.adminEmailAddress, bugreport: bugDataReport.html()};
+		apiconnector.doCallReportBug(bugParams).then((reportRes)=>{
+			if (reportRes.status.code == 200) {
+				$.notify('ระบบฯ ได้รวบรวมข้อผิดพลาดที่เกิดขึ้นส่งไปให้ผู้ดูแลระบบทางอีเมล์แล้ว', 'warning');
+				//มีข้อผิดพลาด กรุณาแจ้งผู้ดูแลระบบ
+			} else if (reportRes.status.code == 500) {
+				$.notify('การรายงานข้อผิดพลาดทางอีเมล์เกิดข้อผิดพลาด @API', 'error');
+			} else {
+				$.notify('การรายงานข้อผิดพลาดทางอีเมล์เกิดข้อผิดพลาด @ไม่ทราบสาเหตุ', 'error');
+			}
+			$('body').loading('stop');
+		});
+	}
+
   return {
 		/* Variable Zone */
 		caseHospitalId,
@@ -1741,6 +1714,7 @@ module.exports = function ( jq ) {
 		getBackupDraftCounter,
 		setBackupDraftCounter,
 		setCaseResponseId,
-		getCaseResponseId
+		getCaseResponseId,
+		doReportBugOpenCase
 	}
 }
