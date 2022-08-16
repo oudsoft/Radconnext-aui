@@ -521,10 +521,10 @@ module.exports = function ( jq ) {
 				$('#quickreply').empty();
 				$('#quickreply').removeAttr('style');
 				$("#dialog").empty();
-				if (saveResponseData.previewOption === 1){
+				if (saveResponseData.previewOption === 0){
 					resolve(saveResponseRes);
 					$('#AcceptedCaseCmd').click();
-				} else {
+				} else if (saveResponseData.previewOption === 1) {
 					let pdfReportLink = saveResponseData.reportPdfLinkPath + '?t=' + common.genUniqueID();
 					console.log(pdfReportLink);
 					/*
