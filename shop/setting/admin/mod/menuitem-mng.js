@@ -99,6 +99,27 @@ module.exports = function ( jq ) {
           $(field).text(item.menugroup[menugroupTableFields[i].fieldName]);
           $(itemRow).append($(field));
         }
+
+				let qrcodeImg = new Image();
+				qrcodeImg.id = 'MenuQRCode_' + item.id;
+				if ((item.QRCodePicture) && (item.QRCodePicture != '')) {
+	      	qrcodeImg.src = '/shop/img/usr/qrcode/' + item.QRCodePicture + '.png';
+					// open dialog for print qrcode
+					$(qrcodeImg).attr('title', 'พิมพ์คิวอาร์โค้ดรายการนี้');
+					$(qrcodeImg).on('click', (evt)=>{
+						doOpenQRCodePopup(evt, item.id, item.QRCodePicture)
+					});
+				} else {
+					qrcodeImg.src = '../../images/scan-qrcode-icon.png';
+					$(qrcodeImg).attr('title', 'สร้างคิวอาร์โค้ดให้รายการนี้');
+					// generate new qrcode
+					$(qrcodeImg).on('click', async (evt)=>{
+						await doCreateNewQRCode(evt, item.id);
+					});
+				}
+				$(qrcodeImg).css({'width': '45px', 'height': 'auto', 'cursor': 'pointer'});
+				let menuitemQRCodeBox = $('<div></div>').css({'text-align': 'center'}).append($(qrcodeImg));
+
 				let editMenuitemCmd = $('<input type="button" value=" Edit " class="action-btn"/>');
 				$(editMenuitemCmd).on('click', (evt)=>{
 					doOpenEditMenuitemForm(shopData, workAreaBox, item);
@@ -107,10 +128,11 @@ module.exports = function ( jq ) {
 				$(deleteMenuitemCmd).on('click', (evt)=>{
 					doDeleteMenuitem(shopData, workAreaBox, item.id);
 				});
+				let menuitemBtnBox = $('<div></div>').css({'text-align': 'center'}).append($(editMenuitemCmd)).append($(deleteMenuitemCmd));
 
 				let commandCell = $('<td align="center"></td>');
-				$(commandCell).append($(editMenuitemCmd));
-				$(commandCell).append($(deleteMenuitemCmd));
+				$(commandCell).append($(menuitemQRCodeBox));
+				$(commandCell).append($(menuitemBtnBox));
 				$(itemRow).append($(commandCell));
 				$(menuitemTable).append($(itemRow));
 			}
@@ -316,6 +338,19 @@ module.exports = function ( jq ) {
 		}
 		let radConfirmBox = $('body').radalert(radconfirmoption);
   }
+
+	const doCreateNewQRCode = function(evt, menuId) {
+		return new Promise(async function(resolve, reject) {
+			let callUrl = '/api/shop/menugitem/qrcode/create/' + menuId;
+			let qrRes = await common.doCallApi(callUrl, {id: menuId});
+			let qrcodeImg = evt.currentTarget;
+			qrcodeImg.src = qrRes.qrLink;
+			$(qrcodeImg).on('click', (evt)=>{
+				doOpenQRCodePopup(evt, menuId, qrRes.qrName);
+			});
+			resolve(qrRes);
+		});
+	}
 
   return {
     doShowMenuitemItem,
