@@ -349,9 +349,10 @@ module.exports = function ( jq ) {
 		return new Promise(async function(resolve, reject) {
 			let callUrl = '/api/shop/menuitem/qrcode/create/' + menuId;
 			let qrRes = await common.doCallApi(callUrl, {id: menuId});
-			console.log(qrRes);
 			let qrcodeImg = evt.currentTarget;
 			qrcodeImg.src = qrRes.qrLink;
+			$(qrcodeImg).attr('title', 'พิมพ์คิวอาร์โค้ดรายการนี้');
+			$(qrcodeImg).css({'width': '55px', 'height': 'auto', 'cursor': 'pointer'});
 			$(qrcodeImg).on('click', (evt)=>{
 				doOpenQRCodePopup(evt, menuId, qrRes.qrName, qrRes.qrLink);
 			});
