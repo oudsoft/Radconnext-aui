@@ -1063,7 +1063,7 @@ module.exports = function ( jq ) {
 			let summarySecondAreaLeft = $('<td width="36%" align="left" valign="top"></td>');
 			let summarySecondAreaMiddle1 = $('<td width="15%" align="left" valign="top"></td>');
 			let summarySecondAreaMiddle2 = $('<td width="25%" align="left" valign="top"></td>');
-			let summarySecondAreaRight = $('<td width="*" align="center" valign="bottom"></td>');
+			let summarySecondAreaRight = $('<td width="*" align="left" valign="bottom"></td>');
 			$(summarySecondAreaRow).append($(summarySecondAreaLeft)).append($(summarySecondAreaMiddle1)).append($(summarySecondAreaMiddle2)).append($(summarySecondAreaRight));
 			$(summarySecondArea).append($(summarySecondAreaRow));
 			$(summarySecondLine).append($(summarySecondArea));
@@ -1109,15 +1109,21 @@ module.exports = function ( jq ) {
 			$(openThirdPartyCmd).on('click', onOpenThirdPartyCmdClick);
 			$(openThirdPartyCmd).appendTo($(open3rdPartyCmdCell));
 
+			console.log(selectedCase);
+			console.log(downloadData);
+
 			if ((selectedCase.case.Case_PatientHRLink) && (selectedCase.case.Case_PatientHRLink.length > 0)) {
 				let patientHRBox = await doRenderPatientHR(selectedCase.case.Case_PatientHRLink, patientFullName, casedate);
 				$(summarySecondAreaMiddle2).append($(patientHRBox));
 			}
-
-			let misstakeCaseNotifyCmd = $('<input type="button" value=" แจ้งเคสผิดพลาด " class="action-btn" style="cursor: pointer;"/>');
+			let ownerCaseInfoBox = $('<div></div>').css({'width': '100%', 'text-align': 'left', 'margin-left': '15%'});
+			$(ownerCaseInfoBox).append($('<h3>ผู้ส่งเคส :</h3>').css({'line-height': '1px'}))
+			$(ownerCaseInfoBox).append($('<p></p>').text(selectedCase.Owner.User_NameTH + ' ' + selectedCase.Owner.User_LastNameTH).css({'line-height': '1px'}));
+			let misstakeCaseNotifyCmd = $('<input type="button" value=" แจ้งเคสผิดพลาด " class="action-btn" style="cursor: pointer; margin-left: 15%"/>');
 			$(misstakeCaseNotifyCmd).data('misstakeCaseData', downloadData);
 			$(misstakeCaseNotifyCmd).on('click', onMisstakeCaseNotifyCmdClick);
-			$(misstakeCaseNotifyCmd).appendTo($(summarySecondAreaRight));
+			//$(misstakeCaseNotifyCmd).appendTo($(summarySecondAreaRight));
+			$(summarySecondAreaRight).append($(ownerCaseInfoBox)).append($(misstakeCaseNotifyCmd));
 
 			resolve($(summarySecondLine));
 		});
