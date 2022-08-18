@@ -25,6 +25,7 @@ $( document ).ready(function() {
     let ionCalendarCssUrl = "../stylesheets/ion.calendar.css";
 
     let utilityPlugin = "../lib/plugin/jquery-radutil-plugin.js";
+    let html5QRCodeUrl = "../lib/html5-qrcode.min.js";
 
     $('head').append('<script src="' + jqueryUiJsUrl + '"></script>');
   	$('head').append('<link rel="stylesheet" href="' + jqueryUiCssUrl + '" type="text/css" />');
@@ -41,6 +42,7 @@ $( document ).ready(function() {
     $('head').append('<link rel="stylesheet" href="' + ionCalendarCssUrl + '" type="text/css" />');
 
     $('head').append('<script src="' + utilityPlugin + '"></script>');
+    $('head').append('<script src="' + html5QRCodeUrl + '"></script>');
 
     $('body').append($('<div id="MainBox"></div>').css({'position': 'absolute', 'top': '0px', 'float': 'left', 'right': '0px', 'left': '0px'}));
     $('body').append($('<div id="MenuBox"></div>').css({'display': 'none', 'position': 'fixed', 'z-index': '42', 'left': '0px', 'top': '0px', 'width': '100%;', 'width': '100%', 'height': '100%', 'overflow': 'scroll', 'background-color': 'rgb(240, 240, 240)'}));

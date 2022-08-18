@@ -12,7 +12,7 @@ module.exports = function ( jq ) {
       let wrapperBox = $('<div></div>');
       let searchInputBox = $('<div></div>').css({'width': '100%', 'padding': '4px'});
       let gooditemListBox = $('<div></div>').css({'width': '100%', 'padding': '4px', 'min-height': '200px'});
-      let searchKeyInput = $('<input id="SearchKeyInput" type="text" size="40" value="*"/>');
+      let searchKeyInput = $('<input id="SearchKeyInput" type="text" value="*"/>').css({'width': '120px'});
       let gooditemResult = undefined;
       $(searchKeyInput).css({'background': 'url(../../images/search-icon.png) no-repeat right center', 'background-size': '6% 100%', 'padding-right': '3px'});
       $(searchKeyInput).on('keyup', async (evt)=>{
@@ -27,6 +27,38 @@ module.exports = function ( jq ) {
           $(gooditemListBox).empty().append($(gooditemResult));
         }
       });
+			let scanQRCodeCmd = $('<img src="../../images/scan-qrcode-icon.png" title="ค้นหาโดยสแกนคิวอาร์โค้ด"/>').css({'width': '28px', 'height': 'auto', 'cursor': 'pointer', 'margin-left': '10px', 'margin-bottom': '-8px'});
+			$(scanQRCodeCmd).on('click', (evt)=>{
+				let qrCodeBox = $('<div id="QRCodeReaderBox"></div>').css({'width': '100%', 'heigth': '100px', 'text-align': 'center', 'display': 'none'});
+				$(searchInputBox).append($(qrCodeBox));
+				$(qrCodeBox).slideDown('slow');
+				let onScanSuccess = function(decodedText, decodedResult) {
+			    //console.log(`Scan result: ${decodedText}`, decodedResult);
+					let temps = decodedText.split('?')
+					temps = temps[1].split('=');
+					let mid = temps[1];
+					if ((temps[0]=='mid') && (Number(temps[1]) > 0)) {
+						let key = Number(temps[1]);
+						let result = menuitems.filter((item)=>{
+		          if (item.id === key) {
+		            return item;
+		          }
+		        });
+						if (result.length > 0) {
+							let menuKey = result[0].MenuName;
+							$(searchKeyInput).val(menuKey).trigger('keyup')
+						}
+						html5QrcodeScanner.clear();
+						$(qrCodeBox).remove();
+					}
+				}
+				let onScanError = function(errorMessage) {
+    			console.log(errorMessage);
+				}
+
+				let html5QrcodeScanner = new Html5QrcodeScanner("QRCodeReaderBox", { fps: 10, qrbox: 250 });
+				html5QrcodeScanner.render(onScanSuccess, onScanError);
+			});
       let addGoodItemCmd = $('<input type="button" value=" เพิ่มสินค้า " class="action-btn"/>').css({'margin-left': '10px'});
       $(addGoodItemCmd).on('click', (evt)=>{
         //$(wrapperBox).empty();
@@ -46,7 +78,7 @@ module.exports = function ( jq ) {
 				});
         $(wrapperBox).append($(newGooditemForm))
       });
-      $(searchInputBox).append($(searchKeyInput)).append($(addGoodItemCmd));
+      $(searchInputBox).append($(searchKeyInput)).append($(scanQRCodeCmd)).append($(addGoodItemCmd));
       gooditemResult = await doShowList(menuitems, gooditemSeleted, successCallback);
       $(gooditemListBox).empty().append($(gooditemResult));
       $(wrapperBox).append($(searchInputBox)).append($(gooditemListBox));
