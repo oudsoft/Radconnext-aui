@@ -12,7 +12,7 @@ module.exports = function ( jq ) {
       let wrapperBox = $('<div></div>');
       let searchInputBox = $('<div></div>').css({'width': '100%', 'padding': '4px'});
       let gooditemListBox = $('<div></div>').css({'width': '100%', 'padding': '4px', 'min-height': '200px'});
-      let searchKeyInput = $('<input id="SearchKeyInput" type="text" value="*"/>').css({'width': '120px'});
+      let searchKeyInput = $('<input id="SearchKeyInput" type="text" value="*"/>').css({'width': '70px'});
       let gooditemResult = undefined;
       $(searchKeyInput).css({'background': 'url(../../images/search-icon.png) no-repeat right center', 'background-size': '6% 100%', 'padding-right': '3px'});
       $(searchKeyInput).on('keyup', async (evt)=>{
