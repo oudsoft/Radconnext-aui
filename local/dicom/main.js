@@ -85,7 +85,7 @@ const doLoadMainPage = function(){
   let printjs = 'https://radconnext.info/lib/print/print.min.js';
   let excelexportjs = 'https://radconnext.info/lib/excel/excelexportjs.js';
   let jquerySimpleUploadUrl = 'https://radconnext.info/lib/simpleUpload.min.js';
-  let patientHistoryPluginUrl = "https://radconnext.info/setting/plugin/jquery-patient-history-image-plugin.js?r=ml";
+  let patientHistoryPluginUrl = "https://radconnext.info/setting/plugin/jquery-patient-history-image-plugin.js?r=coeihj";
 	let countdownclockPluginUrl = "https://radconnext.info/setting/plugin/jquery-countdown-clock-plugin.js";
 	let scanpartPluginUrl = "https://radconnext.info/setting/plugin/jquery-scanpart-plugin.js";
 	let customUrgentPlugin = "https://radconnext.info/setting/plugin/jquery-custom-urgent-plugin.js";

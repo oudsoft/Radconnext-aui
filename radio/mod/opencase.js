@@ -37,28 +37,6 @@ module.exports = function ( jq ) {
 
 	const doDownloadDicom = function(caseDicomZipFilename) {
 		return new Promise(async function(resolve, reject) {
-			/*
-			let fullNameENRes = await common.getPatientFullNameEN(casePatientId);
-			let patientFullNameEN = fullNameENRes.fullNameEN;
-			let frags = patientFullNameEN.split(' ');
-			patientFullNameEN = frags.join('_');
-			patientFullNameEN = patientFullNameEN.trim();
-			//let currentTime = new Date().toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/  /*, "$1");
-			currentTime = currentTime.split(':').join('');
-			let dicomFilename = patientFullNameEN + '-' + casedate + '-' + casetime + '-' + currentTime + '.zip';
-			apiconnector.doCallDownloadDicom(studyID, hospitalId).then((response) => {
-				console.log(response);
-				let pom = document.createElement('a');
-				pom.setAttribute('target', "_blank");
-				pom.setAttribute('href', response.link);
-				pom.setAttribute('download', dicomFilename);
-				setTimeout(()=>{
-					pom.click();
-					downloadDicomList.push(dicomFilename);
-					resolve(response);
-				}, 3000);
-	  	});
-			*/
 			let dicomZipLink = '/img/usr/zip/' + caseDicomZipFilename;
 			let pom = document.createElement('a');
 			pom.setAttribute('target', "_blank");
@@ -77,7 +55,6 @@ module.exports = function ( jq ) {
 			const userdata = JSON.parse(localStorage.getItem('userdata'));
 	    const downloadCmd = $(evt.currentTarget);
 	    const downloadData = $(downloadCmd).data('downloadData');
-			console.log(downloadData);
 			/*
 			let downloadData = {patientId: selectedCase.case.patient.id, studyID: selectedCase.case.Case_OrthancStudyID, casedate: casedate, casetime: casetime, hospitalId: selectedCase.case.hospitalId, dicomzipfilename: selectedCase.case.Case_DicomZipFilename};
       $(downloadCmd).data('downloadData', downloadData);
@@ -329,58 +306,62 @@ module.exports = function ( jq ) {
 			}
 			tempToken = tempToken.split(startPointText).join('');
 			tempToken = tempToken.split(endPointText).join('');
-			let draftbackup = {caseId: caseId, content: tempToken, backupAt: new Date()};
-			localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
-			responseText = toAsciidoc(tempToken);
-			let rsW = saveNewResponseData.resultFormat.width;
-			let fnS = saveNewResponseData.resultFormat.fontsize;
-			let rsH = doCalResultHeigth(tempToken, rsW, fnS);
-			console.log(rsW, fnS, rsH);
-			let saveData = {Response_HTML: tempToken, Response_Text: responseText, Response_Type: responsetype, reporttype: reporttype, Response_A4Height: rsH};
-			let casedate = saveNewResponseData.casedate;
-			let casetime = saveNewResponseData.casetime;
-			let patientFullName = saveNewResponseData.patientFullName;
-			let fileExt = 'pdf';
-			let fileName = (patientFullName.split(' ').join('_')) + '-' + casedate + '-' + casetime + '.' + fileExt;
+			if (tempToken !== '') {
+				let draftbackup = {caseId: caseId, content: tempToken, backupAt: new Date()};
+				localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
+				responseText = toAsciidoc(tempToken);
+				let rsW = saveNewResponseData.resultFormat.width;
+				let fnS = saveNewResponseData.resultFormat.fontsize;
+				let rsH = doCalResultHeigth(tempToken, rsW, fnS);
+				console.log(rsW, fnS, rsH);
+				let saveData = {Response_HTML: tempToken, Response_Text: responseText, Response_Type: responsetype, reporttype: reporttype, Response_A4Height: rsH};
+				let casedate = saveNewResponseData.casedate;
+				let casetime = saveNewResponseData.casetime;
+				let patientFullName = saveNewResponseData.patientFullName;
+				let fileExt = 'pdf';
+				let fileName = (patientFullName.split(' ').join('_')) + '-' + casedate + '-' + casetime + '.' + fileExt;
 
-			let params = {
-				caseId: caseId,
-				userId: userId,
-				data: saveData,
-				responseId: caseResponseId,
-				hospitalId: caseHospitalId,
-				pdfFileName: fileName
-			};
+				let params = {
+					caseId: caseId,
+					userId: userId,
+					data: saveData,
+					responseId: caseResponseId,
+					hospitalId: caseHospitalId,
+					pdfFileName: fileName
+				};
 
-			if ((params.caseId) && (Number(params.caseId) > 0)) {
-				if (!caseResponseId){
-					let saveDraftResponseData = {type: 'draft', caseId: caseId};
-					saveDraftRes = await doSaveDraft(saveDraftResponseData);
-					caseResponseId = saveDraftRes.result.responseId;
-					params.responseId = caseResponseId;
+				if ((params.caseId) && (Number(params.caseId) > 0)) {
+					if (!caseResponseId){
+						let saveDraftResponseData = {type: 'draft', caseId: caseId};
+						saveDraftRes = await doSaveDraft(saveDraftResponseData);
+						caseResponseId = saveDraftRes.result.responseId;
+						params.responseId = caseResponseId;
+					}
+					saveNewResponseData.responseid = caseResponseId;
+					saveNewResponseData.reportPdfLinkPath = '/img/usr/pdf/' + fileName;
+
+					//doCreateResultManagementDialog(saveNewResponseData);
+					//let saveResponseRes = doCallSaveResult(params);
+					//->ตรงนี้คืออะไร
+					//-> ตรงนี้คือการสั่งให้เซิร์ฟเวอร์สร้างผลอ่าน pdf ไว้ก่อนล่วงหน้า
+
+					let saveResponseApiURL = '/api/uicommon/radio/saveresponse';
+					$.post(saveResponseApiURL, params, function(saveResponseRes){
+						doCreateResultManagementDialog(saveNewResponseData);
+					}).catch((err) => {
+						console.log(err);
+						$.notify("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ โปรดแจ้งผู้ดูแลระบบ", "error");
+						doReportBugOpenCase({params: params, url: saveResponseApiURL}, 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร');
+					});
+				} else {
+					$.notify('ข้อมูลที่ต้องการบันทึกไม่ถูกต้อง ไม่พบหมายเลขเคสของคุณ', 'error');
+					doReportBugOpenCase({params: params, url: saveResponseApiURL}, 'ไม่พบหมายเลขเคสของคุณ');
 				}
-				saveNewResponseData.responseid = caseResponseId;
-				saveNewResponseData.reportPdfLinkPath = '/img/usr/pdf/' + fileName;
-
-				doCreateResultManagementDialog(saveNewResponseData);
-				//let saveResponseRes = doCallSaveResult(params);
-				//->ตรงนี้คืออะไร
-				//-> ตรงนี้คือการสั่งให้เซิร์ฟเวอร์สร้างผลอ่าน pdf ไว้ก่อนล่วงหน้า
-
-				let saveResponseApiURL = '/api/uicommon/radio/saveresponse';
-				$.post(saveResponseApiURL, params, function(saveResponseRes){
-					console.log(saveResponseRes);
-				}).catch((err) => {
-					console.log(err);
-					$.notify("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ โปรดแจ้งผู้ดูแลระบบ", "error");
-					doReportBugOpenCase({params: params, url: saveResponseApiURL}, 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร');
-				});
 			} else {
-				$.notify('ข้อมูลที่ต้องการบันทึกไม่ถูกต้อง ไม่พบหมายเลขเคสของคุณ', 'error');
-				doReportBugOpenCase({params: params, url: saveResponseApiURL}, 'ไม่พบหมายเลขเคสของคุณ');
+				$.notify("ข้อความในผลอ่านว่างเปล่า ไม่สามารถบันทึกได้", "error");
 			}
 		} else {
-			$.notify("ผลอ่านว่างเปล่า ไม่สามารถบันทึกได้", "warn");
+			$.notify("ผลอ่านว่างเปล่า ไม่สามารถบันทึกได้", "error");
 		}
 	}
 

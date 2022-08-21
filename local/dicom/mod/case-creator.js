@@ -641,11 +641,25 @@ module.exports = function ( jq ) {
     tableCell = $('<div style="display: table-cell; padding: 5px;"></div>');
 
     let patientHistoryBox = $('<div id="PatientHistoryBox"></div>').appendTo($(tableCell)).imagehistory( phProp ).data("custom-imagehistory");
+		console.log(patientHistoryBox);
     if ((defualtValue.pn_history) && (defualtValue.pn_history.length > 0)) {
       defualtValue.pn_history.forEach((item, i) => {
         patientHistoryBox.images(item);
       });
     }
+
+		document.onpaste = function(pasteEvent) {
+			var item = pasteEvent.clipboardData.items[0];
+			if (item.type.indexOf("image") === 0) {
+				let phBox = $(tableCell).find('#PatientHistoryBox');
+				if ($(phBox)) {
+					var blob = item.getAsFile();
+					patientHistoryBox.options.doUploadBlob(blob).then((data)=>{
+						//console.log(data);
+					});
+				}
+			}
+		};
 
     $(tableWrapper).on('newpatienthistoryimage', (evt)=>{
       //
