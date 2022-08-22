@@ -8,6 +8,7 @@ module.exports = function ( jq ) {
   const gooditemdlg = require('./gooditem-dlg.js')($);
 	const closeorderdlg = require('./closeorder-dlg.js')($);
 	const calendardlg = require('./calendar-dlg.js')($);
+	const mergeorderdlg = require('./order-merge-dlg.js')($);
 
   const doShowOrderList = function(shopData, workAreaBox, orderDate){
     return new Promise(async function(resolve, reject) {
@@ -236,6 +237,8 @@ module.exports = function ( jq ) {
 			$(editCustomerCmd).hide();
 			$(saveNewOrderCmd).hide();
 		}
+
+		$('#App').find('#SummaryBox').remove();
 
     const customerSelectedCallback = function(customerSelected){
       orderObj.customer = customerSelected;
@@ -617,6 +620,13 @@ module.exports = function ( jq ) {
             $(orderBox).append($('<div><b>วันที่-เวลา :</b> ' + fmtDate + ':' + fmtTime + '</div>').css({'width': '100%'}));
 						if (orders[i].Status == 1) {
 							$(orderBox).css({'background-color': 'yellow'});
+							let mergeOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
+							$(mergeOrderCmdBox).append($('<span>ยุบรวมออร์เดอร์</span>').css({'font-weight': 'bold'}));
+							$(mergeOrderCmdBox).on('click', async (evt)=>{
+								evt.stopPropagation();
+								mergeorderdlg.doMergeOrder(orders, i);
+							});
+							$(orderBox).append($(mergeOrderCmdBox));
 							let cancelOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
 							$(cancelOrderCmdBox).append($('<span>ยกเลิกออร์เดอร์</span>').css({'font-weight': 'bold'}));
 							$(cancelOrderCmdBox).on('click', async (evt)=>{
@@ -626,7 +636,8 @@ module.exports = function ( jq ) {
 								if (orderRes.status.code == 200) {
 									$.notify("ยกเลิกรายการออร์เดอร์สำเร็จ", "success");
 									$('#OrderListBox').remove();
-									doCreateOrderList(shopData, workAreaBox, orderDate);
+									let orderListBox = await doCreateOrderList(shopData, workAreaBox, orderDate);
+									$(workAreaBox).append($(orderListBox));
 								} else {
 									$.notify("ระบบไม่สามารถยกเลิกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
 								}
@@ -714,6 +725,7 @@ module.exports = function ( jq ) {
         });
         Promise.all([promiseList]).then((ob)=>{
           $(workAreaBox).append($(ob[0]));
+					$('#App').find('#SummaryBox').remove();
 					let summaryData = {yellowOrders, orangeOrders, greenOrders, greyOrders};
 					let summaryBox = $('<div id="SummaryBox"></div>').css({'position': 'relative', 'width': '99%', 'min-height': '60px', 'cursor': 'pointer', 'font-size': '18px', 'text-align': 'center', 'background-color': ' #dddd', 'border': '2px solid grey', 'margin-top': '45px', 'overflow': 'auto'});
 					$(summaryBox).append($('<span><b>สรุป</b></span>').css({'line-height': '60px'}));

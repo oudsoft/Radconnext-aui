@@ -163,6 +163,16 @@ module.exports = function ( jq ) {
 		return $(reportDocButtonBox).append($(openReportDocCmd)).append($(openReportQrCmd));
 	}
 
+	const doCalOrderTotal = function(gooditems){
+    return new Promise(async function(resolve, reject) {
+      let total = 0;
+      await gooditems.forEach((item, i) => {
+        total += Number(item.Price) * Number(item.Qty);
+      });
+      resolve(total);
+    });
+  }
+
   return {
 		fileUploadMaxSize,
     doCallApi,
@@ -178,6 +188,7 @@ module.exports = function ( jq ) {
 		calendarOptions,
 		genUniqueID,
 		isExistsResource,
-		doCreateReportDocButtonCmd
+		doCreateReportDocButtonCmd,
+		doCalOrderTotal
 	}
 }
