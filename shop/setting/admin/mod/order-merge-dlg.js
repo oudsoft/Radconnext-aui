@@ -5,6 +5,12 @@ module.exports = function ( jq ) {
 
 	const orderSelectCallback = function(evt, orders, srcIndex, destIndex) {
 		console.log(evt, orders, srcIndex, destIndex);
+
+		const searchItems = function(srcIndex) {
+			return new Promise(async function(resolve, reject) {
+				
+			});
+		}
 		/*
 		let newValue = $(editInput).val();
 		if(newValue !== '') {

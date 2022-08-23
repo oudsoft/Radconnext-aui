@@ -193,8 +193,10 @@ module.exports = function ( jq ) {
 			if (addNewGoodItemCmd) {
 				$(lastCell).append($(addNewGoodItemCmd));
 			}
-			lastCell = $(goodItemTable).children(":last").children(":last");
-			$(lastCell).append($(callCreateCloseOrderCmd));
+			if ([1, 2].includes(orderObj.Status)) {
+				lastCell = $(goodItemTable).children(":last").children(":last");
+				$(lastCell).append($(callCreateCloseOrderCmd));
+			}
       $(itemlistWorkingBox).append($(goodItemTable));
     }
 
@@ -257,14 +259,11 @@ module.exports = function ( jq ) {
 			if (addNewGoodItemCmd) {
 				$(lastCell).append($(addNewGoodItemCmd));
 			}
-			lastCell = $(goodItemTable).children(":last").children(":last");
-			$(lastCell).append($(callCreateCloseOrderCmd));
+			if ([1, 2].includes(orderObj.Status)) {
+				lastCell = $(goodItemTable).children(":last").children(":last");
+				$(lastCell).append($(callCreateCloseOrderCmd));
+			}
       $(itemlistWorkingBox).empty().append($(goodItemTable));
-			/*
-      if (dlgHandle) {
-        dlgHandle.closeAlert();
-      }
-			*/
     }
 
 		const invoiceCallback = async function(newInvoiceData){
@@ -546,7 +545,9 @@ module.exports = function ( jq ) {
               let total = await doCalOrderTotal(orderData.gooditems);
               $(totalValueCell).empty().append($('<span><b>' + common.doFormatNumber(total) + '</b></span>').css({'margin-right': '4px'}));
             });
-            $(commandCell).append($(increaseBtnCmd)).append($(decreaseBtnCmd)).append($(deleteGoodItemCmd));
+						if ([1, 2].includes(orderData.Status)) {
+            	$(commandCell).append($(increaseBtnCmd)).append($(decreaseBtnCmd)).append($(deleteGoodItemCmd));
+						}
             $(goodItemForm).append($(goodItemRow));
 						itenNoCells.push($(itenNoCell));
           }
