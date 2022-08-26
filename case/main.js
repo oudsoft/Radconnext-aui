@@ -519,7 +519,7 @@ const onCaseMisstakeNotifyTrigger = function(evt){
     msg: $(radAlertMsg),
     width: '420px',
     onOk: function(evt) {
-      radConfirmBox.closeAlert();
+      radAlertBox.closeAlert();
     }
   }
   let radAlertBox = $('body').radalert(radalertoption);

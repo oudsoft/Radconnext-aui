@@ -3,40 +3,40 @@ module.exports = function ( jq ) {
 
   const common = require('../../../home/mod/common-lib.js')($);
 
-	const orderSelectCallback = function(evt, orders, srcIndex, destIndex) {
-		console.log(evt, orders, srcIndex, destIndex);
+	let dlgHandle = undefined;
 
-		const searchItems = function(srcIndex) {
-			return new Promise(async function(resolve, reject) {
-				
-			});
-		}
-		/*
-		let newValue = $(editInput).val();
-		if(newValue !== '') {
-			$(editInput).css({'border': ''});
-			let params = {data: {Price: newValue}, id: gooditems[index].id};
-			let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
-			if (menuitemRes.status.code == 200) {
-				$.notify("แก้ไขรายการเมนูสำเร็จ", "success");
-				dlgHandle.closeAlert();
-				successCallback(newValue);
-			} else if (menuitemRes.status.code == 201) {
-				$.notify("ไม่สามารถแก้ไขรายการเมนูได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
-			} else {
-				$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการเมนูได้", "error");
+	const orderSelectCallback = function(evt, orders, srcIndex, destIndex, mergeSuccessCallback) {
+		let	promiseList = new Promise(async function(resolve2, reject2){
+			for (let i=0; i < orders[srcIndex].Items.length; i++) {
+				srcItemId = orders[srcIndex].Items[i].id;
+				let foundIndex = orders[destIndex].Items.findIndex((item)=>{
+					return (item.id === srcItemId);
+				});
+				if (foundIndex >= 0) {
+					let srcQty = orders[srcIndex].Items[i].Qty;
+					let destQty = orders[destIndex].Items[foundIndex].Qty;
+					let newQty = Number(srcQty) + Number(destQty);
+					orders[destIndex].Items[foundIndex].Qty = newQty;
+				} else {
+					orders[destIndex].Items.push(orders[srcIndex].Items[i]);
+				}
 			}
-		} else {
-			$.notify('ราคาสินค้าต้องไม่ว่าง', 'error');
-			$(editInput).css({'border': '1px solid red'});
-		}
-
-
-		*/
+			setTimeout(()=>{
+				resolve2($(orders));
+			}, 500);
+		});
+		Promise.all([promiseList]).then((ob)=>{
+			$('body').loading('start');
+			mergeSuccessCallback(ob[0], destIndex);
+			$('body').loading('stop');
+			if (dlgHandle) {
+				dlgHandle.closeAlert();
+			}
+		});
 	}
 
-	const doMergeOrder = async function(orders, srcIndex) {
-		let orderMergerForm = await doCreateMergeSelectOrderForm(orders, srcIndex, orderSelectCallback);
+	const doMergeOrder = async function(orders, srcIndex, mergeSuccessCallback) {
+		let orderMergerForm = await doCreateMergeSelectOrderForm(orders, srcIndex, orderSelectCallback, mergeSuccessCallback);
 		let mergeDlgOption = {
 			title: 'เลือกออร์เดอร์ปลายทางที่ต้องการนำไปยุบรวม',
 			msg: $(orderMergerForm),
@@ -48,14 +48,14 @@ module.exports = function ( jq ) {
 				dlgHandle.closeAlert();
 			}
 		}
-		let dlgHandle = $('body').radalert(mergeDlgOption);
+		dlgHandle = $('body').radalert(mergeDlgOption);
 		$(dlgHandle.okCmd).hide();
 	}
 
-  const doCreateMergeSelectOrderForm = function(orders, srcIndex, selectedCallback){
+  const doCreateMergeSelectOrderForm = function(orders, srcIndex, selectedCallback, mergeSuccessCallback){
     return new Promise(async function(resolve, reject) {
       let selectOrderForm = $('<div></div>').css({'width': '100%', 'height': '220px', 'overflow': 'scroll', 'padding': '5px'});
-      const promiseList = new Promise(async function(resolve2, reject2){
+      let promiseList = new Promise(async function(resolve2, reject2){
 				for (let i=0; i < orders.length; i++) {
           if ((orders[i].Status == 1) && (orders[i].id != orders[srcIndex].id)) {
 						let total = await common.doCalOrderTotal(orders[i].Items);
@@ -70,7 +70,7 @@ module.exports = function ( jq ) {
               $(orderBox).css({'border': '4px solid #dddd'});
             });
             $(orderBox).on('click', (evt)=>{
-              selectedCallback(evt, orders, srcIndex, i);
+              selectedCallback(evt, orders, srcIndex, i, mergeSuccessCallback);
             });
             $(selectOrderForm).append($(orderBox));
           }

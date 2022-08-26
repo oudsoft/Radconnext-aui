@@ -604,6 +604,7 @@ module.exports = function ( jq ) {
 			let orangeOrders = [];
 			let greenOrders = [];
 			let greyOrders = [];
+			
       let orderListBox = $('<div id="OrderListBox"></div>').css({'position': 'relative', 'width': '100%', 'margin-top': '25px', 'overflow': 'auto'});
       if ((orders) && (orders.length > 0)) {
         let	promiseList = new Promise(async function(resolve2, reject2){
@@ -625,7 +626,26 @@ module.exports = function ( jq ) {
 							$(mergeOrderCmdBox).append($('<span>ยุบรวมออร์เดอร์</span>').css({'font-weight': 'bold'}));
 							$(mergeOrderCmdBox).on('click', async (evt)=>{
 								evt.stopPropagation();
-								mergeorderdlg.doMergeOrder(orders, i);
+								mergeorderdlg.doMergeOrder(orders, i, async (newOrders, destIndex)=>{
+									let params = {data: {Status: 0, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, id: orders[i].id};
+									let orderRes = await common.doCallApi('/api/shop/order/update', params);
+									if (orderRes.status.code == 200) {
+										$.notify("ยกเลิกรายการออร์เดอร์สำเร็จ", "success");
+										params = {data: {Items: orders[destIndex].Items, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, id: orders[destIndex].id};
+					          orderRes = await common.doCallApi('/api/shop/order/update', params);
+					          if (orderRes.status.code == 200) {
+					            $.notify("ยุบรวมรายการออร์เดอร์สำเร็จ", "success");
+											$('#OrderListBox').remove();
+											//let orderListBox = await doCreateOrderList(shopData, workAreaBox, orderDate);
+											await doCreateOrderList(shopData, workAreaBox, orderDate);
+											//$(workAreaBox).append($(orderListBox));
+					          } else {
+					            $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+					          }
+									} else {
+										$.notify("ระบบไม่สามารถยกเลิกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+									}
+								});
 							});
 							$(orderBox).append($(mergeOrderCmdBox));
 							let cancelOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
