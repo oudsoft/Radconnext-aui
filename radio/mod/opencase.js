@@ -765,10 +765,10 @@ module.exports = function ( jq ) {
 					let fileName = fileNames.split('.');
 					let fileExt = fileName[1];
 					let patientName = patientFullName.split(' ').join('_');
-					patientName = patientName.substring(0, 14);
+					patientName = patientName.substring(0, 12);
 					let linkText = patientName + ' (' + (i+1) + ')' + '.' + fileExt;
 					//$(patientHRLink).text(linkText);
-					let patientHRButton = $('<div class="action-btn" style="width: 100%; cursor: pointer; text-align: center;">' + linkText + '</div>');
+					let patientHRButton = $('<div class="action-btn" style="position: relative; display: inline-block; cursor: pointer; text-align: center;">' + linkText + '</div>');
 
 					$(patientHRButton).on("click", function(evt){
 	          doOpenHR(item.link, patientFullName, casedate);
@@ -787,7 +787,7 @@ module.exports = function ( jq ) {
 	//const doCreateDicomCmdBox = function(orthancStudyID, studyInstanceUID, casedate, casetime, hospitalId){
 	const doCreateDicomCmdBox = function(caseDicomZipFilename){
 		let dicomCmdBox = $('<div></div>');
-		let downloadCmd = $('<div class="action-btn">Download</div>');
+		let downloadCmd = $('<div class="action-btn" style="position: relative; display: inline-block; width: 110px;">Download</div>');
 		$(downloadCmd).css(commandButtonStyle);
 		$(downloadCmd).appendTo($(dicomCmdBox));
 		$(downloadCmd).on('click', async (evt)=>{
@@ -809,14 +809,14 @@ module.exports = function ( jq ) {
 
 	const doCreateHRBackwardBox = function(patientFullName, patientHRLinks, casedate){
 		return new Promise(async function(resolve, reject) {
-			let hrbackwardBox = $('<div style="width: 100%;"></div>');
+			let hrbackwardBox = $('<div"></div>');
 			if ((patientHRLinks) && (patientHRLinks.length > 0)){
 				await patientHRLinks.forEach((item, i) => {
 					let filePaths = item.link.split('/');
 					let fileNames = filePaths[filePaths.length-1];
 					let fileName = fileNames.split('.');
 					let fileCode = fileName[0];
-					let codeLink = $('<div class="action-btn" style="width: 100%; cursor: pointer;">' + fileCode + '</div>');
+					let codeLink = $('<div class="action-btn" style="position: relative; display: inline-block; width: 140px; cursor: pointer;">' + fileCode + '</div>');
 					$(codeLink).css(commandButtonStyle);
 					$(hrbackwardBox).append($(codeLink));
 					$(codeLink).on('click',(evt)=>{
@@ -830,7 +830,7 @@ module.exports = function ( jq ) {
 
 	const doCreateResponseBackwardBox = function(backwardCaseId, responseId, responseText, patientFullName, casedate){
 		let responseBackwarBox = $('<div></div>');
-		let downloadCmd = $('<div class="action-btn" style="position: relative; display: inline-block;">Download</div>');
+		let downloadCmd = $('<div class="action-btn" style="position: relative; display: inline-block; width: 110px;">Download</div>');
 		$(downloadCmd).css(commandButtonStyle);
 		$(downloadCmd).appendTo($(responseBackwarBox));
 		$(downloadCmd).on('click', async (evt)=>{
@@ -848,7 +848,7 @@ module.exports = function ( jq ) {
 			pom.click();
 			//$('body').loading('stop');
 		});
-		let pasteCmd = $('<div class="action-btn" style="position: relative; display: inline-block;">Paste</div>');
+		let pasteCmd = $('<div class="action-btn" style="position: relative; display: inline-block; width: 110px;">Paste</div>');
 		$(pasteCmd).css(commandButtonStyle).css({'margin-left': '8px'});
 		$(pasteCmd).appendTo($(responseBackwarBox));
 		$(pasteCmd).on('click', async (evt)=>{
@@ -893,13 +893,13 @@ module.exports = function ( jq ) {
 			$(backwardView).empty();
 			let backwardHeader = $('<div style="display: table-row; width: 100%;"></div>');
 			$(backwardHeader).appendTo($(backwardView));
-			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">#</span>'));
-			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">วันที่</span>'));
-			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">รายการ</span>'));
-			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">ภาพ</span>'));
-			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">ไฟล์ประวัติ</span>'));
-			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">ผลอ่าน</span>'));
-			$(backwardHeader).append($('<span style="display: table-cell; text-align: center;" class="header-cell">หมายเหตุ/อื่นๆ</span>'));
+			$(backwardHeader).append($('<div style="display: table-cell; text-align: center;" class="header-cell">#</div>'));
+			$(backwardHeader).append($('<div style="display: table-cell; text-align: center;" class="header-cell">วันที่</div>'));
+			$(backwardHeader).append($('<div style="display: table-cell; text-align: center;" class="header-cell">รายการ</div>').css({'width': '18%'}));
+			$(backwardHeader).append($('<div style="display: table-cell; text-align: center;" class="header-cell">ภาพ</div>'));
+			$(backwardHeader).append($('<div style="display: table-cell; text-align: center;" class="header-cell">ไฟล์ประวัติ</div>'));
+			$(backwardHeader).append($('<div style="display: table-cell; text-align: center;" class="header-cell">ผลอ่าน</div>'));
+			$(backwardHeader).append($('<div style="display: table-cell; text-align: center;" class="header-cell">หมายเหตุ/อื่นๆ</div>'));
 			const promiseList = new Promise(async function(resolve2, reject2){
 				for (let i=0; i < backwards.length; i++) {
 					let backwardRow = $('<div style="display: table-row; width: 100%;" class="case-row"></div>');
@@ -930,23 +930,26 @@ module.exports = function ( jq ) {
 					} else {
 						responseBackwardBox = $('<div style="text-align: center">เคสยังไม่มีผลอ่าน</div>');
 					}
-					$(backwardRow).append($('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">' + (i+1) + '</span>'));
-					$(backwardRow).append($('<span style="display: table-cell; text-align: left; padding: 4px; vertical-align: middle;">' + casedateDisplay + '</span>'));
-					$(backwardRow).append($('<span style="display: table-cell; text-align: left; vertical-align: middle;">' + backward.Case_BodyPart + '</span>'));
-					let dicomCmdCell = $('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle; width: 150px;"></span>');
+					$(backwardRow).append($('<div style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">' + (i+1) + '</div>'));
+					$(backwardRow).append($('<div style="display: table-cell; text-align: left; padding: 4px; vertical-align: middle;">' + casedateDisplay + '</div>'));
+					$(backwardRow).append($('<div style="display: table-cell; text-align: left; vertical-align: middle;">' + backward.Case_BodyPart + '</div>'));
+					let dicomCmdCell = $('<div style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></div>');
+					console.log($(dicomCmdCell));
+					console.log($(dicomCmdBox));
 					$(dicomCmdCell).append($(dicomCmdBox));
 					$(backwardRow).append($(dicomCmdCell));
-					let hrBackwardCell = $('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></span>');
+					let hrBackwardCell = $('<div style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></div>');
+					console.log($(patientHRBackwardBox));
 					$(hrBackwardCell).append($(patientHRBackwardBox));
 					$(backwardRow).append($(hrBackwardCell));
-					let responseBackwardCell = $('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></span>');
+					let responseBackwardCell = $('<div style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></div>');
+					console.log($(responseBackwardBox));
 					$(responseBackwardCell).append($(responseBackwardBox));
 					$(backwardRow).append($(responseBackwardCell));
-					$(backwardRow).append($('<span style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">-</span>'));
+					$(backwardRow).append($('<div style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">-</div>'));
 					$(backwardRow).css({'cursor': 'pointer'});
 					$(backwardRow).on('dblclick', (evt)=>{
 						common.doOpenStoneWebViewer(backward.Case_StudyInstanceUID, backward.hospitalId);
-						//$(backwardRow).click();
 			    });
 					$(backwardRow).appendTo($(backwardView));
 				}
@@ -965,7 +968,7 @@ module.exports = function ( jq ) {
 			let backwardBox = $('<div style="100%"></div>');
 			let titleBox = $('<div style="100%"></div>');
 			$(titleBox).appendTo($(backwardBox));
-			let titleText = $('<span><b>ประวัติการตรวจ</b></span>');
+			let titleText = $('<div><b>ประวัติการตรวจ</b></div>');
 			$(titleText).appendTo($(titleBox));
 
 			let backwardView = $('<div style="display: table; width: 100%; border-collapse: collapse;"></div>');
@@ -1034,8 +1037,8 @@ module.exports = function ( jq ) {
 			} else {
 				dfName = df[i].Name;
 			}
-			let nameCell = $('<td width="80%" align="left">' + dfName + '</td>');
-			let priceCell = $('<td width="20%" align="right" style="padding-right: 80px;">' + df[i].DF.value + '</td>');
+			let nameCell = $('<td width="90%" align="left">' + dfName + '</td>');
+			let priceCell = $('<td width="*" align="right" style="padding-right: 10px;">' + df[i].DF.value + '</td>');
 			total += Number(df[i].DF.value);
 			$(row).append($(nameCell)).append($(priceCell));
 			$(summaryTable).append($(row));
@@ -1050,7 +1053,7 @@ module.exports = function ( jq ) {
 		}
 		let totalRow = $('<tr></tr>').css({'border-top': '1px solid black', 'border-bottom': '1px solid black'});
 		let totalNameCell = $('<td align="left" valign="bottom"><b>รวม</b></td>');
-		let totalPriceCell = $('<td align="right" valign="bottom" style="padding-right: 80px;"><b>' + total + '</b></td>');
+		let totalPriceCell = $('<td align="right" valign="bottom" style="padding-right: 10px;"><b>' + total + '</b></td>');
 		$(totalRow).append($(totalNameCell)).append($(totalPriceCell))
 		$(summaryTable).append($(totalRow));
 		return $(summaryDF).append($(summaryTable));
@@ -1061,11 +1064,12 @@ module.exports = function ( jq ) {
 			let summarySecondLine = $('<div></div>');
 			let summarySecondArea = $('<table width="100%" border="0" cellspacing="0" cellpadding="0"></table>');
 			let summarySecondAreaRow = $('<tr></tr>');
-			let summarySecondAreaLeft = $('<td width="36%" align="left" valign="top"></td>');
-			let summarySecondAreaMiddle1 = $('<td width="15%" align="left" valign="top"></td>');
-			let summarySecondAreaMiddle2 = $('<td width="25%" align="left" valign="top"></td>');
-			let summarySecondAreaRight = $('<td width="*" align="left" valign="top"></td>');
-			$(summarySecondAreaRow).append($(summarySecondAreaLeft)).append($(summarySecondAreaMiddle1)).append($(summarySecondAreaMiddle2)).append($(summarySecondAreaRight));
+			let summarySecondAreaLeft = $('<td width="31%" align="left" valign="top"></td>');
+			let summarySecondAreaMiddle1 = $('<td width="15%" align="center" valign="top"></td>');
+			let summarySecondAreaMiddle2 = $('<td width="25%" align="center" valign="top"></td>');
+			let summarySecondAreaMiddle3 = $('<td width="15%" align="left" valign="top">&nbsp;</td>');
+			let summarySecondAreaRight = $('<td width="*" align="center" valign="top"></td>');
+			$(summarySecondAreaRow).append($(summarySecondAreaLeft)).append($(summarySecondAreaMiddle1)).append($(summarySecondAreaMiddle2)).append($(summarySecondAreaMiddle3)).append($(summarySecondAreaRight));
 			$(summarySecondArea).append($(summarySecondAreaRow));
 			$(summarySecondLine).append($(summarySecondArea));
 
@@ -1080,7 +1084,7 @@ module.exports = function ( jq ) {
 			let buttonCmdRow2 = $('<tr></tr>');
 			let buttonCmdRow3 = $('<tr></tr>');
 			*/
-			let downloadCmdCell = $('<td width="30%" align="left"></td>');
+			let downloadCmdCell = $('<td width="30%" align="center"></td>');
 			/*
 			let blankCell = $('<td align="left"><div style="wisth: 100%; min-height: 30px;"></div></td>');
 			let open3rdPartyCmdCell = $('<td align="left"></td>');
@@ -1093,7 +1097,7 @@ module.exports = function ( jq ) {
 			$(buttonCmdTable).append($(buttonCmdRow1))/*.append($(buttonCmdRow2)).append($(buttonCmdRow3))*/;
 			$(buttonCmdArea).append($(buttonCmdTable));
 			$(summarySecondAreaMiddle1).append($(buttonCmdArea));
-			let downloadCmd = $('<input type="button" value=" DL/Open " class="special-action-btn" style="cursor: pointer;"/>');
+			let downloadCmd = $('<input type="button" value=" DL/Open " class="special-action-btn" style="cursor: pointer; width: 110px;"/>');
 			$(downloadCmd).attr('title', 'Tooltip: Hold left click to open with 3rd party program');
 			let patientFullName = selectedCase.case.patient.Patient_NameEN + ' ' + selectedCase.case.patient.Patient_LastNameEN;
 			let patientHN = selectedCase.case.patient.Patient_HN;
@@ -1135,7 +1139,7 @@ module.exports = function ( jq ) {
 				$(summarySecondAreaMiddle2).append($(patientHRBox));
 			}
 
-			let misstakeCaseNotifyCmd = $('<input type="button" value=" แจ้งเคสผิดพลาด " class="action-btn" style="cursor: pointer; margin-left: 15%"/>');
+			let misstakeCaseNotifyCmd = $('<input type="button" value=" แจ้งเคสผิดพลาด " class="action-btn" style="cursor: pointer; margin-left: 0px"/>');
 			$(misstakeCaseNotifyCmd).data('misstakeCaseData', downloadData);
 			$(misstakeCaseNotifyCmd).on('click', onMisstakeCaseNotifyCmdClick);
 
@@ -1143,7 +1147,7 @@ module.exports = function ( jq ) {
 			let misstakeCaseNotifyTable = $('<table width="100%" border="0" cellspacing="0" cellpadding="0"></table>');
 			$(misstakeCaseNotifyBox).append($(misstakeCaseNotifyTable));
 			let misstakeCaseNotifyRow = $('<tr></tr>');
-			let misstakeCaseNotifyCell = $('<td width="100%" align="left"></td>');
+			let misstakeCaseNotifyCell = $('<td width="100%" align="center"></td>');
 			$(misstakeCaseNotifyRow).append($(misstakeCaseNotifyCell))
 			$(misstakeCaseNotifyCell).append($(misstakeCaseNotifyCmd));
 			$(misstakeCaseNotifyTable).append($(misstakeCaseNotifyRow));
