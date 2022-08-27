@@ -650,7 +650,8 @@ module.exports = function ( jq ) {
 
 		document.onpaste = function(pasteEvent) {
 			var item = pasteEvent.clipboardData.items[0];
-			if (item.type.indexOf("image") === 0) {
+			console.log(item);
+			if ((item.type.indexOf("image") === 0) || (item.type.toUpperCase() === 'APPLICATION/ZIP')) {
 				let phBox = $(tableCell).find('#PatientHistoryBox');
 				if ($(phBox)) {
 					var blob = item.getAsFile();

@@ -19,7 +19,7 @@ module.exports = function ( jq ) {
 	let downloadDicomList = [];
 	let syncTimer = undefined;
 
-	const doDownloadZipBlob = function(link, outputFilename){
+	const doDownloadZipBlob = function(link, outputFilename, successCallback){
 		var pom = document.createElement('a');
 		$.ajax({
 			url: link,
@@ -27,10 +27,11 @@ module.exports = function ( jq ) {
 				responseType: 'blob'
 			},
 			success: function(data){
-				let stremLink = URL.createObjectURL(new Blob([data], {type: 'octet/stream'}));
+				let stremLink = URL.createObjectURL(new Blob([data], {type: 'application/octetstream'}));
 				pom.setAttribute('href', stremLink);
 				pom.setAttribute('download', outputFilename);
 				pom.click();
+				successCallback();
 			}
 		});
 	}
@@ -55,46 +56,36 @@ module.exports = function ( jq ) {
 			const userdata = JSON.parse(localStorage.getItem('userdata'));
 	    const downloadCmd = $(evt.currentTarget);
 	    const downloadData = $(downloadCmd).data('downloadData');
-			/*
-			let downloadData = {patientId: selectedCase.case.patient.id, studyID: selectedCase.case.Case_OrthancStudyID, casedate: casedate, casetime: casetime, hospitalId: selectedCase.case.hospitalId, dicomzipfilename: selectedCase.case.Case_DicomZipFilename};
-      $(downloadCmd).data('downloadData', downloadData);
-			*/
 			let dicomzipfilename = downloadData.dicomzipfilename;
 			let dicomzipfilepath = '/img/usr/zip/' + dicomzipfilename;
-			//console.log(dicomzipfilepath);
 			let orthanczipfilename = downloadData.studyID + '.zip';
 			let orthanczipfilepath = '/img/usr/zip/' + orthanczipfilename;
-			//console.log(orthanczipfilepath);
 
 			let existDicomFileRes = await apiconnector.doCallDicomArchiveExist(dicomzipfilename);
 			console.log(existDicomFileRes);
-			let pom = document.createElement('a');
-			pom.setAttribute('download', dicomzipfilename);
-			pom.setAttribute('target', "_blank");
-
 			if (existDicomFileRes.link){
-				pom.setAttribute('href', dicomzipfilepath);
-				pom.click();
-				downloadDicomList.push(dicomzipfilename);
-				resolve();
+				doDownloadZipBlob(dicomzipfilepath, dicomzipfilename, ()=>{
+					downloadDicomList.push(dicomzipfilename);
+					resolve(existDicomFileRes);
+				});
 			} else {
 				let existOrthancFileRes = await apiconnector.doCallDicomArchiveExist(orthanczipfilename);
 				console.log(existOrthancFileRes);
 				if (existOrthancFileRes.link){
-					pom.setAttribute('href', orthanczipfilepath);
-					pom.click();
-					downloadDicomList.push(dicomzipfilename);
-					resolve();
+					doDownloadZipBlob(orthanczipfilepath, dicomzipfilename, ()=>{
+						downloadDicomList.push(dicomzipfilename);
+						resolve(existOrthancFileRes);
+					});
 				} else {
 					let studyID = downloadData.studyID;
 					let hospitalId = downloadData.hospitalId;
 					apiconnector.doCallDownloadDicom(studyID, hospitalId).then((response) => {
 						console.log(response);
-						pom.setAttribute('href', response.link);
 						setTimeout(()=>{
-							pom.click();
-							downloadDicomList.push(dicomzipfilename);
-							resolve();
+							doDownloadZipBlob(response.link, dicomzipfilename, ()=>{
+								downloadDicomList.push(dicomzipfilename);
+								resolve(response);
+							});
 						}, 3500);
 					});
 				}
@@ -1097,24 +1088,32 @@ module.exports = function ( jq ) {
 			$(buttonCmdTable).append($(buttonCmdRow1))/*.append($(buttonCmdRow2)).append($(buttonCmdRow3))*/;
 			$(buttonCmdArea).append($(buttonCmdTable));
 			$(summarySecondAreaMiddle1).append($(buttonCmdArea));
-			let downloadCmd = $('<input type="button" value=" DL/Open " class="special-action-btn" style="cursor: pointer; width: 110px;"/>');
-			$(downloadCmd).attr('title', 'Tooltip: Hold left click to open with 3rd party program');
+			let downloadCmd = $('<input type="button" value=" Download " class="action-btn" style="cursor: pointer; width: 110px;"/>');
 			let patientFullName = selectedCase.case.patient.Patient_NameEN + ' ' + selectedCase.case.patient.Patient_LastNameEN;
 			let patientHN = selectedCase.case.patient.Patient_HN;
 			let downloadData = {caseId: selectedCase.case.id, patientId: selectedCase.case.patient.id, studyID: selectedCase.case.Case_OrthancStudyID, casedate: casedate, casetime: casetime, hospitalId: selectedCase.case.hospitalId, dicomzipfilename: selectedCase.case.Case_DicomZipFilename, userId: selectedCase.case.userId};
 			downloadData.caseScanParts = caseScanParts;
 			downloadData.patientFullName = patientFullName;
 			downloadData.patientHN = patientHN;
+			$(downloadCmd).attr('title', 'Download zip file of ' + patientFullName);
 			$(downloadCmd).data('downloadData', downloadData);
-			$(downloadCmd).on('click', (evt)=>{
-				console.log(evt);
-				if (evt.ctrlKey) {
-					// Ctrl Click
-					onOpenThirdPartyCmdClick(evt)
-				} else {
-					//normal click
-					onDownloadCmdClick(evt);
-				}
+			$(downloadCmd).on('click', async (evt)=>{
+				let dwnRes = await onDownloadCmdClick(evt);
+				$(downloadCmd).off('click');
+				$(downloadCmd).removeClass('action-btn');
+				$(downloadCmd).addClass('special-action-btn');
+				$(downloadCmd).attr('title', 'Ctrl+click to open with 3rd party program');
+				$(downloadCmd).val(' DL/Open ');
+				$(downloadCmd).on('click', async (evt)=>{
+					console.log(evt);
+					if (evt.ctrlKey) {
+						// Ctrl Click
+						onOpenThirdPartyCmdClick(evt);
+					} else {
+						//normal click
+						dwnRes = await onDownloadCmdClick(evt);
+					}
+				});
 			});
 			$(downloadCmd).appendTo($(downloadCmdCell));
 			/*
