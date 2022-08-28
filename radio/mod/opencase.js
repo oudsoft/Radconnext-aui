@@ -19,36 +19,50 @@ module.exports = function ( jq ) {
 	let downloadDicomList = [];
 	let syncTimer = undefined;
 
-	const doDownloadZipBlob = function(link, outputFilename, successCallback){
-		var pom = document.createElement('a');
+	const doDownloadZipBlob = function(evt, link, outputFilename, successCallback){
+		console.log($(evt.currentTarget));
+		$(evt.currentTarget).css({'backdrop-filter': 'blur(10px)'});
+		let pom = document.createElement('a');
 		$.ajax({
 			url: link,
 			xhrFields:{
 				responseType: 'blob'
 			},
+			xhr: function () {
+				var xhr = $.ajaxSettings.xhr();
+				xhr.onprogress = function(event) {
+					if (event.lengthComputable) {
+						// For Download
+						let loaded = event.loaded;
+						let total = event.total;
+						let prog = (loaded / total) * 100;
+						let perc = prog.toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+						$(evt.currentTarget).val(perc + '%');
+					}
+				}
+				return xhr;
+			},
 			success: function(data){
+				$(evt.currentTarget).val(' DL/Open ');
+				$(evt.currentTarget).css({'backdrop-filter': ''});
 				let stremLink = URL.createObjectURL(new Blob([data], {type: 'application/octetstream'}));
 				pom.setAttribute('href', stremLink);
 				pom.setAttribute('download', outputFilename);
 				pom.click();
 				successCallback();
 			}
-		});
+  	});
 	}
 
 	const doDownloadDicom = function(caseDicomZipFilename) {
-		return new Promise(async function(resolve, reject) {
-			let dicomZipLink = '/img/usr/zip/' + caseDicomZipFilename;
-			let pom = document.createElement('a');
-			pom.setAttribute('target', "_blank");
-			pom.setAttribute('href', dicomZipLink);
-			pom.setAttribute('download', caseDicomZipFilename);
-			setTimeout(()=>{
-				pom.click();
-				downloadDicomList.push(dicomFilename);
-				resolve(response);
-			}, 1000);
-		});
+		let dicomZipLink = '/img/usr/zip/' + caseDicomZipFilename;
+		let pom = document.createElement('a');
+		pom.setAttribute('target', "_blank");
+		pom.setAttribute('href', dicomZipLink);
+		pom.setAttribute('download', caseDicomZipFilename);
+		pom.click();
+		downloadDicomList.push(caseDicomZipFilename);
+		return downloadDicomList;
 	}
 
   const onDownloadCmdClick = function(evt) {
@@ -62,31 +76,28 @@ module.exports = function ( jq ) {
 			let orthanczipfilepath = '/img/usr/zip/' + orthanczipfilename;
 
 			let existDicomFileRes = await apiconnector.doCallDicomArchiveExist(dicomzipfilename);
-			console.log(existDicomFileRes);
 			if (existDicomFileRes.link){
-				doDownloadZipBlob(dicomzipfilepath, dicomzipfilename, ()=>{
+				doDownloadZipBlob(evt, dicomzipfilepath, dicomzipfilename, ()=>{
 					downloadDicomList.push(dicomzipfilename);
-					resolve(existDicomFileRes);
 				});
+				resolve(existDicomFileRes);
 			} else {
 				let existOrthancFileRes = await apiconnector.doCallDicomArchiveExist(orthanczipfilename);
-				console.log(existOrthancFileRes);
 				if (existOrthancFileRes.link){
-					doDownloadZipBlob(orthanczipfilepath, dicomzipfilename, ()=>{
+					doDownloadZipBlob(evt, orthanczipfilepath, dicomzipfilename, ()=>{
 						downloadDicomList.push(dicomzipfilename);
-						resolve(existOrthancFileRes);
 					});
+					resolve(existOrthancFileRes);
 				} else {
 					let studyID = downloadData.studyID;
 					let hospitalId = downloadData.hospitalId;
 					apiconnector.doCallDownloadDicom(studyID, hospitalId).then((response) => {
-						console.log(response);
 						setTimeout(()=>{
-							doDownloadZipBlob(response.link, dicomzipfilename, ()=>{
+							doDownloadZipBlob(evt, response.link, dicomzipfilename, ()=>{
 								downloadDicomList.push(dicomzipfilename);
-								resolve(response);
 							});
-						}, 3500);
+							resolve(response);
+						}, 2500);
 					});
 				}
 			}
@@ -740,7 +751,7 @@ module.exports = function ( jq ) {
   const doRenderPatientHR = function(hrlinks, patientFullName, casedate) {
     return new Promise(async function(resolve, reject) {
       let hrBox = $('<div style="width: 100%; padding: 5px;"></div>');
-			let hrTable = $('<table width="100%" border="0" cellspacing="0" cellpadding="0"></table>');
+			let hrTable = $('<table width="100%" border="0" cellspacing="0" cellpadding="2"></table>');
 			$(hrBox).append($(hrTable));
 			if ((hrlinks) && (hrlinks.length > 0)){
 	      await hrlinks.forEach((item, i) => {
@@ -925,16 +936,12 @@ module.exports = function ( jq ) {
 					$(backwardRow).append($('<div style="display: table-cell; text-align: left; padding: 4px; vertical-align: middle;">' + casedateDisplay + '</div>'));
 					$(backwardRow).append($('<div style="display: table-cell; text-align: left; vertical-align: middle;">' + backward.Case_BodyPart + '</div>'));
 					let dicomCmdCell = $('<div style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></div>');
-					console.log($(dicomCmdCell));
-					console.log($(dicomCmdBox));
 					$(dicomCmdCell).append($(dicomCmdBox));
 					$(backwardRow).append($(dicomCmdCell));
 					let hrBackwardCell = $('<div style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></div>');
-					console.log($(patientHRBackwardBox));
 					$(hrBackwardCell).append($(patientHRBackwardBox));
 					$(backwardRow).append($(hrBackwardCell));
 					let responseBackwardCell = $('<div style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;"></div>');
-					console.log($(responseBackwardBox));
 					$(responseBackwardCell).append($(responseBackwardBox));
 					$(backwardRow).append($(responseBackwardCell));
 					$(backwardRow).append($('<div style="display: table-cell; text-align: center; padding: 4px; vertical-align: middle;">-</div>'));
@@ -1130,8 +1137,10 @@ module.exports = function ( jq ) {
 			$(openThirdPartyCmd).appendTo($(open3rdPartyCmdCell));
 			*/
 
+			/*
 			console.log(selectedCase);
 			console.log(downloadData);
+			*/
 
 			if ((selectedCase.case.Case_PatientHRLink) && (selectedCase.case.Case_PatientHRLink.length > 0)) {
 				let patientHRBox = await doRenderPatientHR(selectedCase.case.Case_PatientHRLink, patientFullName, casedate);
