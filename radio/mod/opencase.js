@@ -306,12 +306,17 @@ module.exports = function ( jq ) {
 				let endPosition = tempToken.indexOf(endPointText);
 				tempToken = tempToken.slice((startPosition+20), (endPosition));
 			}
-			tempToken = tempToken.split(startPointText).join('');
-			tempToken = tempToken.split(endPointText).join('');
+			/*
+			tempToken = tempToken.split(startPointText).join('<div>');
+			tempToken = tempToken.split(endPointText).join('</div>');
+			*/
+			tempToken = tempToken.replace(startPointText, '<div>');
+			tempToken = tempToken.replace(endPointText, '</div>');
 			if (tempToken !== '') {
 				let draftbackup = {caseId: caseId, content: tempToken, backupAt: new Date()};
 				localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
 				responseText = toAsciidoc(tempToken);
+				console.log(responseText);
 				let rsW = saveNewResponseData.resultFormat.width;
 				let fnS = saveNewResponseData.resultFormat.fontsize;
 				let rsH = doCalResultHeigth(tempToken, rsW, fnS);
@@ -537,7 +542,7 @@ module.exports = function ( jq ) {
 			let userdata = JSON.parse(localStorage.getItem('userdata'));
 			let userId = userdata.id;
 			let responseHTML = $('#SimpleEditor').val();
-			let startPointText = '<!--StartFragment-->'
+			let startPointText = '<!--StartFragment-->';
 			let endPointText = '<!--EndFragment-->';
 			let tempToken = responseHTML.replace('\n', '');
 			let startPosition = tempToken.indexOf(startPointText);
@@ -545,8 +550,12 @@ module.exports = function ( jq ) {
 				let endPosition = tempToken.indexOf(endPointText);
 				tempToken = tempToken.slice((startPosition+20), (endPosition));
 			}
-			tempToken = tempToken.split(startPointText).join('');
-			tempToken = tempToken.split(endPointText).join('');
+			/*
+			tempToken = tempToken.split(startPointText).join('<div>');
+			tempToken = tempToken.split(endPointText).join('</div>');
+			*/
+			tempToken = tempToken.replace(startPointText, '<div>');
+			tempToken = tempToken.replace(endPointText, '</div>');
 			let draftbackup = {caseId: caseId, content: tempToken, backupAt: new Date()};
 			localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
 			responseText = toAsciidoc(tempToken);
