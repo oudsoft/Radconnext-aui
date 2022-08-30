@@ -3,7 +3,8 @@ module.exports = function ( jq ) {
   const common = require('../../../home/mod/common-lib.js')($);
 
   const groupmenuTableFields = [
-		{fieldName: 'GroupName', displayName: 'ชื่อกลุ่มเมนู', width: '30%', align: 'left', inputSize: '30', verify: true, showHeader: true},
+		{fieldName: 'GroupName', displayName: 'ชื่อกลุ่มเมนู', width: '20%', align: 'left', inputSize: '30', verify: true, showHeader: true},
+		{fieldName: 'GroupDesc', displayName: 'รายละเอียด', width: '30%', align: 'left', inputSize: '30', verify: false, showHeader: true},
 		{fieldName: 'GroupPicture', displayName: 'โลโก้', width: '25%', align: 'center', inputSize: '30', verify: false, showHeader: true}
 	];
 

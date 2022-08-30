@@ -37,8 +37,8 @@ module.exports = function ( jq ) {
 				common.calendarOptions.onClick = async function(date){
 					selectDate = common.doFormatDateStr(new Date(date));
 					$(orderDateBox).text(selectDate);
-					$('#OrderListBox').remove();
 					calendarHandle.closeAlert();
+					$('#OrderListBox').remove();
 					let orderListBox = await doCreateOrderList(shopData, workAreaBox, selectDate);
 					$(workAreaBox).append($(orderListBox));
 				}
@@ -596,6 +596,7 @@ module.exports = function ( jq ) {
 			if (orderDate) {
 				orderReqParams = {orderDate: orderDate};
 			}
+
       let orderRes = await common.doCallApi('/api/shop/order/list/by/shop/' + shopData.id, orderReqParams);
       let orders = orderRes.Records;
       console.log(orders);
@@ -604,7 +605,7 @@ module.exports = function ( jq ) {
 			let orangeOrders = [];
 			let greenOrders = [];
 			let greyOrders = [];
-			
+
       let orderListBox = $('<div id="OrderListBox"></div>').css({'position': 'relative', 'width': '100%', 'margin-top': '25px', 'overflow': 'auto'});
       if ((orders) && (orders.length > 0)) {
         let	promiseList = new Promise(async function(resolve2, reject2){
@@ -622,7 +623,7 @@ module.exports = function ( jq ) {
             $(orderBox).append($('<div><b>วันที่-เวลา :</b> ' + fmtDate + ':' + fmtTime + '</div>').css({'width': '100%'}));
 						if (orders[i].Status == 1) {
 							$(orderBox).css({'background-color': 'yellow'});
-							let mergeOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
+							let mergeOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px', 'border': '1px solid black'});
 							$(mergeOrderCmdBox).append($('<span>ยุบรวมออร์เดอร์</span>').css({'font-weight': 'bold'}));
 							$(mergeOrderCmdBox).on('click', async (evt)=>{
 								evt.stopPropagation();
@@ -635,10 +636,11 @@ module.exports = function ( jq ) {
 					          orderRes = await common.doCallApi('/api/shop/order/update', params);
 					          if (orderRes.status.code == 200) {
 					            $.notify("ยุบรวมรายการออร์เดอร์สำเร็จ", "success");
-											$('#OrderListBox').remove();
-											//let orderListBox = await doCreateOrderList(shopData, workAreaBox, orderDate);
-											await doCreateOrderList(shopData, workAreaBox, orderDate);
-											//$(workAreaBox).append($(orderListBox));
+											common.delay(500).then(async()=>{
+												$('#OrderListBox').remove();
+												let newOrderListBox = await doCreateOrderList(shopData, workAreaBox, orderReqParams.orderDate);
+												$(workAreaBox).append($(newOrderListBox));
+											});
 					          } else {
 					            $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
 					          }
@@ -648,7 +650,7 @@ module.exports = function ( jq ) {
 								});
 							});
 							$(orderBox).append($(mergeOrderCmdBox));
-							let cancelOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
+							let cancelOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px', 'border': '1px solid black'});
 							$(cancelOrderCmdBox).append($('<span>ยกเลิกออร์เดอร์</span>').css({'font-weight': 'bold'}));
 							$(cancelOrderCmdBox).on('click', async (evt)=>{
 								evt.stopPropagation();
@@ -656,9 +658,11 @@ module.exports = function ( jq ) {
 								let orderRes = await common.doCallApi('/api/shop/order/update', params);
 								if (orderRes.status.code == 200) {
 									$.notify("ยกเลิกรายการออร์เดอร์สำเร็จ", "success");
-									$('#OrderListBox').remove();
-									let orderListBox = await doCreateOrderList(shopData, workAreaBox, orderDate);
-									$(workAreaBox).append($(orderListBox));
+									common.delay(500).then(async()=>{
+										$('#OrderListBox').remove();
+										let newOrderListBox = await doCreateOrderList(shopData, workAreaBox, orderReqParams.orderDate);
+										$(workAreaBox).append($(newOrderListBox));
+									});
 								} else {
 									$.notify("ระบบไม่สามารถยกเลิกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
 								}

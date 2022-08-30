@@ -111,6 +111,7 @@ module.exports = function ( jq ) {
 						return (item.id == results[i].id);
 					});
 					if (itemOnOrders.length == 0) {
+						let descRow = undefined;
 	          let resultRow = $('<tr></tr>').css({'cursor': 'pointer', 'padding': '4px'});
 	          $(resultRow).hover(()=>{
 	            $(resultRow).css({'background-color': 'grey', 'color': 'white'});
@@ -134,6 +135,9 @@ module.exports = function ( jq ) {
 	              applyResult.Qty = qtyValue;
 								applyResult.ItemStatus = 'New';
 								$(resultRow).remove();
+								if ($(descRow)) {
+									$(descRow).remove();
+								}
 	              successCallback(applyResult);
 	            } else {
 	              $(qtyInput).css({'border': '1px solid red'});
@@ -152,6 +156,14 @@ module.exports = function ( jq ) {
 	          $(qtyCell).append($(qtyInput)).append($('<span>*</spam>').css({'color': 'red'}));
 	          $(resultRow).append($(pictureCell)).append($(nameCell)).append($(qtyCell)).append($(priceCell)).append($(unitCell)).append($(groupCell));
 	          $(gooditemTable).append($(resultRow));
+						if ((results[i].Desc) && (results[i].Desc != '')) {
+							$(resultRow).attr('title', results[i].Desc);
+							descRow = $('<tr></tr>');
+							let descCell = $('<td colspan="6" align="left" valign="middle"></td>').css({'font-size': '14px'});
+							$(descCell).text(results[i].Desc.substring(0, 150));
+							$(descRow).append($(descCell))
+							$(gooditemTable).append($(descRow));
+						}
 					}
         }
         setTimeout(()=>{
