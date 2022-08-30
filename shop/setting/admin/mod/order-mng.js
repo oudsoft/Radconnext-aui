@@ -53,7 +53,19 @@ module.exports = function ( jq ) {
 			$(newOrderCmd).on('click', (evt)=>{
 				doOpenOrderForm(shopData, workAreaBox);
 			});
-			$(newOrderCmdBox).append($(newOrderCmd))
+			let canceledOrderHiddenToggleCmd = common.doCreateTextCmd('ซ่อนออร์เดอร์ที่ถูกยกเลิก', 'grey', 'white');
+			$(canceledOrderHiddenToggleCmd).on('click', (evt)=>{
+				let displayStatus = $('.canceled-order').css('display');
+				if (displayStatus === 'none') {
+					$('.canceled-order').css('display', 'block');
+					$(canceledOrderHiddenToggleCmd).text('ซ่อนออร์เดอร์ที่ถูกยกเลิก');
+				} else {
+					$('.canceled-order').css('display', 'none');
+					$(canceledOrderHiddenToggleCmd).text('แสดงออร์เดอร์ที่ถูกยกเลิก');
+				}
+			});
+
+			$(newOrderCmdBox).append($(canceledOrderHiddenToggleCmd)).append($(newOrderCmd).css({'margin-left': '4px'}));
 			$(workAreaBox).append($(newOrderCmdBox));
 
 			$('#OrderListBox').remove();
@@ -383,6 +395,7 @@ module.exports = function ( jq ) {
   const doOpenGoodItemMngDlg = function(shopData, gooditemSeleted, callback){
     return new Promise(async function(resolve, reject) {
       const gooditemDlgContent = await gooditemdlg.doCreateFormDlg(shopData, gooditemSeleted, callback);
+			$(gooditemDlgContent).find('#SearchKeyInput').css({'width': '280px', 'background': 'url("../../images/search-icon.png") right center / 8% 100% no-repeat'});
       $(gooditemDlgContent).css({'margin-top': '10px'});
       const gooditemformoption = {
   			title: 'เลือกรายการสินค้า',
@@ -734,6 +747,7 @@ module.exports = function ( jq ) {
 							greenOrders.push(orders[i]);
 						} else if (orders[i].Status == 0) {
 							$(orderBox).css({'background-color': 'grey'});
+							$(orderBox).addClass('canceled-order');
 							greyOrders.push(orders[i]);
 						}
             $(orderBox).on('click', (evt)=>{

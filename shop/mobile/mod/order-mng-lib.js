@@ -6,6 +6,7 @@ module.exports = function ( jq ) {
   const orderForm = require('./order-form-lib.js')($);
 	const styleCommon = require('./style-common-lib.js')($);
 	const closeorderdlg = require('../../setting/admin/mod/closeorder-dlg.js')($);
+	const mergeorderdlg = require('../../setting/admin/mod/order-merge-dlg.js')($);
 
   let pageHandle = undefined;
 
@@ -58,7 +59,19 @@ module.exports = function ( jq ) {
 			$(newOrderCmd).on('click', (evt)=>{
 				orderForm.doOpenOrderForm(shopId, workAreaBox, undefined, undefined, doShowOrderList);
 			});
-			$(newOrderCmdBox).append($(newOrderCmd))
+			let canceledOrderHiddenToggleCmd = common.doCreateTextCmd('ซ่อนออร์เดอร์ที่ถูกยกเลิก', 'grey', 'white');
+			$(canceledOrderHiddenToggleCmd).on('click', (evt)=>{
+				let displayStatus = $('.canceled-order').css('display');
+				if (displayStatus === 'none') {
+					$('.canceled-order').css('display', 'block');
+					$(canceledOrderHiddenToggleCmd).text('ซ่อนออร์เดอร์ที่ถูกยกเลิก');
+				} else {
+					$('.canceled-order').css('display', 'none');
+					$(canceledOrderHiddenToggleCmd).text('แสดงออร์เดอร์ที่ถูกยกเลิก');
+				}
+			});
+
+			$(newOrderCmdBox).append($(canceledOrderHiddenToggleCmd)).append($(newOrderCmd).css({'margin-left': '4px'}));
 			$(workAreaBox).append($(newOrderCmdBox));
 
       $('#OrderListBox').remove();
@@ -100,7 +113,34 @@ module.exports = function ( jq ) {
             $(orderBox).append($('<div><b>วันที่-เวลา :</b> ' + fmtDate + ':' + fmtTime + '</div>').css({'width': '100%'}));
 						if (orders[i].Status == 1) {
 							$(orderBox).css({'background-color': 'yellow'});
-							let cancelOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px'});
+							let mergeOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px', 'border': '1px solid black'});
+							$(mergeOrderCmdBox).append($('<span>ยุบรวมออร์เดอร์</span>').css({'font-weight': 'bold'}));
+							$(mergeOrderCmdBox).on('click', async (evt)=>{
+								evt.stopPropagation();
+								mergeorderdlg.doMergeOrder(orders, i, async (newOrders, destIndex)=>{
+									let params = {data: {Status: 0, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, id: orders[i].id};
+									let orderRes = await common.doCallApi('/api/shop/order/update', params);
+									if (orderRes.status.code == 200) {
+										$.notify("ยกเลิกรายการออร์เดอร์สำเร็จ", "success");
+										params = {data: {Items: orders[destIndex].Items, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, id: orders[destIndex].id};
+					          orderRes = await common.doCallApi('/api/shop/order/update', params);
+					          if (orderRes.status.code == 200) {
+					            $.notify("ยุบรวมรายการออร์เดอร์สำเร็จ", "success");
+											common.delay(500).then(async()=>{
+												$('#OrderListBox').remove();
+												let newOrderListBox = await doCreateOrderList(shopData, workAreaBox, orderReqParams.orderDate);
+												$(workAreaBox).append($(newOrderListBox));
+											});
+					          } else {
+					            $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+					          }
+									} else {
+										$.notify("ระบบไม่สามารถยกเลิกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+									}
+								});
+							});
+							$(orderBox).append($(mergeOrderCmdBox));
+							let cancelOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px', 'border': '1px solid black'});
 							$(cancelOrderCmdBox).append($('<span>ยกเลิกออร์เดอร์</span>').css({'font-weight': 'bold'}));
 							$(cancelOrderCmdBox).on('click', async (evt)=>{
 								evt.stopPropagation();
@@ -108,8 +148,11 @@ module.exports = function ( jq ) {
 								let orderRes = await common.doCallApi('/api/shop/order/update', params);
 								if (orderRes.status.code == 200) {
 									$.notify("ยกเลิกรายการออร์เดอร์สำเร็จ", "success");
-									$('#OrderListBox').remove();
-									doCreateOrderList(shopId, workAreaBox, orderDate);
+									common.delay(500).then(async()=>{
+										$('#OrderListBox').remove();
+										let newOrderListBox = await doCreateOrderList(shopId, workAreaBox, orderReqParams.orderDate);
+										$(workAreaBox).append($(newOrderListBox));
+									});
 								} else {
 									$.notify("ระบบไม่สามารถยกเลิกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
 								}
@@ -174,6 +217,7 @@ module.exports = function ( jq ) {
 							}
 						} else if (orders[i].Status == 0) {
 							$(orderBox).css({'background-color': 'grey'});
+							$(orderBox).addClass('canceled-order');
 						}
             $(orderBox).on('click', (evt)=>{
 							evt.stopPropagation();
