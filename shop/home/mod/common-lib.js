@@ -3,6 +3,8 @@ module.exports = function ( jq ) {
 
   const fileUploadMaxSize = 10000000;
 
+	const shopSensitives = [1, 6];
+
   const doCallApi = function(apiUrl, rqParams) {
     return new Promise(function(resolve, reject) {
       $('body').loading('start');
@@ -96,7 +98,7 @@ module.exports = function ( jq ) {
   }
 
 	const doCreateTextCmd = function(text, bgcolor, textcolor, bordercolor, hovercolor) {
-    let textCmd = $('<span></span>').css({'min-height': '35px', 'line-height': '30px', 'cursor': 'pointer', 'border-radius': '4px', 'padding': '4px', 'text-align': 'center'});
+    let textCmd = $('<span></span>').css({/*'min-height': '35px', 'line-height': '30px',*/ 'cursor': 'pointer', 'border-radius': '4px', 'padding': '4px', 'text-align': 'center', 'font-size': '16px'});
 		$(textCmd).text(text);
 		$(textCmd).css({'background-color': bgcolor, 'color': textcolor});
 		if (bordercolor){
@@ -173,8 +175,20 @@ module.exports = function ( jq ) {
     });
   }
 
+	const doResetSensitiveWord = function(words){
+    return new Promise(async function(resolve, reject) {
+			await words.forEach((word, i) => {
+				if ($('#' + word.elementId).hasClass('sensitive-word')) {
+					$('#' + word.elementId).text(word.customWord);
+				}
+			});
+			resolve();
+    });
+  }
+
   return {
 		fileUploadMaxSize,
+		shopSensitives,
     doCallApi,
     doGetApi,
 		doUserLogout,
@@ -189,6 +203,7 @@ module.exports = function ( jq ) {
 		genUniqueID,
 		isExistsResource,
 		doCreateReportDocButtonCmd,
-		doCalOrderTotal
+		doCalOrderTotal,
+		doResetSensitiveWord
 	}
 }

@@ -87,44 +87,64 @@ module.exports = function ( jq ) {
   }
 
   const doCreateContolShopCmds = function(shopData){
-    let commandsBox = $('<div style="padding: 4px;"></viv>').css({'width': '99.1%', 'text-align': 'left', 'font-size': '14px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white', 'margin-top': '10px'});
-    let userMngCmd = $('<input type="button" value=" ผู้ใช้งาน " class="action-btn"/>').css({'margin-left': '10px'});
+    let commandsBox = $('<div style="padding: 4px;"></viv>').css({'width': '99.1%', 'height': '35px', 'text-align': 'left', 'border': '2px solid black', 'border-radius': '4px', 'background-color': 'grey', 'margin-top': '5px'});
+    //let userMngCmd = $('<input type="button" value=" ผู้ใช้งาน " class="action-btn"/>').css({'margin-left': '10px'});
+		let userMngCmd = $('<span>ผู้ใช้งาน</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 0px 0px 10px', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey', 'float': 'left'});
+		$(userMngCmd).hover(()=>{	$(userMngCmd).css({'border': '3px solid black'});}, ()=>{	$(userMngCmd).css({'border': '3px solid grey'});});
     $(userMngCmd).on('click', (evt)=>{
       doUserMngClickCallBack(evt, shopData);
     });
-    let customerMngCmd = $('<input type="button" value=" รายการลูกค้า " class="action-btn"/>').css({'margin-left': '10px'});
+    //let customerMngCmd = $('<input type="button" value=" รายการลูกค้า " class="action-btn"/>').css({'margin-left': '10px'});
+		let customerMngCmd = $('<span>รายการลูกค้า</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 0px 0px 10px', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey', 'float': 'left'});
+		$(customerMngCmd).hover(()=>{	$(customerMngCmd).css({'border': '3px solid black'});}, ()=>{	$(customerMngCmd).css({'border': '3px solid grey'});});
     $(customerMngCmd).on('click', (evt)=>{
       doCustomerMngClickCallBack(evt, shopData);
     });
-    let menugroupMngCmd = $('<input type="button" value=" รายการกลุ่มสินค้า " class="action-btn"/>').css({'margin-left': '10px'});
+    //let menugroupMngCmd = $('<input type="button" value=" รายการกลุ่มสินค้า " class="action-btn"/>').css({'margin-left': '10px'});
+		let menugroupMngCmd = $('<span>รายการกลุ่มสินค้า</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 0px 0px 10px', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey', 'float': 'left'});
+		$(menugroupMngCmd).hover(()=>{	$(menugroupMngCmd).css({'border': '3px solid black'});}, ()=>{	$(menugroupMngCmd).css({'border': '3px solid grey'});});
     $(menugroupMngCmd).on('click', (evt)=>{
       doMenugroupMngClickCallBack(evt, shopData);
     });
-    let menuitemMngCmd = $('<input type="button" value=" รายการสินค้า " class="action-btn"/>').css({'margin-left': '10px'});
+    //let menuitemMngCmd = $('<input type="button" value=" รายการสินค้า " class="action-btn"/>').css({'margin-left': '10px'});
+		let menuitemMngCmd = $('<span>รายการสินค้า</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 0px 0px 10px', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey', 'float': 'left'});
+		$(menuitemMngCmd).hover(()=>{	$(menuitemMngCmd).css({'border': '3px solid black'});}, ()=>{	$(menuitemMngCmd).css({'border': '3px solid grey'});});
     $(menuitemMngCmd).on('click', (evt)=>{
       doMenuitemMngClickCallBack(evt, shopData);
     });
 
-    let orderMngCmd = $('<input type="button" value=" ออร์เดอร์ " class="action-btn"/>').css({'margin-left': '10px'});
+    //let orderMngCmd = $('<input type="button" value=" ออร์เดอร์ " class="action-btn"/>').css({'margin-left': '10px'});
+		let orderMngCmd = $('<span id="orderMngCmd">ออร์เดอร์</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 0px 0px 10px', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey', 'float': 'left'});
+		$(orderMngCmd).hover(()=>{	$(orderMngCmd).css({'border': '3px solid black'});}, ()=>{ $(orderMngCmd).css({'border': '3px solid grey'});});
+		$(orderMngCmd).addClass('sensitive-word');
     $(orderMngCmd).on('click', (evt)=>{
       doOrderMngClickCallBack(evt, shopData);
     });
 
-		let templateMngCmd = $('<input type="button" value=" รูปแบบเอกสาร " class="action-btn"/>').css({'margin-left': '10px'});
+		//let templateMngCmd = $('<input type="button" value=" รูปแบบเอกสาร " class="action-btn"/>').css({'margin-left': '10px'});
+		let templateMngCmd = $('<span>รูปแบบเอกสาร</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 0px 0px 10px', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey', 'float': 'left'});
+		$(templateMngCmd).hover(()=>{	$(templateMngCmd).css({'border': '3px solid black'});}, ()=>{ $(templateMngCmd).css({'border': '3px solid grey'});});
     $(templateMngCmd).on('click', (evt)=>{
       doTemplateMngClickCallBack(evt, shopData);
     });
 
-		let logoutCmd = $('<span>ออกจากระบบ</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin-right': '5px', 'margin-top': '1px', 'padding': '4px', 'font-size': '14px', 'float': 'right'});
+		let logoutCmd = $('<span>ออกจากระบบ</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 5px 0px 0px', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey', 'float': 'right'});
 		$(logoutCmd).on('click', (evt)=>{
 			common.doUserLogout();
 		});
-		//$(titlePageBox).append($(logoutCmd));
+		$(logoutCmd).hover(()=>{
+			$(logoutCmd).css({'border': '3px solid black'});
+		},()=>{
+			$(logoutCmd).css({'border': '3px solid grey'});
+		});
+
+
 
     return $(commandsBox).append($(orderMngCmd)).append($(menuitemMngCmd)).append($(menugroupMngCmd)).append($(customerMngCmd)).append($(userMngCmd)).append($(templateMngCmd)).append($(logoutCmd));
   }
 
   const doShowShopMhg = function(shopData, uploadLogCallback, editShopCallback){
+		doSaveSensitiveWord();
     let titlePage = doCreateTitlePage(shopData, uploadLogCallback, editShopCallback);
     $('#App').empty().append($(titlePage));
     let shopCmdControl = doCreateContolShopCmds(shopData);
@@ -157,7 +177,14 @@ module.exports = function ( jq ) {
 
   const doOrderMngClickCallBack = async function(evt, shopData){
 		let workingAreaBox = $('#WorkingAreaBox');
-		await order.doShowOrderList(shopData, workingAreaBox)
+		await order.doShowOrderList(shopData, workingAreaBox);
+
+		if (common.shopSensitives.includes(shopData.id)) {
+			let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));			
+			common.delay(500).then(async ()=>{
+				await common.doResetSensitiveWord(sensitiveWordJSON);
+			});
+		}
   }
 
 	const doTemplateMngClickCallBack = async function(evt, shopData){
@@ -165,7 +192,13 @@ module.exports = function ( jq ) {
 		await template.doShowTemplateDesign(shopData, workingAreaBox)
 	}
 
+	const doSaveSensitiveWord = function(){
+		const sensitiveWordJSON = require('../../../../../api/shop/lib/sensitive-word.json');
+		localStorage.setItem('sensitiveWordJSON', JSON.stringify(sensitiveWordJSON))
+	}
+
   return {
-    doShowShopMhg
+    doShowShopMhg,
+		doSaveSensitiveWord
 	}
 }

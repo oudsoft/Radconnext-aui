@@ -285,7 +285,7 @@ module.exports = function ( jq ) {
 	}
 
 	const doOpenManageShop = function(shopData, uploadLogoCallback, editShopCallback){
-		shopmng.doShowShopMhg(shopData, uploadLogoCallback, editShopCallback)
+		shopmng.doShowShopMhg(shopData, uploadLogoCallback, editShopCallback);
 	}
 
 	const doDeleteShop = function(shopId){

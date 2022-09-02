@@ -64,7 +64,6 @@ $( document ).ready(function() {
 	};
 
 	initPage();
-
   //doTestCreateInvoice();
 });
 

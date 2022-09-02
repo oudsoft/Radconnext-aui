@@ -31,8 +31,8 @@ module.exports = function ( jq ) {
 				selectDate = common.doFormatDateStr(new Date());
 			}
       let titlePageBox = $('<div style="padding: 4px;"></viv>').css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
-			let titleTextBox = $('<div></div>').text('รายการออร์เดอร์ของร้าน');
-			let orderDateBox = $('<div></div>').text(selectDate).css({'width': 'fit-content', 'display': 'inline-block', 'background-color': 'white', 'color': 'black', 'padding': '4px', 'cursor': 'pointer', 'font-size': '16px'});
+			let titleTextBox = $('<div class="sensitive-word" id="titleTextBox"></div>').text('รายการออร์เดอร์ของร้าน');
+			let orderDateBox = $('<span></span>').text(selectDate).css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 5px 0px 30%', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey'});
 			$(orderDateBox).on('click', (evt)=>{
 				common.calendarOptions.onClick = async function(date){
 					selectDate = common.doFormatDateStr(new Date(date));
@@ -44,16 +44,26 @@ module.exports = function ( jq ) {
 				}
 				let calendarHandle = doShowCalendarDlg(common.calendarOptions);
 			});
+			$(orderDateBox).hover(()=>{
+				$(orderDateBox).css({'border': '3px solid black'});
+			},()=>{
+				$(orderDateBox).css({'border': '3px solid grey'});
+			});
+
 			$(titlePageBox).append($(titleTextBox)).append($(orderDateBox));
 
 			$(workAreaBox).append($(titlePageBox));
-			let newOrderCmdBox = $('<div style="padding: 4px;"></div>').css({'width': '99.5%', 'text-align': 'right'});
+			//let newOrderCmdBox = $('<div></div>').css({'position': 'absolute', 'text-align': 'right', 'padding': '4px', 'margin-bottom': '4px'});
 			//let newOrderCmd = $('<input type="button" value=" เปิดออร์เดอร์ใหม่ " class="action-btn"/>');
 			let newOrderCmd = common.doCreateTextCmd('เปิดออร์เดอร์ใหม', 'green', 'white');
+			$(newOrderCmd).addClass('sensitive-word');
+			$(newOrderCmd).attr('id', 'newOrderCmd');
 			$(newOrderCmd).on('click', (evt)=>{
 				doOpenOrderForm(shopData, workAreaBox);
 			});
 			let canceledOrderHiddenToggleCmd = common.doCreateTextCmd('ซ่อนออร์เดอร์ที่ถูกยกเลิก', 'grey', 'white');
+			$(canceledOrderHiddenToggleCmd).addClass('sensitive-word');
+			$(canceledOrderHiddenToggleCmd).attr('id', 'canceledOrderHiddenToggleCmd');
 			$(canceledOrderHiddenToggleCmd).on('click', (evt)=>{
 				let displayStatus = $('.canceled-order').css('display');
 				if (displayStatus === 'none') {
@@ -65,13 +75,16 @@ module.exports = function ( jq ) {
 				}
 			});
 
-			$(newOrderCmdBox).append($(canceledOrderHiddenToggleCmd)).append($(newOrderCmd).css({'margin-left': '4px'}));
-			$(workAreaBox).append($(newOrderCmdBox));
+			//$(newOrderCmdBox).append($(canceledOrderHiddenToggleCmd)).append($(newOrderCmd).css({'margin-left': '4px'}));
+			//$(workAreaBox).append($(newOrderCmdBox));
+			$(titlePageBox).append($(newOrderCmd).css({'float': 'right', 'margin-right': '5px'})).append($(canceledOrderHiddenToggleCmd).css({'float': 'right', 'margin-right': '10px'}));
+			//$(titlePageBox).append($(newOrderCmdBox));
 
 			$('#OrderListBox').remove();
 			let orderListBox = await doCreateOrderList(shopData, workAreaBox, selectDate);
 			$(workAreaBox).append($(orderListBox));
-
+			let orderDateBoxPos = (($(titleTextBox).width() - $(orderDateBox).width()) / 2) - ($(orderDateBox).width());
+			$(orderDateBox).css({'margin-left': orderDateBoxPos + 'px'});
       resolve();
     });
   }
@@ -101,15 +114,15 @@ module.exports = function ( jq ) {
 
     let orderObj = {};
     $(workAreaBox).empty();
-    let titleText = 'เปิดออร์เดอร์ใหม่';
+    let titleText = $('<div>เปิด<span id="TitleOrderForm" class="sensitive-word">ออร์เดอร์</span>ใหม่</div>');
     if (orderData) {
-      titleText = 'แก้ไขออร์เดอร์';
+      titleText = $('<div>แก้ไข<span id="TitleOrderForm" class="sensitive-word">ออร์เดอร์</span></div>');
 			orderObj.id = orderData.id;
 			orderObj.Status = orderData.Status
     } else {
 			orderObj.Status = 1;
 		}
-    let titlePageBox = $('<div style="padding: 4px;"></viv>').text(titleText).css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
+    let titlePageBox = $('<div style="padding: 4px;"></viv>').append($(titleText)).css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
     let customerWokingBox = $('<div id="OrderCustomer" style="padding: 4px; width: 99.1%;"></viv>');
     let itemlistWorkingBox = $('<div id="OrderItemList" style="padding: 4px; width: 99.1%;"></viv>');
     let saveNewOrderCmdBox = $('<div></div>').css({'width': '99.1%', 'text-align': 'center'});
@@ -254,6 +267,13 @@ module.exports = function ( jq ) {
 
 		$('#App').find('#SummaryBox').remove();
 
+		if (common.shopSensitives.includes(shopData.id)) {
+			let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
+			common.delay(500).then(async ()=>{
+				await common.doResetSensitiveWord(sensitiveWordJSON);
+			});
+		}
+		
     const customerSelectedCallback = function(customerSelected){
       orderObj.customer = customerSelected;
       customerDataBox = doRenderCustomerContent(customerSelected);
@@ -774,10 +794,17 @@ module.exports = function ( jq ) {
 						$(summaryBox).off('click');
 					});
 					$('#App').append($(summaryBox).css({'padding': '5px'}));
-          resolve(ob[0]);
+					if (common.shopSensitives.includes(shopData.id)) {
+						let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
+						common.delay(500).then(async ()=>{
+							await common.doResetSensitiveWord(sensitiveWordJSON);
+						});
+					}
+					resolve(ob[0]);
         });
       } else {
 				$(orderListBox).text('ไม่พบรายการออร์เดอร์ของวันที่ ' + orderDate);
+				$(orderListBox).addClass('sensitive-word');
         resolve($(orderListBox));
       }
     });

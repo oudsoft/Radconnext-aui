@@ -82,8 +82,24 @@ module.exports = function ( jq ) {
 		      $('#RightSideBox').empty().append($(formResult.handle));
 					let isMobileDevice = formResult.isMobileDevice();
 					if (isMobileDevice) {
+						console.log('ok');
+						$('body').empty();
+						$('body').css({'height': 'calc(100vh)', 'font-family': 'EkkamaiStandard', 'font-size': '18px'});
+						/*
 						$('#LeftSideBox').hide();
 						$('#RightSideBox').find(">:first-child").css({'width': '90%', 'margin-top': '-280px'});
+						$('#RightSideBox').removeAttr('style');
+						$('#ViewBox').removeAttr('style');
+						*/
+						const loginBox = $('<div id="LoginForm"></div>');
+					  $(loginBox).css({'position': 'relative', 'width': '100%'});
+					  const radconnextOption = {};
+					  const myRadconnextLoginForm = $(loginBox).loginform(radconnextOption);
+						$('body').append($(loginBox));
+						$(loginBox).find('input[type="text"]').css({'font-family': 'EkkamaiStandard', 'font-size': '18px'});
+						$(loginBox).find('input[type="password"]').css({'font-family': 'EkkamaiStandard', 'font-size': '18px'});
+						$(loginBox).find('input[type="button"]').css({'font-family': 'EkkamaiStandard', 'font-size': '18px', 'height': '35px'});
+						$(loginBox).find('input[type="checkbox"]').css({'transform': 'scale(1.4)'});
 					}
 					$('body').loading('stop');
 				});
