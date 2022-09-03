@@ -14,7 +14,7 @@ module.exports = function ( jq ) {
 		{fieldName: 'User_LastNameEN', displayName: 'นามสกุล (ภาษาอังกฤษ)', width: '12%', align: 'left', inputSize: '30', verify: false, showHeader: false},
     {fieldName: 'User_NameTH', displayName: 'ชื่อ (ภาษาไทย)', width: '15%', align: 'left', inputSize: '30', verify: true, showHeader: true},
 		{fieldName: 'User_LastNameTH', displayName: 'นามสกุล (ภาษาไทย)', width: '15%', align: 'left', inputSize: '30', verify: true, showHeader: true},
-		{fieldName: 'User_Phone', displayName: 'โทรศัพท์', width: '10%', align: 'left', inputSize: '20', verify: false, showHeader: true},
+		{fieldName: 'User_Phone', displayName: 'โทรศัพท์', width: '10%', align: 'left', inputSize: '20', verify: true, showHeader: true},
 		{fieldName: 'User_Email', displayName: 'อีเมล์', width: '10%', align: 'left', inputSize: '30', verify: false, showHeader: false},
 		{fieldName: 'User_LineID', displayName: 'Line ID', width: '10%', align: 'center', inputSize: '30', verify: false, showHeader: false},
 	];
@@ -288,6 +288,7 @@ module.exports = function ( jq ) {
 			width: '520px',
 			onOk: async function(evt) {
 				let newUserFormObj = doVerifyUserForm();
+				console.log(newUserFormObj);
 				if (newUserFormObj) {
 					let hasValue = newUserFormObj.hasOwnProperty('User_NameTH');
 					if (hasValue){

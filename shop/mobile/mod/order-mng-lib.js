@@ -62,17 +62,19 @@ module.exports = function ( jq ) {
 			$(newOrderCmd).on('click', (evt)=>{
 				orderForm.doOpenOrderForm(shopId, workAreaBox, undefined, undefined, doShowOrderList);
 			});
-			let canceledOrderHiddenToggleCmd = common.doCreateTextCmd('ซ่อนออร์เดอร์ที่ถูกยกเลิก', 'grey', 'white');
-			$(canceledOrderHiddenToggleCmd).addClass('sensitive-word');
-			$(canceledOrderHiddenToggleCmd).attr('id', 'canceledOrderHiddenToggleCmd');
+			if (common.shopSensitives.includes(shopId)) {
+				let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
+				$(newOrderCmd).text(sensitiveWordJSON.find((item)=>{if(item.elementId === 'newOrderCmd') return item}).customWord) ;
+			}
+			let canceledOrderHiddenToggleCmd = common.doCreateTextCmd('ซ่อนรายการที่ถูกยกเลิก', 'grey', 'white');
 			$(canceledOrderHiddenToggleCmd).on('click', (evt)=>{
 				let displayStatus = $('.canceled-order').css('display');
 				if (displayStatus === 'none') {
 					$('.canceled-order').css('display', 'block');
-					$(canceledOrderHiddenToggleCmd).text('ซ่อนออร์เดอร์ที่ถูกยกเลิก');
+					$(canceledOrderHiddenToggleCmd).text('ซ่อนรายการที่ถูกยกเลิก');
 				} else {
 					$('.canceled-order').css('display', 'none');
-					$(canceledOrderHiddenToggleCmd).text('แสดงออร์เดอร์ที่ถูกยกเลิก');
+					$(canceledOrderHiddenToggleCmd).text('แสดงรายการที่ถูกยกเลิก');
 				}
 			});
 
@@ -83,14 +85,14 @@ module.exports = function ( jq ) {
 			let orderListBox = await doCreateOrderList(shopId, workAreaBox, selectDate);
 			$(workAreaBox).append($(orderListBox));
 
+			if ($(orderListBox).find('.canceled-order')){
+				$(canceledOrderHiddenToggleCmd).show();
+			} else {
+				$(canceledOrderHiddenToggleCmd).hide();
+			}
+
       resolve();
 
-			if (common.shopSensitives.includes(shopId)) {
-				let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
-				common.delay(500).then(async ()=>{
-					await common.doResetSensitiveWord(sensitiveWordJSON);
-				});
-			}
     });
   }
 
@@ -112,9 +114,6 @@ module.exports = function ( jq ) {
       if ((orders) && (orders.length > 0)) {
         let	promiseList = new Promise(async function(resolve2, reject2){
           for (let i=0; i < orders.length; i++) {
-						$(canceledOrderHiddenToggleCmd).addClass('sensitive-word');
-						$(canceledOrderHiddenToggleCmd).attr('id', 'canceledOrderHiddenToggleCmd');
-
             let total = await doCalOrderTotal(orders[i].Items);
             let orderDate = new Date(orders[i].createdAt);
             let fmtDate = common.doFormatDateStr(orderDate);
@@ -125,10 +124,12 @@ module.exports = function ( jq ) {
             $(orderBox).append($('<div><b><span id ="opennerOrderLabel" class="sensitive-word">ผู้รับออร์เดอร์</span> :</b> ' + ownerOrderFullName + '</div>').css({'width': '100%'}));
             $(orderBox).append($('<div><b>ยอดรวม :</b> ' + common.doFormatNumber(total) + '</div>').css({'width': '100%'}));
             $(orderBox).append($('<div><b>วันที่-เวลา :</b> ' + fmtDate + ':' + fmtTime + '</div>').css({'width': '100%'}));
+						let mergeOrderCmdBox = undefined;
+						let cancelOrderCmdBox = undefined;
 						if (orders[i].Status == 1) {
 							$(orderBox).css({'background-color': 'yellow'});
-							let mergeOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px', 'border': '1px solid black'});
-							$(mergeOrderCmdBox).append($('<span>ยุบรวมออร์เดอร์</span>').css({'font-weight': 'bold'}));
+							mergeOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px', 'border': '1px solid black'});
+							$(mergeOrderCmdBox).append($('<span id ="mergeOrderCmd" class="sensitive-word">ยุบรวมออร์เดอร์</span>').css({'font-weight': 'bold'}));
 							$(mergeOrderCmdBox).on('click', async (evt)=>{
 								evt.stopPropagation();
 								mergeorderdlg.doMergeOrder(orders, i, async (newOrders, destIndex)=>{
@@ -154,8 +155,8 @@ module.exports = function ( jq ) {
 								});
 							});
 							$(orderBox).append($(mergeOrderCmdBox));
-							let cancelOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px', 'border': '1px solid black'});
-							$(cancelOrderCmdBox).append($('<span>ยกเลิกออร์เดอร์</span>').css({'font-weight': 'bold'}));
+							cancelOrderCmdBox = $('<div></div>').css({'width': '100%', 'background-color': 'white', 'color': 'black', 'text-align': 'center', 'cursor': 'pointer', 'z-index': '210', 'line-height': '30px', 'border': '1px solid black'});
+							$(cancelOrderCmdBox).append($('<span id ="cancelOrderCmd" class="sensitive-word">ยกเลิกออร์เดอร์</span>').css({'font-weight': 'bold'}));
 							$(cancelOrderCmdBox).on('click', async (evt)=>{
 								evt.stopPropagation();
 								let params = {data: {Status: 0, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, id: orders[i].id};
@@ -248,6 +249,18 @@ module.exports = function ( jq ) {
               $(orderListBox).remove();
               orderForm.doOpenOrderForm(shopId, workAreaBox, orderData, orderDate, doShowOrderList);
             });
+
+						if (common.shopSensitives.includes(shopId)) {
+							let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
+							$(orderBox).find("#opennerOrderLabel").text(sensitiveWordJSON.find((item)=>{if(item.elementId === 'opennerOrderLabel') return item}).customWord) ;
+							if (mergeOrderCmdBox) {
+								$(mergeOrderCmdBox).find("#mergeOrderCmd").text(sensitiveWordJSON.find((item)=>{if(item.elementId === 'mergeOrderCmd') return item}).customWord) ;
+							}
+							if (cancelOrderCmdBox) {
+								$(cancelOrderCmdBox).find("#cancelOrderCmd").text(sensitiveWordJSON.find((item)=>{if(item.elementId === 'cancelOrderCmd') return item}).customWord) ;
+							}
+						}
+
             $(orderListBox).append($(orderBox));
           }
           setTimeout(()=>{
@@ -260,6 +273,10 @@ module.exports = function ( jq ) {
         });
       } else {
 				let notFoundOrderDatbox = $('<div>ไม่พบรายการ<span id="notFoundOrderDatbox" class="sensitive-word">ออร์เดอร์</span>ของวันที่ ' + orderDate + '</div>');
+				if (common.shopSensitives.includes(shopData.id)) {
+					let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
+					$(notFoundOrderDatbox).find("#notFoundOrderDatbox").text(sensitiveWordJSON.find((item)=>{if(item.elementId === 'notFoundOrderDatbox') return item}).customWord) ;
+				}
 				$(orderListBox).append($(notFoundOrderDatbox));
         resolve($(orderListBox));
       }
