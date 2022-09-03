@@ -56,6 +56,15 @@ $( document ).ready(function() {
   console.log(userdata);
   if ((!userdata) || (userdata == null)) {
     common.doUserLogout();
+  } else {
+    if (common.shopSensitives.includes(userdata.shopId)) {
+      let sensitiveWordJSON = require('../../../api/shop/lib/sensitive-word.json');
+      localStorage.setItem('sensitiveWordJSON', JSON.stringify(sensitiveWordJSON))
+      sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
+      common.delay(500).then(async ()=>{
+        await common.doResetSensitiveWord(sensitiveWordJSON);
+      });
+    }
   }
 
 	initPage();

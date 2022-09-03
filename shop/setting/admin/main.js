@@ -55,11 +55,15 @@ $( document ).ready(function() {
     $('body').loading({overlay: $("#overlay"), stoppable: true});
 
     let userdata = JSON.parse(localStorage.getItem('userdata'));
-    //console.log(userdata);
-    if (userdata.usertypeId == 1) {
-      doShowShopItems();
+    console.log(userdata);
+    if ((!userdata) || (userdata == null)) {
+      common.doUserLogout();
     } else {
-      doShowShopMng(userdata.shopId);
+      if (userdata.usertypeId == 1) {
+        doShowShopItems();
+      } else {
+        doShowShopMng(userdata.shopId);
+      }
     }
 	};
 
@@ -80,6 +84,14 @@ const doShowShopMng = async function(shopId) {
   let editShopCallback = shopitem.doOpenEditShopForm;
   let uploadLogCallback = shopitem.doStartUploadPicture;
   shopitem.doOpenManageShop(shopData, uploadLogCallback, editShopCallback);
+  if (common.shopSensitives.includes(shopId)) {
+    let sensitiveWordJSON = require('../../../../api/shop/lib/sensitive-word.json');
+    localStorage.setItem('sensitiveWordJSON', JSON.stringify(sensitiveWordJSON))
+    sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
+    common.delay(500).then(async ()=>{
+      await common.doResetSensitiveWord(sensitiveWordJSON);
+    });
+  }
 }
 
 const doTestCreateInvoice = async function(){

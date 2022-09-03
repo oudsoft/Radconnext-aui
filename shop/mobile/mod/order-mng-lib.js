@@ -36,7 +36,8 @@ module.exports = function ( jq ) {
 				selectDate = common.doFormatDateStr(new Date());
 			}
       let titlePageBox = $('<div></viv>').css(styleCommon.titlePageBoxStyle);
-			let titleTextBox = $('<div></div>').text('รายการออร์เดอร์ของร้าน');
+			//let titleTextBox = $('<div></div>').text('รายการออร์เดอร์ของร้าน');
+			let titleTextBox = $('<div class="sensitive-word" id="titleTextBox"></div>').text('รายการออร์เดอร์ของร้าน');
 			let orderDateBox = $('<div></div>').text(selectDate).css(styleCommon.orderDateBoxStyle);
 			$(orderDateBox).on('click', (evt)=>{
         common.calendarOptions.onClick = async function(date) {
@@ -56,10 +57,14 @@ module.exports = function ( jq ) {
 
       let newOrderCmdBox = $('<div style="padding: 4px;"></div>').css({'width': '99.5%', 'text-align': 'right'});
 			let newOrderCmd = common.doCreateTextCmd('เปิดออร์เดอร์ใหม', 'green', 'white');
+			$(newOrderCmd).addClass('sensitive-word');
+			$(newOrderCmd).attr('id', 'newOrderCmd');
 			$(newOrderCmd).on('click', (evt)=>{
 				orderForm.doOpenOrderForm(shopId, workAreaBox, undefined, undefined, doShowOrderList);
 			});
 			let canceledOrderHiddenToggleCmd = common.doCreateTextCmd('ซ่อนออร์เดอร์ที่ถูกยกเลิก', 'grey', 'white');
+			$(canceledOrderHiddenToggleCmd).addClass('sensitive-word');
+			$(canceledOrderHiddenToggleCmd).attr('id', 'canceledOrderHiddenToggleCmd');
 			$(canceledOrderHiddenToggleCmd).on('click', (evt)=>{
 				let displayStatus = $('.canceled-order').css('display');
 				if (displayStatus === 'none') {
@@ -79,6 +84,13 @@ module.exports = function ( jq ) {
 			$(workAreaBox).append($(orderListBox));
 
       resolve();
+
+			if (common.shopSensitives.includes(shopId)) {
+				let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
+				common.delay(500).then(async ()=>{
+					await common.doResetSensitiveWord(sensitiveWordJSON);
+				});
+			}
     });
   }
 
@@ -100,7 +112,9 @@ module.exports = function ( jq ) {
       if ((orders) && (orders.length > 0)) {
         let	promiseList = new Promise(async function(resolve2, reject2){
           for (let i=0; i < orders.length; i++) {
-            //console.log(orders[i]);
+						$(canceledOrderHiddenToggleCmd).addClass('sensitive-word');
+						$(canceledOrderHiddenToggleCmd).attr('id', 'canceledOrderHiddenToggleCmd');
+
             let total = await doCalOrderTotal(orders[i].Items);
             let orderDate = new Date(orders[i].createdAt);
             let fmtDate = common.doFormatDateStr(orderDate);
@@ -108,7 +122,7 @@ module.exports = function ( jq ) {
             let ownerOrderFullName = orders[i].userinfo.User_NameTH + ' ' + orders[i].userinfo.User_LastNameTH;
             let orderBox = $('<div></div>').css({'width': '125px', 'position': 'relative', 'min-height': '150px', 'border': '2px solid black', 'border-radius': '5px', 'float': 'left', 'cursor': 'pointer', 'padding': '5px', 'margin-left': '8px', 'margin-top': '10px'});
             $(orderBox).append($('<div><b>ลูกค้า :</b> ' + orders[i].customer.Name + '</div>').css({'width': '100%'}));
-            $(orderBox).append($('<div><b>ผู้รับออร์เดอร์ :</b> ' + ownerOrderFullName + '</div>').css({'width': '100%'}));
+            $(orderBox).append($('<div><b><span id ="opennerOrderLabel" class="sensitive-word">ผู้รับออร์เดอร์</span> :</b> ' + ownerOrderFullName + '</div>').css({'width': '100%'}));
             $(orderBox).append($('<div><b>ยอดรวม :</b> ' + common.doFormatNumber(total) + '</div>').css({'width': '100%'}));
             $(orderBox).append($('<div><b>วันที่-เวลา :</b> ' + fmtDate + ':' + fmtTime + '</div>').css({'width': '100%'}));
 						if (orders[i].Status == 1) {
@@ -245,7 +259,8 @@ module.exports = function ( jq ) {
           resolve(ob[0]);
         });
       } else {
-        $(orderListBox).text('ไม่พบรายการออร์เดอร์ของวันที่ ' + orderDate);
+				let notFoundOrderDatbox = $('<div>ไม่พบรายการ<span id="notFoundOrderDatbox" class="sensitive-word">ออร์เดอร์</span>ของวันที่ ' + orderDate + '</div>');
+				$(orderListBox).append($(notFoundOrderDatbox));
         resolve($(orderListBox));
       }
     });

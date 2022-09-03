@@ -144,7 +144,6 @@ module.exports = function ( jq ) {
   }
 
   const doShowShopMhg = function(shopData, uploadLogCallback, editShopCallback){
-		doSaveSensitiveWord();
     let titlePage = doCreateTitlePage(shopData, uploadLogCallback, editShopCallback);
     $('#App').empty().append($(titlePage));
     let shopCmdControl = doCreateContolShopCmds(shopData);
@@ -178,13 +177,6 @@ module.exports = function ( jq ) {
   const doOrderMngClickCallBack = async function(evt, shopData){
 		let workingAreaBox = $('#WorkingAreaBox');
 		await order.doShowOrderList(shopData, workingAreaBox);
-
-		if (common.shopSensitives.includes(shopData.id)) {
-			let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));			
-			common.delay(500).then(async ()=>{
-				await common.doResetSensitiveWord(sensitiveWordJSON);
-			});
-		}
   }
 
 	const doTemplateMngClickCallBack = async function(evt, shopData){
@@ -192,13 +184,7 @@ module.exports = function ( jq ) {
 		await template.doShowTemplateDesign(shopData, workingAreaBox)
 	}
 
-	const doSaveSensitiveWord = function(){
-		const sensitiveWordJSON = require('../../../../../api/shop/lib/sensitive-word.json');
-		localStorage.setItem('sensitiveWordJSON', JSON.stringify(sensitiveWordJSON))
-	}
-
   return {
-    doShowShopMhg,
-		doSaveSensitiveWord
+    doShowShopMhg
 	}
 }

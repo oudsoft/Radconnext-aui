@@ -22,15 +22,15 @@ module.exports = function ( jq ) {
 
     let orderObj = {};
     $(workAreaBox).empty();
-    let titleText = 'เปิดออร์เดอร์ใหม่';
+    let titleText = $('<div>เปิด<span id="titleOrderForm" class="sensitive-word">ออร์เดอร์</span>ใหม่</div>');
     if (orderData) {
-      titleText = 'แก้ไขออร์เดอร์';
+      titleText = $('<div>แก้ไข<span id="titleOrderForm" class="sensitive-word">ออร์เดอร์</span></div>');
 			orderObj.id = orderData.id;
 			orderObj.Status = orderData.Status
     } else {
 			orderObj.Status = 1;
 		}
-    let titlePageBox = $('<div style="padding: 4px;"></viv>').text(titleText).css(styleCommon.titlePageBoxStyle);
+    let titlePageBox = $('<div style="padding: 4px;"></viv>').append($(titleText)).css(styleCommon.titlePageBoxStyle);
     let customerWokingBox = $('<div id="OrderCustomer" style="padding: 4px; width: 100%; border-bottom: 1px solid black"></viv>');
     let itemlistWorkingBox = $('<div id="OrderItemList" style="padding: 4px; width: 100%;"></viv>');
     let saveNewOrderCmdBox = $('<div id="LastBox"></div>').css({'width': '100%', 'text-align': 'center'});
@@ -243,6 +243,13 @@ module.exports = function ( jq ) {
 		if ([3, 4].includes(orderObj.Status)) {
 			$(editCustomerCmd).hide();
 			$(saveNewOrderCmd).hide();
+		}
+
+		if (common.shopSensitives.includes(shopId)) {
+			let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
+			common.delay(500).then(async ()=>{
+				await common.doResetSensitiveWord(sensitiveWordJSON);
+			});
 		}
 
     const customerSelectedCallback = function(customerSelected){

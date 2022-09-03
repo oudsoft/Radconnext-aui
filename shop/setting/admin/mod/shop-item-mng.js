@@ -286,6 +286,14 @@ module.exports = function ( jq ) {
 
 	const doOpenManageShop = function(shopData, uploadLogoCallback, editShopCallback){
 		shopmng.doShowShopMhg(shopData, uploadLogoCallback, editShopCallback);
+		if (common.shopSensitives.includes(shopData.id)) {
+	    let sensitiveWordJSON = require('../../../../../api/shop/lib/sensitive-word.json');
+	    localStorage.setItem('sensitiveWordJSON', JSON.stringify(sensitiveWordJSON))
+	    sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
+	    common.delay(500).then(async ()=>{
+	      await common.doResetSensitiveWord(sensitiveWordJSON);
+	    });
+	  }
 	}
 
 	const doDeleteShop = function(shopId){

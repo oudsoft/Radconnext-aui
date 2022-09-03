@@ -3,7 +3,7 @@ module.exports = function ( jq ) {
 
   const fileUploadMaxSize = 10000000;
 
-	const shopSensitives = [1, 6];
+	const shopSensitives = [1,6];
 
   const doCallApi = function(apiUrl, rqParams) {
     return new Promise(function(resolve, reject) {
