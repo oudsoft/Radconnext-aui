@@ -158,9 +158,10 @@ module.exports = function ( jq ) {
 				}
 				localStorage.setItem('dicomzipsync', JSON.stringify(dicomzipsync));
 				//util.dicomZipSyncWorker.postMessage({studyID: newDicomZipSync.studyID, type: 'application/x-compressed'});
+				$.notify('ตอบรับเคสสำเร็จ', 'success');
 				$('#NewCaseCmd').click();
 			} else {
-				alert('เกิดข้อผิดพลาด ไม่สามารถตอบรับเคสได้ในขณะนี้');
+				$.notify('ตอบรับเคสไม่สำเร็จ้ในขณะนี้', 'error');
 			}
     });
     $(caseCmdBox).append($(acceptCmd));
@@ -170,9 +171,10 @@ module.exports = function ( jq ) {
     $(notAacceptCmd).on('click', async (evt)=>{
       let response = await common.doUpdateCaseStatus(caseItem.id, 3, 'Radiologist Reject case by Web App')
 			if (response.status.code == 200) {
+				$.notify('ปฏิเสธเคสสำเร็จ', 'success');
 				$('#NewCaseCmd').click();
 			} else {
-				alert('เกิดข้อผิดพลาด ไม่สามารถตอบปฏิเสธเคสได้ในขณะนี้');
+				$.notify('ปฏิเสธเคสไม่สำเร็จในขณะนี้', 'error');
 			}
     });
     $(caseCmdBox).append($(notAacceptCmd))

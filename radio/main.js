@@ -603,6 +603,7 @@ function onNewReportLocalTrigger(evt){
   let triggerData = evt.detail.data;
   console.log(triggerData);
   $.notify('ส่งผลอ่านของ ' + triggerData.patientFullName + ' เข้า PACS รพ. สำเร็จ', 'success');
+  //$('#AcceptedCaseCmd').click();
 }
 
 function doSetupAutoReadyAfterLogin(){

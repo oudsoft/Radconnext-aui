@@ -590,7 +590,7 @@ module.exports = function ( jq ) {
 				resolve(draftResponseRes);
 			} else {
 				$.notify("โปรดพิมพ์ผลอ่านก่อนครับ", "warn");
-				resolve({});
+				resolve();
 			}
 		});
 	}
@@ -1132,24 +1132,6 @@ module.exports = function ( jq ) {
 				});
 			});
 			$(downloadCmd).appendTo($(downloadCmdCell));
-			/*
-			let openStoneWebViewerCmd = $('<input type="button" value=" Open " class="action-btn" style="cursor: pointer;"/>');
-			let openData = {studyInstanceUID: selectedCase.case.Case_StudyInstanceUID, hospitalId: selectedCase.case.hospitalId};
-			$(openStoneWebViewerCmd).data('openData', openData);
-			$(openStoneWebViewerCmd).on('click', onOpenStoneWebViewerCmdClick);
-			$(openStoneWebViewerCmd).appendTo($(downloadCmdCell));
-			*/
-
-			/*
-			let openThirdPartyCmd = $('<input type="button" value=" Open (3rd Party) " class="action-btn" style="cursor: pointer;"/>');
-			$(openThirdPartyCmd).on('click', onOpenThirdPartyCmdClick);
-			$(openThirdPartyCmd).appendTo($(open3rdPartyCmdCell));
-			*/
-
-			/*
-			console.log(selectedCase);
-			console.log(downloadData);
-			*/
 
 			if ((selectedCase.case.Case_PatientHRLink) && (selectedCase.case.Case_PatientHRLink.length > 0)) {
 				let patientHRBox = await doRenderPatientHR(selectedCase.case.Case_PatientHRLink, patientFullName, casedate);
@@ -1720,7 +1702,7 @@ module.exports = function ( jq ) {
 		let bugParams = {email: apiconnector.adminEmailAddress, bugreport: bugDataReport.html()};
 		apiconnector.doCallReportBug(bugParams).then((reportRes)=>{
 			if (reportRes.status.code == 200) {
-				$.notify('ระบบฯ ได้รวบรวมข้อผิดพลาดที่เกิดขึ้นส่งไปให้ผู้ดูแลระบบทางอีเมล์แล้ว', 'warning');
+				$.notify('ระบบฯ ได้รวบรวมข้อผิดพลาดที่เกิดขึ้นส่งไปให้ผู้ดูแลระบบทางอีเมล์แล้ว', 'success');
 				//มีข้อผิดพลาด กรุณาแจ้งผู้ดูแลระบบ
 			} else if (reportRes.status.code == 500) {
 				$.notify('การรายงานข้อผิดพลาดทางอีเมล์เกิดข้อผิดพลาด @API', 'error');
