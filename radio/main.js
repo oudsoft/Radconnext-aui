@@ -165,6 +165,7 @@ function doLoadMainPage(){
   document.addEventListener("unlockscreen", onUnLockScreenTrigger);
   document.addEventListener("autologout", onAutoLogoutTrigger);
   document.addEventListener("updateuserprofile", onUpdateUserProfileTrigger);
+  document.addEventListener("newreportlocalresult", onNewReportLocalTrigger);
 
   let userdata = JSON.parse(doGetUserData());
 
@@ -596,6 +597,12 @@ function onUpdateUserProfileTrigger(evt){
     readyLogic = false;
   }
   $('#app').find('#ReadyState').find('input[type="checkbox"]').prop('checked', readyLogic);
+}
+
+function onNewReportLocalTrigger(evt){
+  let triggerData = evt.detail.data;
+  console.log(triggerData);
+  $.notify('ส่งผลอ่านเข้า PACS รพ. สำเร็จ', 'success');
 }
 
 function doSetupAutoReadyAfterLogin(){

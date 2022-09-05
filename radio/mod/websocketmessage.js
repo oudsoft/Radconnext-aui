@@ -98,6 +98,10 @@ module.exports = function ( jq, wsm) {
 			let eventName = 'echoreturn';
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.message}});
 			document.dispatchEvent(event);
+		} else if (data.type == 'newreportlocalresult') {
+			let eventName = 'newreportlocalresult';
+			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: {result: data.result, hospitalId: data.hospitalId, from: data.from, patientFullName: data.patientFullName}}});
+			document.dispatchEvent(event);
 		} else if (data.type == 'wrtc') {
 			switch(data.wrtc) {
 				//when somebody wants to call us
@@ -113,7 +117,7 @@ module.exports = function ( jq, wsm) {
 				break;
 				case "interchange":
 					wrtcCommon.wsHandleInterchange(wsm, data.interchange);
-				break;				
+				break;
 				case "leave":
 					wrtcCommon.wsHandleLeave(wsm, data.leave);
 				break;

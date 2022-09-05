@@ -373,7 +373,7 @@ module.exports = function ( jq ) {
 	}
 
 	const doCreateResultManagementDialog = function(saveResponseData){
-		let report = {reportPdfLinkPath: saveResponseData.reportPdfLinkPath, reportPages: saveResponseData.reportPages};
+		let report = {reportPdfLinkPath: saveResponseData.reportPdfLinkPath, reportPages: saveResponseData.reportPages, patientFullName: saveResponseData.patientFullName};
 		saveResponseData.report = report;
 		let saveTypeOptionBox = $('<table width="100%" border="0" cellspacing="0" cellpadding="2"></table>');
 
@@ -496,7 +496,7 @@ module.exports = function ( jq ) {
 				responseId: caseResponseId,
 				hospitalId: caseHospitalId,
 				reporttype: reportType,
-				report: saveResponseData.report
+				report: saveResponseData.report,
 			};
 
 			let saveResponseRes = await doCallSubmitResult(params);
@@ -504,7 +504,7 @@ module.exports = function ( jq ) {
 			console.log(saveResponseRes);
 
 			if ((saveResponseRes.status.code == 200) || (saveResponseRes.status.code == 203)){
-				$.notify("ส่งผลอ่าน - Success", "success");
+				$.notify("ส่งผลอ่านเข้า cloud สำเร็จ", "success");
 				$('body').loading('stop');
 				$('#quickreply').empty();
 				$('#quickreply').removeAttr('style');
