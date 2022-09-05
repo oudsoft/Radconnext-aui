@@ -300,7 +300,7 @@ function doLoadMainPage(){
           $(".mainfull").empty().append($(opencasePage));
           common.doScrollTopPage();
           util.doResetPingCounter();
-          $.notify('เปิดเคส - Success', 'success');
+          $.notify('เปิดเคส สำเร็จ', 'success');
           //$('.jqte_editor').css(common.sizeA4Style);
           //console.log($('.jqte_editor').css('font-family'));
         }).catch(async (err)=>{
@@ -314,7 +314,7 @@ function doLoadMainPage(){
                 $(".mainfull").empty().append($(opencasePage));
                 common.doScrollTopPage();
                 util.doResetPingCounter();
-                $.notify('เปิดเคส - Success', 'success');
+                $.notify('เปิดเคส สำเร็จ', 'success');
               });
             } else {
               common.doUserLogout(wsm);
@@ -602,7 +602,7 @@ function onUpdateUserProfileTrigger(evt){
 function onNewReportLocalTrigger(evt){
   let triggerData = evt.detail.data;
   console.log(triggerData);
-  $.notify('ส่งผลอ่านเข้า PACS รพ. สำเร็จ', 'success');
+  $.notify('ส่งผลอ่านของ ' + triggerData.patientFullName + ' เข้า PACS รพ. สำเร็จ', 'success');
 }
 
 function doSetupAutoReadyAfterLogin(){

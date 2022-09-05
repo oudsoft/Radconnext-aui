@@ -718,7 +718,7 @@ module.exports = function ( jq ) {
 							$(openInvoicePdfCmd).on('click', async (evt)=>{
 								evt.stopPropagation();
 								//closeorderdlg.doOpenReportPdfDlg('/shop/img/usr/pdf/' + orders[i].invoice.Filename, 'ใบแจ้งหนี้');
-								let docParams = {orderId: orders[i].id, shopId: shopId};
+								let docParams = {orderId: orders[i].id, shopId: shopData.id};
 								let docRes = await common.doCallApi('/api/shop/invoice/create/report', docParams);
 								console.log(docRes);
 								if (docRes.status.code == 200) {

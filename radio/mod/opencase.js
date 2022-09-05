@@ -581,7 +581,7 @@ module.exports = function ( jq ) {
 					if (!caseResponseId) {
 						$.notify("เกิดความผิดพลาด Case Response API", "error");
 					}
-					$.notify("บันทึก Draft - Success", "success");
+					$.notify("บันทึก Draft สำเร็จ", "success");
 					$('body').loading('stop');
 				} else {
 					$.notify("ไม่สามารถบันทึก Draft - Error โปรดติดต่อผู้ดูแลระบบ", "error");
