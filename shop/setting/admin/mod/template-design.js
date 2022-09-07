@@ -102,13 +102,40 @@ module.exports = function ( jq ) {
     $(columnMiddleBox).append($(reportcontainerBox));
 
 		$(addTextElementCmd).on('click', (evt)=>{
-			let newElement = elementProperty.doCreateElement(reportcontainerBox, 'text');
+			let elemAc = $(reportcontainerBox).find('.elementActive');
+			let elemData = $(elemAc).data();
+			if (elemData.customTdelement) {
+				if (elemData.customTdelement.options.elementType == 'td') {
+					elementProperty.doCreateElement(elemAc, 'text');
+				} else {
+					elementProperty.doCreateElement(reportcontainerBox, 'text');
+				}
+			}
 		});
 		$(addHrElementCmd).on('click', (evt)=>{
-			elementProperty.doCreateElement(reportcontainerBox, 'hr');
+			let elemAc = $(reportcontainerBox).find('.elementActive');
+			let elemData = $(elemAc).data();
+			if (elemData.customTdelement) {
+				if (elemData.customTdelement.options.elementType == 'td') {
+					elementProperty.doCreateElement(elemAc, 'hr');
+				} else {
+					elementProperty.doCreateElement(reportcontainerBox, 'hr');
+				}
+			}
 		});
 		$(addImageElementCmd).on('click', (evt)=>{
-			elementProperty.doCreateElement(reportcontainerBox, 'image');
+			let elemAc = $(reportcontainerBox).find('.elementActive');
+			let elemData = $(elemAc).data();
+			console.log(elemData.customTdelement);
+			if (elemData.customTdelement) {
+				console.log(elemData.customTdelement.options);
+				if (elemData.customTdelement.options.elementType == 'td') {
+					elementProperty.doCreateElement(elemAc, 'image');
+					console.log('ok');
+				} else {
+					elementProperty.doCreateElement(reportcontainerBox, 'image');
+				}
+			}
 		});
 
     return $(wrapper).append($(columnSideBox)).append($(columnMiddleBox))
@@ -152,6 +179,11 @@ module.exports = function ( jq ) {
       drop: function( event, ui ) {
       }
     });
+		$('.tdElement').droppable({
+      accept: ".reportElement",
+      drop: function( event, ui ) {
+      }
+    });
     $("#add-item-cmd").click((event) => {
       let elemType = activeType.type;
       let wrapper = $("#report-container");
@@ -180,17 +212,17 @@ module.exports = function ( jq ) {
 		let tableData = $(tableBox).data().customTableelement.options;
 		//console.log(tableData);
 		//console.log(tableData.customTableelement.options);
-		let tableDesignData = {elementType: 'table', id: tableData.id, x: tableData.x, y: tableData.y, width: tableData.width, height: tableData.height, cols: tableData.cols, rows: []};
+		let tableDesignData = {elementType: 'table', id: tableData.id, x: tableData.x, y: tableData.y, width: tableData.width, height: tableData.height, cols: tableData.cols, border: tableData.border, rows: []};
 		let trs = $(tableBox).find('.trElement');
 		$(trs).each((i, tr)=>{
 			let trData = $(tr).data().customTrelement.options;
 			//console.log(trData);
-			let trDesignData = {elementType: 'tr', id: trData.id, backgroundColor: trData.backgroundColor, fields: []};
+			let trDesignData = {elementType: 'tr', id: trData.id, backgroundColor: trData.backgroundColor, height: trData.height, fields: []};
 			let tds  = $(tr).find('.tdElement');
 			//console.log(tds);
 			$(tds).each((i, td)=>{
 				let tdData = $(td).data().customTdelement.options;
-				let fieldData = {elementType: 'td', id: tdData.id, height: tdData.height, cellData: tdData.cellData, fontweight: tdData.fontweight, fontalign: tdData.fontalign, fontsize: tdData.fontsize, fontstyle: tdData.fontstyle};
+				let fieldData = {elementType: 'td', id: tdData.id, height: tdData.height, cellData: tdData.cellData, fontweight: tdData.fontweight, fontalign: tdData.fontalign, fontsize: tdData.fontsize, fontstyle: tdData.fontstyle, valign: tdData.valign};
 				let percentWidth = ((tdData.width / rowWidth) * 100).toFixed(2);
 				fieldData.width = percentWidth;
 				trDesignData.fields.push(fieldData);

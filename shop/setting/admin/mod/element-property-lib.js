@@ -88,6 +88,7 @@ module.exports = function ( jq ) {
 
   const elementSelect = function(event, data){
 		if ((event) && (event.target)) {
+			event.stopPropagation();
     	resetActive(event.target);
     	let prop = data.options;
     	resetPropForm(event.target, prop);
@@ -243,7 +244,7 @@ module.exports = function ( jq ) {
 
 	const doCreateTable = function(wrapper, tableData, x, y){
 		let wrapperWidth = $(wrapper).width();
-		let tableProp = {id: 'table-element-1', x: x?x:0, y: y?y:60, width: '100%', cols: 5};
+		let tableProp = {id: 'table-element-1', x: x?x:0, y: y?y:60, width: '100%', cols: 5, border: '1'};
 		tableProp.elementselect = elementSelect;
 		tableProp.elementdrop = elementDrop;
 		tableProp.elementresizestop = elementResizeStop;
@@ -332,14 +333,22 @@ module.exports = function ( jq ) {
   }
 
   function createPropContentFragment(fragParent, fragTarget, data) {
+		//console.log(data);
     let targetData = $(fragTarget).data();
     //console.log(targetData);
 		let elementDataName = undefined;
 		if (data.elementType == 'text') {
 			elementDataName = 'customTextelement';
+		} else if (data.elementType == 'hr') {
+			elementDataName = 'customHrelement';
+		} else if (data.elementType == 'image') {
+			elementDataName = 'customImageelement';
 		} else if (data.elementType == 'td') {
 			elementDataName = 'customTdelement';
+		} else {
+			console.log(elementDataName);
 		}
+
     let fragProp = $("<tr></tr>");
     $(fragProp).appendTo($(fragParent));
     let fragLabel = $("<td align='left'>Type</td>");
@@ -353,40 +362,42 @@ module.exports = function ( jq ) {
     $(fragValue).on('change', ()=> {
       let newValue = $(fragValue).val();
       if (newValue === 'static') {
-        targetData[elementDataName].options['type'] = 'static';
-        $(dynamicFrag).remove();
+				if (targetData[elementDataName].options) {
+	        targetData[elementDataName].options['type'] = 'static';
+	        $(dynamicFrag).remove();
 
-        contentLabelFrag = $("<tr></tr>");
-        $(contentLabelFrag).appendTo($(fragParent));
-        let contentlabel = $("<td colspan='2' align='left'>Text</td>");
-        $(contentlabel).appendTo($(contentLabelFrag));
+	        contentLabelFrag = $("<tr></tr>");
+	        $(contentLabelFrag).appendTo($(fragParent));
+	        let contentlabel = $("<td colspan='2' align='left'>Text</td>");
+	        $(contentlabel).appendTo($(contentLabelFrag));
 
-        contentDataFrag = $("<tr></tr>");
-        $(contentDataFrag).appendTo($(fragParent));
-        let textEditorFrag = $("<td colspan='2' align='left'></td>");
-        $(textEditorFrag).appendTo($(contentDataFrag));
-        let textEditor = $("<input type='text'/>").css({'width': '60px'});
-        $(textEditor).css({"width": "98%"});
+	        contentDataFrag = $("<tr></tr>");
+	        $(contentDataFrag).appendTo($(fragParent));
+	        let textEditorFrag = $("<td colspan='2' align='left'></td>");
+	        $(textEditorFrag).appendTo($(contentDataFrag));
+	        let textEditor = $("<input type='text'/>").css({'width': '60px'});
+	        $(textEditor).css({"width": "98%"});
 
-				if (data.elementType == 'text') {
-					$(textEditor).val(data.title);
-				} else if (data.elementType == 'td') {
-					$(textEditor).val(data.cellData);
-				}
-        $(textEditor).appendTo($(textEditorFrag));
-        updateContentCmdFrag = $("<tr></tr>");
-        $(updateContentCmdFrag).appendTo($(fragParent));
-        let updateCmdFrag = $("<td colspan='2' align='right'></td>");
-        $(updateCmdFrag).appendTo($(updateContentCmdFrag));
-				$(textEditor).on('keyup', (e)=> {
-					let newContent = $(textEditor).val();
 					if (data.elementType == 'text') {
-          	targetData[elementDataName].options['title'] = newContent;
+						$(textEditor).val(data.title);
 					} else if (data.elementType == 'td') {
-						targetData[elementDataName].options['cellData'] = newContent;
+						$(textEditor).val(data.cellData);
 					}
-          targetData[elementDataName].options.refresh();
-				});
+	        $(textEditor).appendTo($(textEditorFrag));
+	        updateContentCmdFrag = $("<tr></tr>");
+	        $(updateContentCmdFrag).appendTo($(fragParent));
+	        let updateCmdFrag = $("<td colspan='2' align='right'></td>");
+	        $(updateCmdFrag).appendTo($(updateContentCmdFrag));
+					$(textEditor).on('keyup', (e)=> {
+						let newContent = $(textEditor).val();
+						if (data.elementType == 'text') {
+	          	targetData[elementDataName].options['title'] = newContent;
+						} else if (data.elementType == 'td') {
+							targetData[elementDataName].options['cellData'] = newContent;
+						}
+	          targetData[elementDataName].options.refresh();
+					});
+				}
       } else if (newValue === 'dynamic') {
         targetData[elementDataName].options['type'] = 'dynamic';
         $(contentLabelFrag).remove();
@@ -535,6 +546,7 @@ module.exports = function ( jq ) {
     const fontAlign = ["left", "center", "right"];
 
     let targetData = $(fragTarget).data();
+		let elementDataName = undefined;
 		if (data.elementType == 'text') {
 			elementDataName = 'customTextelement';
 		} else if (data.elementType == 'td') {
@@ -561,6 +573,59 @@ module.exports = function ( jq ) {
     $(fragFontAlignValue).val(data.fontalign).change();
     return $(fragFontAlign);
   }
+
+	function createVAlignFragment(fragParent, fragTarget, data) {
+    const vAlign = ["top", "middle", "bottom"];
+		let targetData = $(fragTarget).data();
+		let elementDataName = 'customTdelement';
+
+    let fragVAlign = $("<tr></tr>");
+    $(fragVAlign).appendTo($(fragParent));
+    let fragVAlignLabel = $("<td align='left'>Align</td>");
+    $(fragVAlignLabel).appendTo($(fragVAlign));
+
+    let fragVAlignOption = $("<td align='left'></td>");
+    $(fragVAlignOption).appendTo($(fragVAlign));
+    let fragVAlignValue = $("<select></select>");
+    $(fragVAlignValue).appendTo($(fragVAlignOption));
+    vAlign.forEach((item, i) => {
+      $(fragVAlignValue).append("<option value='" + item + "'>" + item + "</option>");
+    });
+    $(fragVAlignValue).on('change', ()=>{
+      let newAlign = $(fragVAlignValue).val();
+      targetData[elementDataName].options['valign'] = newAlign;
+      targetData[elementDataName].options.refresh();
+    });
+    $(fragVAlignValue).val(data.valign).change();
+    return $(fragVAlign);
+	}
+
+	function createHrLineStyleFragment(fragParent, fragTarget, data) {
+    const lineStyle = ["solid", "dashed"];
+		let elementDataName = 'customHrelement';
+		let targetData = $(fragTarget).data();
+		let fragLineStyle = $("<tr></tr>");
+    $(fragLineStyle).appendTo($(fragParent));
+    let fragLineStyleLabel = $("<td align='left'>Style</td>");
+    $(fragLineStyleLabel).appendTo($(fragLineStyle));
+
+    let fragLineStyleOption = $("<td align='left'></td>");
+    $(fragLineStyleOption).appendTo($(fragLineStyle));
+    let fragLineStyleValue = $("<select></select>");
+    $(fragLineStyleValue).appendTo($(fragLineStyleOption));
+    lineStyle.forEach((item, i) => {
+      $(fragLineStyleValue).append("<option value='" + item + "'>" + item + "</option>");
+    });
+		$(fragLineStyleValue).on('change', ()=>{
+			if (targetData[elementDataName].options) {
+	      let newStyle = $(fragLineStyleValue).val();
+	      targetData[elementDataName].options['lineStyle'] = newStyle;
+	      targetData[elementDataName].options.refresh();
+			}
+    });
+    $(fragLineStyleValue).val(data.lineStyle).change();
+    return $(fragLineStyle);
+	}
 
   function createPropImageSrcFragment(fragParent, fragTarget, data) {
     let targetData = $(fragTarget).data();
@@ -625,11 +690,28 @@ module.exports = function ( jq ) {
 			let colsFieldValue = $('<td align="left"></td>');
 			$(colsFieldValue).append($(colsInput));
 			$(fragCols).append($(colsFieldValue));
-			/*
-				ควบคุมการแสดงเส้นขอบ border ของตาราง
-			*/
+
+			let fragฺBorder = $("<tr></tr>");
+			$(fragParent).append($(fragฺBorder));
+			$(fragฺBorder).append($('<td align="left">เส้นขอบ</td>'));
+			let borderInput = $('<input type="number"/>').css({'width': '50px'});
+			$(borderInput).on('keyup', (e)=> {
+				if (e.keyCode == 13){
+					let newValue = $(borderInput).val();
+					targetData.customTableelement.options['border'] = newValue;
+					console.log(targetData.customTableelement.options['border']);
+					targetData.customTableelement.options.refresh();
+				}
+			});
+			$(borderInput).val(targetData.customTableelement.options['border']);
+			let borderFieldValue = $('<td align="left"></td>');
+			$(borderFieldValue).append($(borderInput));
+			$(fragฺBorder).append($(borderFieldValue));
+
 			return $(fragCols);
-		} else return;
+		} else {
+			return;
+		}
 	}
 
 	const createTrPropFragment = function(fragParent, fragTarget, data) {
@@ -650,6 +732,23 @@ module.exports = function ( jq ) {
 			let colorFieldValue = $('<td align="left"></td>');
 			$(colorFieldValue).append($(colorInput));
 			$(fragRow).append($(colorFieldValue));
+
+			fragRow = $("<tr></tr>");
+			$(fragParent).append($(fragRow));
+			$(fragRow).append($('<td align="left">ความสูง</td>'));
+			let heightInput = $('<input type="text"/>').css({'width': '70px'});
+			$(heightInput).on('keyup', (e)=> {
+				if (e.keyCode == 13){
+					let newValue = $(heightInput).val();
+					targetData.customTrelement.options['height'] = newValue;
+					targetData.customTrelement.options.refresh();
+				}
+			});
+			$(heightInput).val(targetData.customTrelement.options['height']);
+			let heightFieldValue = $('<td align="left"></td>');
+			$(heightFieldValue).append($(heightInput));
+			$(fragRow).append($(heightFieldValue));
+
 			return $(fragRow);
 		} else {
 			return;
@@ -659,7 +758,7 @@ module.exports = function ( jq ) {
   const createElementPropertyForm = function(target, data) {
     let formbox = $("<table width='100%' cellspacing='0' cellpadding='2' border='0'></table>");
     $(formbox).append("<tr><td align='left' width='40%'>id</td><td align='left' width='*'>" + data.id + "</td></tr>");
-    if ((data.elementType === 'text') || (data.elementType === 'td')) {
+    if (data.elementType === 'text') {
 			let topProp = createPropEditFragment(formbox, target, 'y', 'Top', data.y, data.elementType);
 	    let leftProp = createPropEditFragment(formbox, target, 'x', 'Left', data.x, data.elementType);
 	    let widthProp = createPropEditFragment(formbox, target, 'width', 'Width', data.width, data.elementType);
@@ -674,6 +773,8 @@ module.exports = function ( jq ) {
 	    let leftProp = createPropEditFragment(formbox, target, 'x', 'Left', data.x, data.elementType);
 	    let widthProp = createPropEditFragment(formbox, target, 'width', 'Width', data.width, data.elementType);
 	    let heightProp = createPropEditFragment(formbox, target, 'height', 'Height', data.height, data.elementType);
+			let lineThickProp = createPropEditFragment(formbox, target, 'lineThick', 'Thick', data.lineThick, data.elementType);
+			let lineStyleProp = createHrLineStyleFragment(formbox, target, data);
     } else if (data.elementType === 'image') {
 			let topProp = createPropEditFragment(formbox, target, 'y', 'Top', data.y, data.elementType);
 	    let leftProp = createPropEditFragment(formbox, target, 'x', 'Left', data.x, data.elementType);
@@ -688,6 +789,17 @@ module.exports = function ( jq ) {
 			let tableProp = createTablePropFragment(formbox, target, data);
 		} else if (data.elementType === 'tr') {
 			let trProp = createTrPropFragment(formbox, target, data);
+		} else if (data.elementType === 'td') {
+			let topProp = createPropEditFragment(formbox, target, 'y', 'Top', data.y, data.elementType);
+	    let leftProp = createPropEditFragment(formbox, target, 'x', 'Left', data.x, data.elementType);
+	    let widthProp = createPropEditFragment(formbox, target, 'width', 'Width', data.width, data.elementType);
+	    let heightProp = createPropEditFragment(formbox, target, 'height', 'Height', data.height, data.elementType);
+      let contentProp = createPropContentFragment(formbox, target, data);
+      let contentFontSize = createFontSizeFragment(formbox, target, data);
+      let contentFontWeight = createFontWeightFragment(formbox, target, data);
+      let contentFontStyle = createFontStyleFragment(formbox, target, data);
+      let contentFontAlign = createFontAlignFragment(formbox, target, data);
+			let contentVAlign = createVAlignFragment(formbox, target, data);
     }
     return $(formbox);
   }

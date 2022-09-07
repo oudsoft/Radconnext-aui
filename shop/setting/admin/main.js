@@ -101,6 +101,13 @@ const doTestCreateInvoice = async function(){
 
   window.open(docRes.result.link, '_blank');
   window.open(docRes.result.qrLink, '_blank');
+  /*
+  let apiUrl = '/api/shop/bill/create/report';
+  let docParams = {orderId: 199, shopId: 6};
+  $.post(apiUrl, docParams, function(data){
+    console.log(data);
+  })
+  */
 }
 
 module.exports = {
