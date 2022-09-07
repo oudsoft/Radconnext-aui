@@ -596,7 +596,11 @@ module.exports = function ( jq ) {
       targetData[elementDataName].options['valign'] = newAlign;
       targetData[elementDataName].options.refresh();
     });
-    $(fragVAlignValue).val(data.valign).change();
+		if ((data.valign) && (data.valign !== '')) {
+    	$(fragVAlignValue).val(data.valign).change();
+		} else {
+			$(fragVAlignValue).val('middle').change();
+		}
     return $(fragVAlign);
 	}
 
@@ -703,7 +707,11 @@ module.exports = function ( jq ) {
 					targetData.customTableelement.options.refresh();
 				}
 			});
-			$(borderInput).val(targetData.customTableelement.options['border']);
+			if ((targetData.customTableelement.options['border']) && (targetData.customTableelement.options['border'] !== '')) {
+				$(borderInput).val(targetData.customTableelement.options['border']);
+			} else {
+				$(borderInput).val('1');
+			}
 			let borderFieldValue = $('<td align="left"></td>');
 			$(borderFieldValue).append($(borderInput));
 			$(fragฺBorder).append($(borderFieldValue));
@@ -744,7 +752,11 @@ module.exports = function ( jq ) {
 					targetData.customTrelement.options.refresh();
 				}
 			});
-			$(heightInput).val(targetData.customTrelement.options['height']);
+			if ((targetData.customTrelement.options['height']) && (targetData.customTrelement.options['height'] !== '')){
+				$(heightInput).val(targetData.customTrelement.options['height']);
+			} else {
+				$(heightInput).val('40');
+			}
 			let heightFieldValue = $('<td align="left"></td>');
 			$(heightFieldValue).append($(heightInput));
 			$(fragRow).append($(heightFieldValue));
