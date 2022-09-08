@@ -102,10 +102,18 @@ const doTestCreateInvoice = async function(){
   window.open(docRes.result.link, '_blank');
   window.open(docRes.result.qrLink, '_blank');
   /*
+  $('body').loading('start');
   let apiUrl = '/api/shop/bill/create/report';
-  let docParams = {orderId: 199, shopId: 6};
-  $.post(apiUrl, docParams, function(data){
-    console.log(data);
+  let docParams = {orderId: 207, shopId: 6};
+  $.post(apiUrl, docParams, function(docRes){
+    console.log(docRes);
+    window.open(docRes.result.link, '_blank');
+    window.open(docRes.result.pngLink, '_blank');
+    window.open(docRes.result.ppLink, '_blank');
+    window.open(docRes.result.qrLink, '_blank');
+    //let shareCode = orders[i].bill.Filename.split('.')[0];
+    //window.open('/shop/share/?id=' + shareCode, '_blank');
+    $('body').loading('stop');
   })
   */
 }
