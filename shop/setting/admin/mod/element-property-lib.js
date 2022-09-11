@@ -581,7 +581,7 @@ module.exports = function ( jq ) {
 
     let fragVAlign = $("<tr></tr>");
     $(fragVAlign).appendTo($(fragParent));
-    let fragVAlignLabel = $("<td align='left'>Align</td>");
+    let fragVAlignLabel = $("<td align='left'>V-Align</td>");
     $(fragVAlignLabel).appendTo($(fragVAlign));
 
     let fragVAlignOption = $("<td align='left'></td>");

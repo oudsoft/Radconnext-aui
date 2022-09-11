@@ -63,7 +63,8 @@ module.exports = function ( jq ) {
 			});
 			if (common.shopSensitives.includes(shopData.id)) {
 				let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
-				$(newOrderCmd).text(sensitiveWordJSON.find((item)=>{if(item.elementId === 'newOrderCmd') return item}).customWord) ;
+				$(newOrderCmd).text(sensitiveWordJSON.find((item)=>{if(item.elementId === 'newOrderCmd') return item}).customWord);
+				$(titleTextBox).find('#titleTextBox').text(sensitiveWordJSON.find((item)=>{if(item.elementId === 'titleTextBox') return item}).customWord) ;
 			}
 
 			let canceledOrderHiddenToggleCmd = common.doCreateTextCmd('ซ่อนรายการที่ถูกยกเลิก', 'grey', 'white');
@@ -304,6 +305,9 @@ module.exports = function ( jq ) {
     }
 
 		const invoiceCallback = async function(newInvoiceData){
+			if (dlgHandle) {
+        dlgHandle.closeAlert();
+      }
 			let invoiceParams = {data: newInvoiceData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 			let invoiceRes = await common.doCallApi('/api/shop/invoice/add', invoiceParams);
 
@@ -322,13 +326,12 @@ module.exports = function ( jq ) {
 			} else {
 				$.notify("บันทึกใบแจ้งหนี้ไม่สำเร็จ", "error");
 			}
-
-			if (dlgHandle) {
-        dlgHandle.closeAlert();
-      }
 		}
 
 		const billCallback = async function(newBillData, paymentData){
+			if (dlgHandle) {
+        dlgHandle.closeAlert();
+      }
 			let billParams = {data: newBillData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 			let billRes = await common.doCallApi('/api/shop/bill/add', billParams);
 
@@ -355,13 +358,12 @@ module.exports = function ( jq ) {
 			} else {
 				$.notify("บันทึกบิลไม่สำเร็จ", "error");
 			}
-
-			if (dlgHandle) {
-        dlgHandle.closeAlert();
-      }
 		}
 
 		const taxinvoiceCallback = async function(newTaxInvoiceData, paymentData){
+			if (dlgHandle) {
+        dlgHandle.closeAlert();
+      }
 			let taxinvoiceParams = {data: newTaxInvoiceData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId};
 			let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/add', taxinvoiceParams);
 
@@ -388,10 +390,6 @@ module.exports = function ( jq ) {
 			} else {
 				$.notify("บันทึกใบกำกับภาษีไม่สำเร็จ", "error");
 			}
-
-			if (dlgHandle) {
-        dlgHandle.closeAlert();
-      }
 		}
   }
 
