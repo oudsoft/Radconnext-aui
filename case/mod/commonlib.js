@@ -445,6 +445,7 @@ module.exports = function ( jq ) {
 		localStorage.removeItem('userdata');
 		localStorage.removeItem('masternotify');
 		//localStorage.removeItem('dicomfilter');
+		sessionStorage.removeItem('logged');
 	  let url = '/index.html';
 	  window.location.replace(url);
 	}

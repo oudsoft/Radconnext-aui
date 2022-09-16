@@ -184,7 +184,7 @@ module.exports = function ( jq ) {
 		let usertypes = JSON.parse(localStorage.getItem('usertypes'));
 		//console.log(usertypes);
 		usertypes.forEach((item, i) => {
-			$(inputValue).append($('<option value="' + item.Value + '">' + item.DisplayText + '<option>'))
+			$(inputValue).append($('<option value="' + item.Value + '">' + item.DisplayText + '</option>'))
 		});
 		if ((userData) && (userData.usertypeId)) {
 			$(inputValue).val(userData.usertypeId);

@@ -43,6 +43,7 @@ module.exports = function ( jq ) {
 								if ((eventData.StudyDescription == '') && (eventData.ProtocolName != '')) {
 									eventData.StudyDescription = eventData.ProtocolName;
 								}
+								eventData.startDownload = 0;
 								console.log(eventData);
 					      $(iconCmd).trigger('opencase', [eventData]);
 							}

@@ -71,7 +71,7 @@ module.exports = function ( jq ) {
 		} else {
 			openCmdText = 'อ่านผล';
 		}
-    let openCmd = $('<div></div>').text(openCmdText);
+    let openCmd = $('<div id="OpenCaseCmd"></div>').text(openCmdText);
     $(openCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '5px 12px', 'border-radius': '12px', 'cursor': 'pointer', 'color': 'white'});
 		if (caseItem.casestatusId == 2) {
 			$(openCmd).css({'background-color' : 'orange'});
@@ -93,12 +93,14 @@ module.exports = function ( jq ) {
 	      let response = await common.doUpdateCaseStatus(caseItem.id, newCaseStatus, 'Radiologist Open accepted case by Web App');
 				if (response.status.code == 200) {
 		      eventData.statusId = newCaseStatus;
+					eventData.startDownload = 1;
 		      $(openCmd).trigger('opencase', [eventData]);
 				} else {
 					$.notify('เกิดข้อผิดพลาด ไม่สามารถอัพเดทสถานะเคสได้ในขณะนี้', 'error');
 				}
 			} else if ((currentCaseRes.current == 8) || (currentCaseRes.current == 9) || (currentCaseRes.current == 14)){
 				eventData.statusId = caseItem.casestatusId;
+				//eventData.startDownload = 1;
 	      $(openCmd).trigger('opencase', [eventData]);
 			} else {
 				$.notify('ขออภัย เคสไม่อยู่ในสถานะที่จะพิมพ์ผลอ่านแล้ว', 'error');
@@ -133,7 +135,10 @@ module.exports = function ( jq ) {
 			let caseCMD = doCreateCaseItemCommand(caseItem);
 
       let caseRow = $('<div style="display: table-row; width: 100%;" class="case-row"></div>');
-
+			$(caseRow).css({'cursor': 'pointer'});
+			$(caseRow).on('dblclick', (evt)=>{
+				$(caseCMD).find('#OpenCaseCmd').click();
+			});
   		let caseColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
   		$(caseColumn).append('<span>' + casedate + ' : ' + casetime + '</span>');
   		$(caseColumn).appendTo($(caseRow));

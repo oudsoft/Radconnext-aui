@@ -207,11 +207,8 @@ module.exports = function ( jq ) {
 		let tableBox = $("#report-container").find('.tableElement');
 		let tableWidth = $(tableBox).width();
 		let rowWidth = tableWidth * 0.94;
-		//console.log(tableWidth);
-		//console.log(rowWidth);
 		let tableData = $(tableBox).data().customTableelement.options;
-		//console.log(tableData);
-		//console.log(tableData.customTableelement.options);
+		console.log(tableData);
 		let tableDesignData = {elementType: 'table', id: tableData.id, x: tableData.x, y: tableData.y, width: tableData.width, height: tableData.height, cols: tableData.cols, border: tableData.border, rows: []};
 		let trs = $(tableBox).find('.trElement');
 		$(trs).each((i, tr)=>{

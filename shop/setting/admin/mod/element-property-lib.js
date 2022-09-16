@@ -703,7 +703,7 @@ module.exports = function ( jq ) {
 				if (e.keyCode == 13){
 					let newValue = $(borderInput).val();
 					targetData.customTableelement.options['border'] = newValue;
-					console.log(targetData.customTableelement.options['border']);
+					//console.log(targetData.customTableelement.options['border']);
 					targetData.customTableelement.options.refresh();
 				}
 			});

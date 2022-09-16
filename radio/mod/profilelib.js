@@ -5,7 +5,55 @@ module.exports = function ( jq ) {
 	const apiconnector = require('../../case/mod/apiconnect.js')($);
   const util = require('../../case/mod/utilmod.js')($);
   const common = require('../../case/mod/commonlib.js')($);
-
+	const defaultRadioProfileV2 = {
+		readyState: 1,
+		readyBy: 'user',
+		activeState: {
+			autoAcc: 0,
+			autoReady:0,
+			webNotify: 1,
+			lineNotify: 1,
+			phoneCall: 0,
+			phoneCallOptions: {
+				manAutoOption: 1,
+				optionCaseControl: {
+					case1H: 0,
+					case4H: 0,
+					case24HL: 0,
+					case24HU: 0
+				}
+			}
+		},
+		lockState: {
+			autoLockScreen: 30,
+			passwordUnlock: 0,
+			lineNotify: 1,
+			phoneCall: 0,
+			phoneCallOptions: {
+				manAutoOption: 1,
+				optionCaseControl: {
+					case1H: 0,
+					case4H: 0,
+					case24HL: 0,
+					case24HU: 0
+				}
+			}
+		},
+		offlineState: {
+			autoLogout: 0,
+			lineNotify: 1,
+			phoneCall: 0,
+			phoneCallOptions: {
+				manAutoOption: 1,
+				optionCaseControl: {
+					case1H: 0,
+					case4H: 0,
+					case24HL: 0,
+					case24HU: 0
+				}
+			}
+		}
+	};
 
   const doCreateProfileTitlePage = function(){
     const profileTitle = 'ตั้งค่าการแจ้งเตือนและรับเคส';
@@ -212,50 +260,8 @@ module.exports = function ( jq ) {
           }
         }
 				*/
-				
-				let profileValue = {
-					activeState: {
-						webNotify: webmessageSwitchControl? 1:0,
-						lineNotify: lineSwitchControl? 1:0,
-						phoneCall: autocallSwitchControl? 1:0,
-						phoneCallOptions: {
-							manAutoOption:  mancallSwitchControl,
-							optionCaseControl: {
-								case1H: 0,
-								case4H: 0
-							}
-						},
-						autoAcc: caseAcccallSwitchControl? 1:0,
-						//autoReady: activeAutoReady? 1:0
-					},
-					lockState: {
-						lineNotify: 1,
-						phoneCall: 0,
-						phoneCallOptions: {
-							manAutoOption: mancallSwitchControl,
-							optionCaseControl: {
-								case1H: 0,
-								case4H: 0
-							}
-						},
-						autoLockScreen: minuteValue,
-						passwordUnlock: unlockOptionControl? 1:0
-					},
-					offlineState: {
-						lineNotify: 1,
-						phoneCall: 0,
-						phoneCallOptions: {
-							manAutoOption: mancallSwitchControl,
-							optionCaseControl: {
-								case1H: 0,
-								case4H: 0
-							}
-						},
-						autoLogout: 0
-					}
-				};
 
-        saveCallBack(profileValue);
+        saveCallBack(defaultRadioProfileV2);
       } else {
         $(pageHandle).find('#MinuteValue').css('border', '1px solid red');
         $.notify("ค่าจำนวนนาทีต้องมีค่าระหว่าง 1-60", "error");
@@ -377,6 +383,7 @@ module.exports = function ( jq ) {
   }
 
   return {
+		defaultRadioProfileV2,
     doCreateProfileTitlePage,
     doCallMyProfile,
     doCreateProfilePage

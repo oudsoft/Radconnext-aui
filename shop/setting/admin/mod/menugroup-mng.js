@@ -121,14 +121,20 @@ module.exports = function ( jq ) {
 
   const doUploadImage = function(fileBrowser, groupmenuLogoIcon, fileType, groupId, shopData, workAreaBox){
     var uploadUrl = '/api/shop/upload/menugrouplogo';
+		//$('body').loading('start');
     $(fileBrowser).simpleUpload(uploadUrl, {
       success: async function(data){
         $(fileBrowser).remove();
         let shopRes = await common.doCallApi('/api/shop/menugroup/change/logo', {data: {GroupPicture: data.link}, id: groupId});
         setTimeout(async() => {
           await doShowMenugroupItem(shopData, workAreaBox);
+					$('body').loading({message: undefined});
         }, 400);
       },
+			progress: function(progress){
+				$('body').loading({message: Math.round(progress) + ' %'});
+			}
+			//https://www.npmjs.com/package/jquery-simple-upload
     });
   }
 

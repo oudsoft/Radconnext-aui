@@ -95,7 +95,9 @@ module.exports = function ( jq ) {
           let n = item.MenuName.search(key);
           if (n >= 0) {
             return item;
-          }
+          } else if ((item.Desc) && (item.Desc.search(key) >= 0)) {
+						return item;
+					}
         });
         resolve(result);
       }
