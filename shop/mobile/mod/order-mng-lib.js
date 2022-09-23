@@ -17,6 +17,7 @@ module.exports = function ( jq ) {
 
   const doShowOrderList = function(shopId, workAreaBox, orderDate){
     return new Promise(async function(resolve, reject) {
+			let userdata = JSON.parse(localStorage.getItem('userdata'));
       let customerRes = await common.doCallApi('/api/shop/customer/list/by/shop/' + shopId, {});
       let menugroupRes = await common.doCallApi('/api/shop/menugroup/list/by/shop/' + shopId, {});
       let menuitemRes = await common.doCallApi('/api/shop/menuitem/list/by/shop/' + shopId, {});
@@ -79,6 +80,20 @@ module.exports = function ( jq ) {
 			});
 
 			$(newOrderCmdBox).append($(canceledOrderHiddenToggleCmd)).append($(newOrderCmd).css({'margin-left': '4px'}));
+			if ([1, 2, 3].includes(userdata.usertypeId)) {
+				let openSummaryOrderToggleCmd = common.doCreateTextCmd('ดูสรุป', 'orange', 'white');
+				$(openSummaryOrderToggleCmd).on('click', async(evt)=>{
+					let summaryData = $('#OrderListBox').data('summaryData');
+					if (summaryData.yellowOrders) {
+						let summaryBox = await doCreateSummaryBox(summaryData, 'สรุป');
+						$(pageHandle.mainContent).slideUp('slow');
+						$(pageHandle.mainBox).append($(summaryBox));
+						$(summaryBox).slideDown('slow');
+					}
+				});
+				$(newOrderCmdBox).prepend($(openSummaryOrderToggleCmd).css({'margin-right': '4px'}));
+			}
+
 			$(workAreaBox).append($(newOrderCmdBox));
 
       $('#OrderListBox').remove();
@@ -110,6 +125,12 @@ module.exports = function ( jq ) {
       let orderRes = await common.doCallApi('/api/shop/order/list/by/shop/' + shopId, orderReqParams);
       let orders = orderRes.Records;
       console.log(orders);
+
+			let yellowOrders = [];
+			let orangeOrders = [];
+			let greenOrders = [];
+			let greyOrders = [];
+
       let orderListBox = $('<div id="OrderListBox"></div>').css({'position': 'relative', 'width': '100%', 'margin-top': '25px'});
       if ((orders) && (orders.length > 0)) {
         let	promiseList = new Promise(async function(resolve2, reject2){
@@ -143,7 +164,7 @@ module.exports = function ( jq ) {
 					            $.notify("ยุบรวมรายการออร์เดอร์สำเร็จ", "success");
 											common.delay(500).then(async()=>{
 												$('#OrderListBox').remove();
-												let newOrderListBox = await doCreateOrderList(shopData, workAreaBox, orderReqParams.orderDate);
+												let newOrderListBox = await doCreateOrderList(shopId, workAreaBox, orderReqParams.orderDate);
 												$(workAreaBox).append($(newOrderListBox));
 											});
 					          } else {
@@ -173,6 +194,7 @@ module.exports = function ( jq ) {
 								}
 							});
 							$(orderBox).append($(cancelOrderCmdBox));
+							yellowOrders.push(orders[i]);
 						} else if (orders[i].Status == 2) {
 							$(orderBox).css({'background-color': 'orange'});
 							let textCmdCallback = async function(evt){
@@ -196,6 +218,7 @@ module.exports = function ( jq ) {
 							}
 							let invoiceBox = common.doCreateReportDocButtonCmd(orders[i].invoice.No, textCmdCallback, qrCmdCallback);
 							$(orderBox).append($(invoiceBox));
+							orangeOrders.push(orders[i]);
 						} else if ((orders[i].Status == 3) || (orders[i].Status == 4)) {
 							$(orderBox).css({'background-color': 'green'});
 							if (orders[i].bill){
@@ -230,9 +253,11 @@ module.exports = function ( jq ) {
 								let taxinvoiceBox = common.doCreateReportDocButtonCmd(orders[i].taxinvoice.No, textCmdCallback, qrCmdCallback);
 								$(orderBox).append($(taxinvoiceBox));
 							}
+							greenOrders.push(orders[i]);
 						} else if (orders[i].Status == 0) {
 							$(orderBox).css({'background-color': 'grey'});
 							$(orderBox).addClass('canceled-order');
+							greyOrders.push(orders[i]);
 						}
             $(orderBox).on('click', (evt)=>{
 							evt.stopPropagation();
@@ -261,6 +286,8 @@ module.exports = function ( jq ) {
 							}
 						}
 
+						let summaryData = {yellowOrders, orangeOrders, greenOrders, greyOrders};
+						$(orderListBox).data('summaryData', summaryData);
             $(orderListBox).append($(orderBox));
           }
           setTimeout(()=>{
@@ -273,7 +300,7 @@ module.exports = function ( jq ) {
         });
       } else {
 				let notFoundOrderDatbox = $('<div>ไม่พบรายการ<span id="notFoundOrderDatbox" class="sensitive-word">ออร์เดอร์</span>ของวันที่ ' + orderDate + '</div>');
-				if (common.shopSensitives.includes(shopData.id)) {
+				if (common.shopSensitives.includes(shopId)) {
 					let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
 					$(notFoundOrderDatbox).find("#notFoundOrderDatbox").text(sensitiveWordJSON.find((item)=>{if(item.elementId === 'notFoundOrderDatbox') return item}).customWord) ;
 				}
@@ -292,6 +319,90 @@ module.exports = function ( jq ) {
       resolve(total);
     });
   }
+
+	const doCreateSummaryBox = function(summaryData, title, successCallback){
+		return new Promise(async function(resolve, reject) {
+			let summaryBoxStyle = {'position': 'relative', 'width': '100%', 'text-align': 'center', 'top': '70px'};
+			let summaryBox = $('<div></div>').css(summaryBoxStyle);
+
+			let summaryTable = await doCreateSummary(summaryData);
+			$(summaryBox).append($(summaryTable));
+
+			let toggleSummaryBoxCmd = common.doCreateTextCmd(' ปิด ', 'orange', 'white', 'green', 'black');
+			$(toggleSummaryBoxCmd).on('click', (evt)=>{
+				let hasHiddenSummaryBox = ($(mainBox).css('display') == 'none');
+				if (hasHiddenSummaryBox) {
+					$(mainBox).slideDown('slow');
+					$(pageHandle.mainContent).slideUp('slow');
+				} else {
+					$(mainBox).slideUp('slow');
+					$(pageHandle.mainContent).slideDown('slow');
+					if (successCallback) {
+						successCallback()
+					}
+				}
+			}).css({'display': 'inline-block', 'width': '120px', 'float': 'right'});
+			let docTitleBox = $('<span><b>' + title + '</b></span>').css({'display': 'inline-block', 'float': 'left', 'margin-left': '50px'});
+			let toggleSummaryBox = $('<div></div>').css({'position': 'relative', 'width': '100%'});
+			$(toggleSummaryBox).append($(docTitleBox)).append($(toggleSummaryBoxCmd).css({'text-align': 'center'}));
+			let mainBox = $('<div></div>').css({'position': 'relative', 'width': '100%', 'top': '18px', 'diaplay': 'none'});
+			$(mainBox).append($(toggleSummaryBox)).append($(summaryBox));
+			resolve($(mainBox));
+		});
+	}
+
+	const doCreateSummary = function(summaryData){
+		return new Promise(async function(resolve, reject) {
+			let summaryTable = $('<div style="display: table; width: 100%; border-collapse: collapse;"></div>');
+			let summaryRow = $('<div style="display: table-row; width: 100%;"></div>');
+			$(summaryRow).append($('<span style="display: table-cell; text-align: center;"><b>ประเภท</b></span>'));
+			$(summaryRow).append($('<span style="display: table-cell; text-align: center;"><b>จำนวน</b></span>'));
+			$(summaryRow).append($('<span style="display: table-cell; text-align: center;"><b>มูลค่ารวม</b></span>'));
+			$(summaryTable).append($(summaryRow));
+			let cancelAmount = 0;
+			for (let i=0; i < summaryData.greyOrders.length; i++){
+				cancelAmount += await doCalOrderTotal(summaryData.greyOrders[i].Items);
+			}
+			let newAmount = 0;
+			for (let i=0; i < summaryData.yellowOrders.length; i++){
+				newAmount += await doCalOrderTotal(summaryData.yellowOrders[i].Items);
+			}
+			let invoiceAmount = 0;
+			for (let i=0; i < summaryData.orangeOrders.length; i++){
+				invoiceAmount += await doCalOrderTotal(summaryData.orangeOrders[i].Items);
+			}
+			let successAmount = 0;
+			for (let i=0; i < summaryData.greenOrders.length; i++){
+				successAmount += await doCalOrderTotal(summaryData.greenOrders[i].Items);
+			}
+
+			summaryRow = $('<div style="display: table-row; width: 100%; background-color: grey;"></div>');
+			$(summaryRow).append($('<span style="display: table-cell; text-align: left;">ยกเลิก</span>'));
+			$(summaryRow).append($('<span style="display: table-cell; text-align: center;"></span>').text(summaryData.greyOrders.length));
+			$(summaryRow).append($('<span style="display: table-cell; text-align: right;"></span>').text(common.doFormatNumber(cancelAmount)));
+			$(summaryTable).append($(summaryRow));
+
+			summaryRow = $('<div style="display: table-row; width: 100%; background-color: yellow;"></div>');
+			$(summaryRow).append($('<span style="display: table-cell; text-align: left;">ออร์เดอร์ใหม่</span>'));
+			$(summaryRow).append($('<span style="display: table-cell; text-align: center;"></span>').text(summaryData.yellowOrders.length));
+			$(summaryRow).append($('<span style="display: table-cell; text-align: right;"></span>').text(common.doFormatNumber(newAmount)));
+			$(summaryTable).append($(summaryRow));
+
+			summaryRow = $('<div style="display: table-row; width: 100%; background-color: orange;"></div>');
+			$(summaryRow).append($('<span style="display: table-cell; text-align: left;">รอเก็บเงิน</span>'));
+			$(summaryRow).append($('<span style="display: table-cell; text-align: center;"></span>').text(summaryData.orangeOrders.length));
+			$(summaryRow).append($('<span style="display: table-cell; text-align: right;"></span>').text(common.doFormatNumber(invoiceAmount)));
+			$(summaryTable).append($(summaryRow));
+
+			summaryRow = $('<div style="display: table-row; width: 100%; background-color: green;"></div>');
+			$(summaryRow).append($('<span style="display: table-cell; text-align: left;">เก็บเงินแล้ว</span>'));
+			$(summaryRow).append($('<span style="display: table-cell; text-align: center;"></span>').text(summaryData.greenOrders.length));
+			$(summaryRow).append($('<span style="display: table-cell; text-align: right;"></span>').text(common.doFormatNumber(successAmount)));
+			$(summaryTable).append($(summaryRow));
+
+			resolve($(summaryTable));
+		});
+	}
 
   return {
     setupPageHandle,

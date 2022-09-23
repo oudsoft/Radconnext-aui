@@ -11,6 +11,8 @@ window.$.ajaxSetup({
 const common = require('../../home/mod/common-lib.js')($);
 const shopitem = require('./mod/shop-item-mng.js')($);
 
+let wss = undefined;
+
 $( document ).ready(function() {
   const initPage = function() {
     let jqueryUiCssUrl = "../lib/jquery-ui.min.css";
@@ -64,6 +66,7 @@ $( document ).ready(function() {
       } else {
         doShowShopMng(userdata.shopId);
       }
+      wss = common.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.shopId, 'shop');
     }
 	};
 

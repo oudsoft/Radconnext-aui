@@ -61,9 +61,8 @@ module.exports = function ( jq ) {
     return $(headerRow);
   }
 
-  function doCreateCaseItemCommand(caseItem) {
-    const main = require('../main.js');
-    let userdata = JSON.parse(main.doGetUserData());
+  const doCreateCaseItemCommand = function (caseItem) {
+    let userdata = JSON.parse(localStorage.getItem('userdata'));
     let caseCmdBox = $('<div style="text-align: center; padding: 4px;"></div>');
 		let openCmdText = undefined;
 		if (caseItem.casestatusId == 14) {
@@ -79,13 +78,7 @@ module.exports = function ( jq ) {
 			$(openCmd).css({'background-color' : 'green'});
 		}
     $(openCmd).on('click', async (evt)=>{
-			let eventData = {caseId: caseItem.id, patientId: caseItem.patientId, hospitalId: caseItem.hospitalId};
-			eventData.Modality = caseItem.Case_Modality;
-			eventData.StudyDescription = caseItem.Case_StudyDescription;
-			eventData.ProtocolName = caseItem.Case_ProtocolName;
-			if ((eventData.StudyDescription == '') && (eventData.ProtocolName != '')) {
-				eventData.StudyDescription = eventData.ProtocolName;
-			}
+			let eventData = common.doCreateOpenCaseData(caseItem);
 			let currentCaseRes = await common.doGetApi('/api/cases/status/' + caseItem.id, {});
 			if (currentCaseRes.current == 2){
 			//if (caseItem.casestatusId == 2) {
@@ -93,14 +86,14 @@ module.exports = function ( jq ) {
 	      let response = await common.doUpdateCaseStatus(caseItem.id, newCaseStatus, 'Radiologist Open accepted case by Web App');
 				if (response.status.code == 200) {
 		      eventData.statusId = newCaseStatus;
-					eventData.startDownload = 1;
+					eventData.startDownload = 0;
 		      $(openCmd).trigger('opencase', [eventData]);
 				} else {
 					$.notify('เกิดข้อผิดพลาด ไม่สามารถอัพเดทสถานะเคสได้ในขณะนี้', 'error');
 				}
 			} else if ((currentCaseRes.current == 8) || (currentCaseRes.current == 9) || (currentCaseRes.current == 14)){
 				eventData.statusId = caseItem.casestatusId;
-				//eventData.startDownload = 1;
+				eventData.startDownload = 0;
 	      $(openCmd).trigger('opencase', [eventData]);
 			} else {
 				$.notify('ขออภัย เคสไม่อยู่ในสถานะที่จะพิมพ์ผลอ่านแล้ว', 'error');
@@ -137,7 +130,10 @@ module.exports = function ( jq ) {
       let caseRow = $('<div style="display: table-row; width: 100%;" class="case-row"></div>');
 			$(caseRow).css({'cursor': 'pointer'});
 			$(caseRow).on('dblclick', (evt)=>{
-				$(caseCMD).find('#OpenCaseCmd').click();
+				let eventData = common.doCreateOpenCaseData(caseItem);
+				eventData.statusId = caseItem.casestatusId;
+				eventData.startDownload = 1;
+				$(caseRow).trigger('opencase', [eventData]);
 			});
   		let caseColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
   		$(caseColumn).append('<span>' + casedate + ' : ' + casetime + '</span>');

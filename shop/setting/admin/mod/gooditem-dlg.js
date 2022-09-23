@@ -12,20 +12,32 @@ module.exports = function ( jq ) {
       let wrapperBox = $('<div></div>');
       let searchInputBox = $('<div></div>').css({'width': '100%', 'padding': '4px'});
       let gooditemListBox = $('<div></div>').css({'width': '100%', 'padding': '4px', 'min-height': '200px'});
-      let searchKeyInput = $('<input id="SearchKeyInput" type="text" value="*"/>').css({'width': '70px'});
+      let searchKeyInput = $('<input id="SearchKeyInput" type="text" value=""/>').css({'width': '70px'});
       let gooditemResult = undefined;
       $(searchKeyInput).css({'background': 'url(../../images/search-icon.png) no-repeat right center', 'background-size': '6% 100%', 'padding-right': '3px'});
       $(searchKeyInput).on('keyup', async (evt)=>{
         let key = $(searchKeyInput).val();
         if (key !== ''){
-          if (key === '*') {
-            gooditemResult = await doShowList(menuitems, gooditemSeleted, successCallback);
+          if (key === '0') {
+            //gooditemResult = await doShowList(menuitems, gooditemSeleted, successCallback);
+						//$(gooditemListBox).empty().append($(gooditemResult));
+						doShowGroupFilter(menugroups, async (groupSelected)=>{
+							console.log(groupSelected);
+							if (groupSelected) {
+								let gooditemFilter = await doFilterGooditemByGroup(menuitems, groupSelected);
+		            gooditemResult = await doShowList(gooditemFilter, gooditemSeleted, successCallback);
+								$(gooditemListBox).empty().append($(gooditemResult));
+							}
+						});
           } else {
             let gooditemFilter = await doFilterGooditem(menuitems, key);
             gooditemResult = await doShowList(gooditemFilter, gooditemSeleted, successCallback);
+						$(gooditemListBox).empty().append($(gooditemResult));
           }
-          $(gooditemListBox).empty().append($(gooditemResult));
-        }
+        } else {
+					gooditemResult = await doShowList(menuitems, gooditemSeleted, successCallback);
+					$(gooditemListBox).empty().append($(gooditemResult));
+				}
       });
 			let scanQRCodeCmd = $('<img src="../../images/scan-qrcode-icon.png" title="ค้นหาโดยสแกนคิวอาร์โค้ด"/>').css({'width': '28px', 'height': 'auto', 'cursor': 'pointer', 'margin-left': '10px', 'margin-bottom': '-8px'});
 			$(scanQRCodeCmd).on('click', (evt)=>{
@@ -91,7 +103,7 @@ module.exports = function ( jq ) {
       if (key === '*') {
         resolve(gooditems);
       } else {
-        let result = gooditems.filter((item)=>{
+        let result = await gooditems.filter((item)=>{
           let n = item.MenuName.search(key);
           if (n >= 0) {
             return item;
@@ -103,6 +115,18 @@ module.exports = function ( jq ) {
       }
     });
   }
+
+	const doFilterGooditemByGroup = function(gooditems, groupSelected){
+		return new Promise(async function(resolve, reject) {
+			let groupId = groupSelected.id;
+			let result = await gooditems.filter((item)=>{
+				if (item.menugroupId == groupId) {
+					return item;
+				}
+			});
+			resolve(result);
+		});
+	}
 
   const doShowList = function(results, gooditemSeleted, successCallback){
     return new Promise(async function(resolve, reject) {
@@ -147,8 +171,12 @@ module.exports = function ( jq ) {
 	          });
 	          let pictureCell = $('<td width="10%" align="center"></td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
 	          if (results[i].MenuPicture){
-	            let picture = $('<img src="' + results[i].MenuPicture + '"/>').css({'width': '40px', 'height': 'auto'});
+	            let picture = $('<img src="' + results[i].MenuPicture + '"/>').css({'width': '40px', 'height': 'auto', 'cursor': 'pointer'});
 	            $(pictureCell).append($(picture));
+							$(picture).on('click', (evt)=>{
+								evt.stopPropagation();
+								doShowGooditemPopup(results[i]);
+							});
 	          }
 	          let nameCell = $('<td width="30%" align="left">' + results[i].MenuName + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
 	          let qtyCell = $('<td width="10%" align="left"></td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
@@ -245,6 +273,67 @@ module.exports = function ( jq ) {
     $(formRow).append($(nameCell)).append($(priceCell)).append($(unitCell)).append($(groupCell)).append($(commandCell));
     return $(form).append($(formRow));
   }
+
+	const doShowGooditemPopup = function(gooditem) {
+		let gooditemImage = $('<img/>').attr('src', gooditem.MenuPicture).css({'width': '280px', 'height': 'auto'});
+		let imageBox = $('<div></div>').css({'width': '100%', 'text-align': 'center'}).append($(gooditemImage));
+		let nameBox = $('<div></div>').css({'width': '100%', 'text-align': 'left'}).append($('<span><b>ชื่อ: </b></span>')).append($('<span></span>').text(gooditem.MenuName));
+		let priceBox = $('<div></div>').css({'width': '100%', 'text-align': 'left'}).append($('<span><b>ราคาต่อหน่วย: </b></span>')).append($('<span></span>').text(common.doFormatNumber(gooditem.Price)));
+		let unitBox = $('<div></div>').css({'width': '100%', 'text-align': 'left'}).append($('<span><b>หน่วยขาย: </b></span>')).append($('<span></span>').text(gooditem.Unit));
+		let groupBox = $('<div></div>').css({'width': '100%', 'text-align': 'left'}).append($('<span><b>สังกัดกลุ่ม: </b></span>')).append($('<span></span>').text(gooditem.menugroup.GroupName));
+		let popupOption = {
+			title: 'รายละเอียดสินค้า',
+			msg: $('<div></div>').css({'width': '100%'}).append($(imageBox)).append($(nameBox)).append($(priceBox)).append($(unitBox)).append($(groupBox)),
+			width: '320px',
+			onOk: function(evt) {
+				dlgHandle.closeAlert();
+			},
+			onCancel: function(evt){
+				dlgHandle.closeAlert();
+			}
+		}
+		let dlgHandle = $('body').radalert(popupOption);
+		$(dlgHandle.overlay).css({'z-index': '400'});
+		$(dlgHandle.cancelCmd).hide();
+		return dlgHandle;
+	}
+
+	const doShowGroupFilter = function(menugroups, successCallback) {
+		let groupFilterBox = $('<div></div>').css({'width': '100%'});
+		menugroups.forEach((group, i) => {
+			let groupImage = $('<img/>').attr('src', group.GroupPicture).css({'width': '220px', 'height': 'auto'});
+			let imageBox = $('<div></div>').css({'width': '100%', 'text-align': 'center'}).append($(groupImage));
+			let nameBox = $('<div></div>').css({'width': '100%', 'text-align': 'left'}).append($('<span></span>').text(group.GroupName));
+			let groupBox = $('<div></div>').css({'width': '120px', 'display': 'inline-block', 'cursor': 'pointer', 'background-color': '#ddd', 'margin': '10px 0 0 10px'}).append($(imageBox)).append($(nameBox));
+			$(groupBox).hover(()=>{
+				$(groupBox).css({'background-color': 'grey', 'color': 'white'});
+			},()=>{
+				$(groupBox).css({'background-color': '#ddd', 'color': 'black'});
+			});
+			$(groupBox).on('click', (evt)=>{
+				dlgHandle.closeAlert();
+				successCallback(group);
+			});
+			$(groupFilterBox).append($(groupBox));
+		});
+		let popupOption = {
+			title: 'เลือกกลุ่มสินค้า',
+			msg: $(groupFilterBox),
+			width: '460px',
+			onOk: function(evt) {
+				dlgHandle.closeAlert();
+				successCallback(undefined);
+			},
+			onCancel: function(evt){
+				dlgHandle.closeAlert();
+				successCallback(undefined);
+			}
+		}
+		let dlgHandle = $('body').radalert(popupOption);
+		$(dlgHandle.overlay).css({'z-index': '400'});
+		$(dlgHandle.cancelCmd).hide();
+		return dlgHandle;
+	}
 
   return {
     doCreateFormDlg

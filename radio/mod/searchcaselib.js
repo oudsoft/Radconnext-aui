@@ -43,8 +43,8 @@ module.exports = function ( jq ) {
 								if ((eventData.StudyDescription == '') && (eventData.ProtocolName != '')) {
 									eventData.StudyDescription = eventData.ProtocolName;
 								}
+								eventData.statusId = caseItem.casestatusId;
 								eventData.startDownload = 0;
-								console.log(eventData);
 					      $(iconCmd).trigger('opencase', [eventData]);
 							}
 						});
@@ -63,13 +63,9 @@ module.exports = function ( jq ) {
 		let frag = commandStr.substr((commandStr.length-1), commandStr.length);
 		if ((frag === 'R') && (cmd === 'edit')) {
 			let iconCmd = common.doCreateCaseCmd(cmd, caseItem.case.id, (data)=>{
-				let eventData = {caseId: caseItem.case.id, statusId: caseItem.case.casestatusId, patientId: caseItem.case.patientId, hospitalId: caseItem.case.hospitalId};
-				eventData.Modality = caseItem.case.Case_Modality;
-				eventData.StudyDescription = caseItem.case.Case_StudyDescription;
-				eventData.ProtocolName = caseItem.case.Case_ProtocolName;
-				if ((eventData.StudyDescription == '') && (eventData.ProtocolName != '')) {
-					eventData.StudyDescription = eventData.ProtocolName;
-				}
+				let eventData = common.doCreateOpenCaseData(caseItem.case);
+				eventData.statusId = caseItem.case.casestatusId;
+				eventData.startDownload = 0;
 				$(iconCmd).trigger('opencase', [eventData]);
 			});
 			return $(iconCmd);
@@ -327,7 +323,7 @@ module.exports = function ( jq ) {
       	caseSTAT = caseItem.case.casestatus.CS_Name_EN;
 			}
 
-      let itemRow = $('<div class="case-row" style="display: table-row; width: 100%;"></div>');
+      let itemRow = $('<div class="case-row" style="display: table-row; width: 100%; cursor: pointer;"></div>');
       let itemColumn = $('<div style="display: table-cell; text-align: left; vertical-align: middle;"></div>');
       $(itemColumn).append('<span>'+ casedate + ' : ' + casetime +'</span>');
       $(itemColumn).appendTo($(itemRow));
@@ -380,6 +376,13 @@ module.exports = function ( jq ) {
       	$(itemColumn).append($(caseCMD));
 			});
       $(itemColumn).appendTo($(itemRow));
+
+			$(itemRow).on('dblclick', (evt)=>{
+				let eventData = common.doCreateOpenCaseData(caseItem.case);
+				eventData.statusId = caseItem.case.casestatusId;
+				eventData.startDownload = 1;
+				$(itemRow).trigger('opencase', [eventData]);
+			});
 
       resolve($(itemRow));
     });

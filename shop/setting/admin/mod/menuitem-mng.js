@@ -245,7 +245,7 @@ module.exports = function ( jq ) {
 		if (groupId) {
 			$(inputValue).val(groupId);
 		} else {
-			$(inputValue).val(menuitemData);
+			$(inputValue).val(menuitemData.menugroupId);
 		}
 
 		return $(menuitemFormTable);

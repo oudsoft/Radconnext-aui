@@ -1211,6 +1211,17 @@ module.exports = function ( jq ) {
     });
   }
 
+	const doCreateOpenCaseData = function(caseItem){
+		let openCaseData = {caseId: caseItem.id, patientId: caseItem.patientId, hospitalId: caseItem.hospitalId};
+		openCaseData.Modality = caseItem.Case_Modality;
+		openCaseData.StudyDescription = caseItem.Case_StudyDescription;
+		openCaseData.ProtocolName = caseItem.Case_ProtocolName;
+		if ((openCaseData.StudyDescription == '') && (openCaseData.ProtocolName != '')) {
+			openCaseData.StudyDescription = openCaseData.ProtocolName;
+		}
+		return openCaseData;
+	}
+
   return {
 		/* Constant share */
 		caseReadWaitStatus,
@@ -1282,6 +1293,7 @@ module.exports = function ( jq ) {
 		doCallLoadStudyTags,
 		doReStructureDicom,
 		doCheckOutTime,
-		doCallPriceChart
+		doCallPriceChart,
+		doCreateOpenCaseData
 	}
 }

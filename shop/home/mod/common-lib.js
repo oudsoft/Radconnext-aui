@@ -37,7 +37,7 @@ module.exports = function ( jq ) {
 		localStorage.removeItem('customers');
 		localStorage.removeItem('menugroups');
 		localStorage.removeItem('menuitems');
-		//localStorage.removeItem('userdata');
+		sessionStorage.removeItem('logged');
 	  let url = '/shop/index.html';
 	  window.location.replace(url);
 	}
@@ -186,6 +186,49 @@ module.exports = function ( jq ) {
     });
   }
 
+	const doConnectWebsocketMaster = function(username, usertype, shopId, connecttype){
+	  const hostname = window.location.hostname;
+		const protocol = window.location.protocol;
+	  const port = window.location.port;
+	  const paths = window.location.pathname.split('/');
+	  const rootname = paths[1];
+
+		//let wsUrl = 'wss://radconnext.tech/' + username + '/' + shopId + '?type=' + connecttype;
+		let wsUrl = 'wss://localhost:4443/' + username + '/' + shopId + '?type=' + connecttype;
+	  const wsm = new WebSocket(wsUrl);
+		wsm.onopen = function () {
+			//console.log('Master Websocket is connected to the signaling server')
+		};
+
+		wsm.onclose = function(event) {
+			//console.log("Master WebSocket is closed now. with  event:=> ", event);
+		};
+
+		wsm.onerror = function (err) {
+		   console.log("Master WS Got error", err);
+		};
+
+		//console.log(usertype);
+
+		/*
+		if ((usertype == 1) || (usertype == 2) || (usertype == 3)) {
+			const wsmMessageHospital = require('./websocketmessage.js')($, wsm);
+			wsm.onmessage = wsmMessageHospital.onMessageHospital;
+		} else if (usertype == 4) {
+			const wsmMessageRedio = require('../../radio/mod/websocketmessage.js')($, wsm);
+			wsm.onmessage = wsmMessageRedio.onMessageRadio;
+		} else if (usertype == 5) {
+			const wsmMessageRefer = require('../../refer/mod/websocketmessage.js')($, wsm);
+			wsm.onmessage = wsmMessageRefer.onMessageRefer;
+		}
+		*/
+
+		const wsmMessageShop = require('./websocketmessage.js')($, wsm);
+		wsm.onmessage = wsmMessageShop.onMessageShop;
+
+		return wsm;
+	}
+
   return {
 		fileUploadMaxSize,
 		shopSensitives,
@@ -204,6 +247,7 @@ module.exports = function ( jq ) {
 		isExistsResource,
 		doCreateReportDocButtonCmd,
 		doCalOrderTotal,
-		doResetSensitiveWord
+		doResetSensitiveWord,
+		doConnectWebsocketMaster
 	}
 }

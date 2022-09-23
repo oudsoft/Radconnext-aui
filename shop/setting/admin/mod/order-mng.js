@@ -504,11 +504,19 @@ module.exports = function ( jq ) {
           let goodItems = orderData.gooditems;
 					let itenNoCells = [];
           for (let i=0; i < goodItems.length; i++) {
+						let menuNameFrag = $('<span></span>').text(goodItems[i].MenuName);
 						let priceFrag = $('<span></span>').text(common.doFormatNumber(Number(goodItems[i].Price)));
 						if ([1, 2].includes(orderData.Status)) {
+							$(menuNameFrag).css({'cursor': 'pointer', 'text-decoration': 'underline', 'text-decoration-style': 'dotted'})
+							$(menuNameFrag).on('click', (evt)=>{
+								doEditMenuNameOnTheFly(evt, orderData.gooditems, i, async(newName)=>{
+									orderData.gooditems[i].MenuName = newName;
+									$(menuNameFrag).text(orderData.gooditems[i].MenuName);
+								});
+							});
 							$(priceFrag).css({'cursor': 'pointer', 'text-decoration': 'underline', 'text-decoration-style': 'dotted'})
 							$(priceFrag).on('click', (evt)=>{
-								doEditOnTheFly(evt, orderData.gooditems, i, async(newPrice)=>{
+								doEditPriceOnTheFly(evt, orderData.gooditems, i, async(newPrice)=>{
 									orderData.gooditems[i].Price = newPrice;
 									$(priceFrag).text(common.doFormatNumber(Number(orderData.gooditems[i].Price)));
 									subTotal = Number(orderData.gooditems[i].Price) * Number(orderData.gooditems[i].Qty);
@@ -521,7 +529,7 @@ module.exports = function ( jq ) {
             let goodItemRow = $('<tr></tr>');
 						let itenNoCell = $('<td align="center">' + (i+1) + '</td>');
             $(goodItemRow).append($(itenNoCell));
-            $(goodItemRow).append($('<td align="left">' + goodItems[i].MenuName + '</td>'));
+            $(goodItemRow).append($('<td align="left"></td>').append($(menuNameFrag)));
             let goodItemQtyCell = $('<td align="center">' + common.doFormatQtyNumber(goodItems[i].Qty) + '</td>');
             $(goodItemRow).append($(goodItemQtyCell));
             $(goodItemRow).append($('<td align="center">' + goodItems[i].Unit + '</td>'));
@@ -827,7 +835,7 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doEditOnTheFly = function(event, gooditems, index, successCallback){
+	const doEditPriceOnTheFly = function(event, gooditems, index, successCallback){
 		let editInput = $('<input type="number"/>').val(common.doFormatNumber(Number(gooditems[index].Price))).css({'width': '100px', 'margin-left': '20px'});
 		$(editInput).on('keyup', (evt)=>{
 			if (evt.keyCode == 13) {
@@ -846,16 +854,56 @@ module.exports = function ( jq ) {
 					let params = {data: {Price: newValue}, id: gooditems[index].id};
 					let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
 					if (menuitemRes.status.code == 200) {
-						$.notify("แก้ไขรายการเมนูสำเร็จ", "success");
+						$.notify("แก้ไขรายการสินค้าสำเร็จ", "success");
 						dlgHandle.closeAlert();
 						successCallback(newValue);
 					} else if (menuitemRes.status.code == 201) {
-						$.notify("ไม่สามารถแก้ไขรายการเมนูได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
+						$.notify("ไม่สามารถแก้ไขรายการสินค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
 					} else {
-						$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการเมนูได้", "error");
+						$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการสินค้าได้", "error");
 					}
 				} else {
 					$.notify('ราคาสินค้าต้องไม่ว่าง', 'error');
+					$(editInput).css({'border': '1px solid red'});
+				}
+			},
+			onCancel: function(evt){
+				dlgHandle.closeAlert();
+			}
+		}
+		let dlgHandle = $('body').radalert(editDlgOption);
+		return dlgHandle;
+	}
+
+	const doEditMenuNameOnTheFly = function(event, gooditems, index, successCallback){
+		let editInput = $('<input type="text"/>').val(gooditems[index].MenuName).css({'width': '200px', 'margin-left': '20px'});
+		$(editInput).on('keyup', (evt)=>{
+			if (evt.keyCode == 13) {
+				$(dlgHandle.okCmd).click();
+			}
+		});
+		let editLabel = $('<label>ชื่อสินค้า:</label>').attr('for', $(editInput)).css({'width': '100%'})
+		let editDlgOption = {
+			title: 'แก้ไขชื่อสินค้า',
+			msg: $('<div></div>').css({'width': '100%', 'height': '70px', 'margin-top': '20px'}).append($(editLabel)).append($(editInput)),
+			width: '320px',
+			onOk: async function(evt) {
+				let newValue = $(editInput).val();
+				if(newValue !== '') {
+					$(editInput).css({'border': ''});
+					let params = {data: {MenuName: newValue}, id: gooditems[index].id};
+					let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
+					if (menuitemRes.status.code == 200) {
+						$.notify("แก้ไขรายการสินค้าสำเร็จ", "success");
+						dlgHandle.closeAlert();
+						successCallback(newValue);
+					} else if (menuitemRes.status.code == 201) {
+						$.notify("ไม่สามารถแก้ไขรายการสินค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
+					} else {
+						$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการสินค้าได้", "error");
+					}
+				} else {
+					$.notify('ชื่อสินค้าต้องไม่ว่าง', 'error');
 					$(editInput).css({'border': '1px solid red'});
 				}
 			},

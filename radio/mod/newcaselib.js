@@ -148,6 +148,7 @@ module.exports = function ( jq ) {
     $(acceptCmd).on('click', async (evt)=>{
       let response = await common.doUpdateCaseStatus(caseItem.id, 2, 'Radiologist Accept case by Web App');
 			if (response.status.code == 200) {
+				/*
 				let newDicomZipSync = {caseId: caseItem.id, studyID: caseItem.Case_OrthancStudyID};
 				let dicomzipsync = JSON.parse(localStorage.getItem('dicomzipsync'));
 				if (dicomzipsync.length > 0){
@@ -157,6 +158,7 @@ module.exports = function ( jq ) {
 					dicomzipsync.push(newDicomZipSync);
 				}
 				localStorage.setItem('dicomzipsync', JSON.stringify(dicomzipsync));
+				*/
 				//util.dicomZipSyncWorker.postMessage({studyID: newDicomZipSync.studyID, type: 'application/x-compressed'});
 				$.notify('ตอบรับเคสสำเร็จ', 'success');
 				$('#NewCaseCmd').click();
