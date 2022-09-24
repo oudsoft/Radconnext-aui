@@ -462,6 +462,7 @@ function doUseFullPage() {
 	$(".row").show();
 	$(".mainfull").show();
 	$(".mainfull").empty();
+  common.doAddNotifyCustomStyle();
 }
 
 function doLoadDefualtPage(autoSelectPage) {

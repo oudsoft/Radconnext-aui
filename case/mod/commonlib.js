@@ -82,6 +82,8 @@ module.exports = function ( jq ) {
 	const quickReplyDialogStyle = { 'position': 'fixed', 'z-index': '33', 'left': '0', 'top': '0', 'width': '100%', 'height': '100%', 'overflow': 'auto',/* 'background-color': 'rgb(0,0,0)',*/ 'background-color': 'rgba(0,0,0,0.4)'};
 	const quickReplyContentStyle = { 'background-color': '#fefefe', 'margin': '70px auto', 'padding': '0px', 'border': '2px solid #888', 'width': '620px', 'height': '500px'/*, 'font-family': 'THSarabunNew', 'font-size': '24px'*/ };
 
+	let downloadDicomList = [];
+
   const doCallApi = function(url, rqParams) {
 		return new Promise(function(resolve, reject) {
 			apiconnector.doCallApi(url, rqParams).then((response) => {
@@ -1222,6 +1224,35 @@ module.exports = function ( jq ) {
 		return openCaseData;
 	}
 
+	const doAddNotifyCustomStyle = function(){
+    $.notify.addStyle('myshopman', {
+      html: "<div class='superblue'><span data-notify-html/></div>",
+      classes: {
+        base: {
+          "border": "3px solid white",
+          "border-radius": "20px",
+          "color": "white",
+          "background-color": "#184175",
+          "padding": "10px"
+        },
+        green: {
+          "border": "3px solid white",
+          "border-radius": "20px",
+          "color": "white",
+          "background-color": "green",
+          "padding": "10px"
+        },
+        red: {
+          "border": "3px solid white",
+          "border-radius": "20px",
+          "color": "white",
+          "background-color": "red",
+          "padding": "10px"
+        }
+      }
+    });
+  }
+
   return {
 		/* Constant share */
 		caseReadWaitStatus,
@@ -1241,6 +1272,7 @@ module.exports = function ( jq ) {
 		sizeA4Style,
 		quickReplyDialogStyle,
 		quickReplyContentStyle,
+		downloadDicomList,
 		/* Function share */
 		doCallApi,
 		doGetApi,
@@ -1294,6 +1326,7 @@ module.exports = function ( jq ) {
 		doReStructureDicom,
 		doCheckOutTime,
 		doCallPriceChart,
-		doCreateOpenCaseData
+		doCreateOpenCaseData,
+		doAddNotifyCustomStyle
 	}
 }

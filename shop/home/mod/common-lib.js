@@ -37,6 +37,7 @@ module.exports = function ( jq ) {
 		localStorage.removeItem('customers');
 		localStorage.removeItem('menugroups');
 		localStorage.removeItem('menuitems');
+		localStorage.removeItem('changelogs');
 		sessionStorage.removeItem('logged');
 	  let url = '/shop/index.html';
 	  window.location.replace(url);
@@ -77,10 +78,18 @@ module.exports = function ( jq ) {
 
 	const doFormatTimeStr = function(d) {
 		var hh, mn, ss;
-		hh = d.getHours();
-		mn = d.getMinutes();
+		if (d.getHours() < 10) {
+			hh = '0' + d.getHours();
+		} else {
+			hh = '' + d.getHours();
+		}
+		if (d.getMinutes() < 10) {
+			mn = '0' + d.getMinutes();
+		} else {
+			mn = '' + d.getMinutes();
+		}
 		ss = d.getSeconds();
-		var td = `${hh}:${mn}:${ss}`;
+		var td = `${hh}.${mn}`;
 		return td;
 	}
 

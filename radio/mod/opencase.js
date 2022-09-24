@@ -16,7 +16,6 @@ module.exports = function ( jq ) {
 	let caseId = undefined;
 	let caseResponseId = undefined;
 	let backupDraftCounter = undefined;
-	let downloadDicomList = [];
 	let syncTimer = undefined;
 
 	const doDownloadZipBlob = function(downloadCmd, link, outputFilename, successCallback){
@@ -60,8 +59,8 @@ module.exports = function ( jq ) {
 		pom.setAttribute('href', dicomZipLink);
 		pom.setAttribute('download', caseDicomZipFilename);
 		pom.click();
-		downloadDicomList.push(caseDicomZipFilename);
-		return downloadDicomList;
+		common.downloadDicomList.push(caseDicomZipFilename);
+		return common.downloadDicomList;
 	}
 
   const onDownloadCmdClick = function(downloadCmd) {
@@ -77,14 +76,14 @@ module.exports = function ( jq ) {
 			let existDicomFileRes = await apiconnector.doCallDicomArchiveExist(dicomzipfilename);
 			if (existDicomFileRes.link){
 				doDownloadZipBlob(downloadCmd, dicomzipfilepath, dicomzipfilename, ()=>{
-					downloadDicomList.push(dicomzipfilename);
+					common.downloadDicomList.push(dicomzipfilename);
 					resolve(existDicomFileRes);
 				});
 			} else {
 				let existOrthancFileRes = await apiconnector.doCallDicomArchiveExist(orthanczipfilename);
 				if (existOrthancFileRes.link){
 					doDownloadZipBlob(downloadCmd, orthanczipfilepath, dicomzipfilename, ()=>{
-						downloadDicomList.push(dicomzipfilename);
+						common.downloadDicomList.push(dicomzipfilename);
 						resolve(existOrthancFileRes);
 					});
 				} else {
@@ -93,7 +92,7 @@ module.exports = function ( jq ) {
 					apiconnector.doCallDownloadDicom(studyID, hospitalId).then((response) => {
 						setTimeout(()=>{
 							doDownloadZipBlob(downloadCmd, response.link, dicomzipfilename, ()=>{
-								downloadDicomList.push(dicomzipfilename);
+								common.downloadDicomList.push(dicomzipfilename);
 								resolve(response);
 							});
 						}, 2500);
@@ -163,10 +162,10 @@ module.exports = function ( jq ) {
 		user ต้องรอให้การดาวน์โหลดเสร็จสมูรณ์ จึงคลิก 3th Party ได้
 		*/
 		let thirdPartyLink = 'radiant://?n=f&v=';
-		if (downloadDicomList.length > 0) {
-			if (downloadDicomList.length <= 3) {
-				downloadDicomList.forEach((item, i) => {
-					if (i < (downloadDicomList.length-1)) {
+		if (common.downloadDicomList.length > 0) {
+			if (common.downloadDicomList.length <= 3) {
+				common.downloadDicomList.forEach((item, i) => {
+					if (i < (common.downloadDicomList.length-1)) {
 						thirdPartyLink += defaultDownloadPath + '/' + item + '&v=';
 					} else {
 						thirdPartyLink += defaultDownloadPath + '/' + item;
@@ -177,7 +176,7 @@ module.exports = function ( jq ) {
 				pom.setAttribute('href', thirdPartyLink);
 				//pom.setAttribute('download', dicomFilename);
 				pom.click();
-				downloadDicomList = [];
+				common.downloadDicomList = [];
 			} else {
 				$.notify("sorry, not support exceed three file download", "warn");
 			}
@@ -802,8 +801,7 @@ module.exports = function ( jq ) {
 		$(downloadCmd).appendTo($(dicomCmdBox));
 		$(downloadCmd).on('click', async (evt)=>{
 			//$('body').loading('start');
-			//let downloadRes = await doDownloadDicom(orthancStudyID, hospitalId, casedate, casetime);
-			let downloadRes = await doDownloadDicom(caseDicomZipFilename);
+			let downloadList = doDownloadDicom(caseDicomZipFilename);
 			//$('body').loading('stop');
 		});
 		/*
@@ -1113,24 +1111,20 @@ module.exports = function ( jq ) {
 			$(downloadCmd).attr('title', 'Download zip file of ' + patientFullName);
 			$(downloadCmd).data('downloadData', downloadData);
 			$(downloadCmd).on('click', async (evt)=>{
-				let dwnRes = await onDownloadCmdClick(downloadCmd);
-				$(downloadCmd).off('click');
-				//$(downloadCmd).removeClass('action-btn');
-				//$(downloadCmd).addClass('special-action-btn');
-				$(downloadCmd).attr('title', 'Ctrl+click to open with 3rd party program');
-				$(downloadCmd).val(' DL/Open ');
-				$(downloadCmd).removeClass('action-btn');
-				$(downloadCmd).addClass('special-action-btn');
-				$(downloadCmd).on('click', async (evt)=>{
-					console.log(evt);
-					if (evt.ctrlKey) {
-						// Ctrl Click
-						onOpenThirdPartyCmdClick(evt);
-					} else {
-						//normal click
-						dwnRes = await onDownloadCmdClick(downloadCmd);
+				let foundItem = await common.downloadDicomList.find((item, i) =>{
+					if (item === downloadData.dicomzipfilename) {
+						return item;
 					}
 				});
+				if ((foundItem) && (foundItem === downloadData.dicomzipfilename)) {
+					let msgDiv = $('<p></p>').text('พบรายการไฟล์ ' + downloadData.dicomzipfilename + ' ในประวัติการดาวน์โหลด')
+					let msgBox = doCreateCustomNotify('ประวัติการดาวน์โหลด', msgDiv, ()=>{
+						onOpenThirdPartyCmdClick();
+					});
+					$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
+				} else {
+					let dwnList = doDownloadDicom(downloadData.dicomzipfilename);
+				}
 			});
 			$(downloadCmd).appendTo($(downloadCmdCell));
 
@@ -1524,33 +1518,29 @@ module.exports = function ( jq ) {
 				$(myOpenCaseView).append($(caseSummaryDetail));
 	      resolve($(myOpenCaseView));
 				let casestatusId = caseData.statusId;
-				let dwnRes = undefined;
 				if (caseData.startDownload == 1) {
 					let downloadDicomZipCmd = $(caseSummaryDetail).find('#DownloadDicomZipCmd');
 					if (downloadDicomZipCmd) {
-						if (casestatusId == 2) {
-							dwnRes = await doStartAutoDownloadDicom(downloadDicomZipCmd);
-						} else if ([5, 6, 8, 9, 10, 11, 12, 13, 14].includes(casestatusId)) {
-							if (downloadDicomList.length > 0){
-								let downloadData = $(downloadDicomZipCmd).data('downloadData');
-								let dicomzipfilename = downloadData.dicomzipfilename;
-								let foundItem = await downloadDicomList.find((item, i) =>{
-									if (item === dicomzipfilename) {
-										return item;
-									}
-								});
-								if ((foundItem) && (foundItem === dicomzipfilename)) {
-									doChangeStateDownloadDicomCmd(downloadDicomZipCmd);
-									let newEvt = jQuery.Event("click");
-									newEvt.ctrlKey = true;
-									$(downloadDicomZipCmd).trigger(newEvt);
-								} else {
-									dwnRes = await doStartAutoDownloadDicom(downloadDicomZipCmd);
-								}
-							} else {
-								dwnRes = await doStartAutoDownloadDicom(downloadDicomZipCmd);
+						let downloadData = $(downloadDicomZipCmd).data('downloadData');
+						let dicomzipfilename = downloadData.dicomzipfilename;
+						let foundItem = await common.downloadDicomList.find((item, i) =>{
+							if (item === dicomzipfilename) {
+								return item;
 							}
+						});
+						if ((foundItem) && (foundItem === dicomzipfilename)) {
+							doChangeStateDownloadDicomCmd(downloadDicomZipCmd);
+							let msgDiv = $('<p></p>').text('พบรายการไฟล์ ' + dicomzipfilename + ' ในประวัติการดาวน์โหลด')
+							let msgBox = doCreateCustomNotify('ประวัติการดาวน์โหลด', msgDiv, ()=>{
+								let newEvt = jQuery.Event("click");
+								newEvt.ctrlKey = true;
+								$(downloadDicomZipCmd).trigger(newEvt);
+							});
+							$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
+						} else {
+							let dwnRes = await doStartAutoDownloadDicom(downloadDicomZipCmd);
 						}
+
 					} else {
 						let apiError = 'api error at doCallMyOpenCase';
 						reject({error: apiError});
@@ -1570,12 +1560,13 @@ module.exports = function ( jq ) {
 			let dwnRes = await onDownloadCmdClick(downloadDicomZipCmd);
 			doChangeStateDownloadDicomCmd(downloadDicomZipCmd);
 			//onOpenThirdPartyCmdClick();
-			let newEvt = jQuery.Event("click");
-			newEvt.ctrlKey = true;
-			setTimeout(()=>{
+			let msgDiv = $('<p></p>').text('พบรายการไฟล์ ' + dicomzipfilename + ' ในประวัติการดาวน์โหลด')
+			let msgBox = doCreateCustomNotify('ประวัติการดาวน์โหลด', msgDiv, ()=>{
+				let newEvt = jQuery.Event("click");
+				newEvt.ctrlKey = true;
 				$(downloadDicomZipCmd).trigger(newEvt);
-				resolve(dwnRes);
-			}, 1500);
+			});
+			$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
 		});
 	}
 
@@ -1762,6 +1753,23 @@ module.exports = function ( jq ) {
 			}
 			$('body').loading('stop');
 		});
+	}
+
+	const doCreateCustomNotify = function(title, msgDiv, callback){
+	  let msgBox = $('<div></div>');
+	  let titleBox = $("<div id='notify-title' style='background-color: white; color: black; font-weight: bold; text-align: center;'></div>");
+	  $(titleBox).append($('<h4>' + title + '</h4>'));
+	  let bodyBox = $("<div id='notify-body'></div>");
+		$(bodyBox).append($(msgDiv));
+	  $(bodyBox).append($('<span>คลิกที่ปุ่ม <b>ตกลง</b> เพื่อเปิดภาพและปิดการแจ้งเตือนนี้</span>'));
+	  let footerBox = $("<div id='notify-footer' style='text-align: center;'></div>");
+	  let updateCmd = $('<input type="button" value="ตกลง" id="SuccessNotifyCmd"/>');
+		$(updateCmd).on('click', (evt)=>{
+			$(msgBox).remove();
+			callback();
+		});
+	  $(footerBox).append($(updateCmd));
+	  return $(msgBox).append($(titleBox)).append($(bodyBox)).append($(footerBox))
 	}
 
   return {
