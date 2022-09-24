@@ -1532,9 +1532,12 @@ module.exports = function ( jq ) {
 							doChangeStateDownloadDicomCmd(downloadDicomZipCmd);
 							let msgDiv = $('<p></p>').text('พบรายการไฟล์ ' + dicomzipfilename + ' ในประวัติการดาวน์โหลด')
 							let msgBox = doCreateCustomNotify('ประวัติการดาวน์โหลด', msgDiv, ()=>{
+								/*
 								let newEvt = jQuery.Event("click");
 								newEvt.ctrlKey = true;
 								$(downloadDicomZipCmd).trigger(newEvt);
+								*/
+								onOpenThirdPartyCmdClick();
 							});
 							$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
 						} else {
@@ -1560,11 +1563,16 @@ module.exports = function ( jq ) {
 			let dwnRes = await onDownloadCmdClick(downloadDicomZipCmd);
 			doChangeStateDownloadDicomCmd(downloadDicomZipCmd);
 			//onOpenThirdPartyCmdClick();
+			let downloadData = $(downloadDicomZipCmd).data('downloadData');
+			let dicomzipfilename = downloadData.dicomzipfilename;
 			let msgDiv = $('<p></p>').text('พบรายการไฟล์ ' + dicomzipfilename + ' ในประวัติการดาวน์โหลด')
 			let msgBox = doCreateCustomNotify('ประวัติการดาวน์โหลด', msgDiv, ()=>{
+				/*
 				let newEvt = jQuery.Event("click");
 				newEvt.ctrlKey = true;
 				$(downloadDicomZipCmd).trigger(newEvt);
+				*/
+				onOpenThirdPartyCmdClick();
 			});
 			$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
 		});
