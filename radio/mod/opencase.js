@@ -161,6 +161,7 @@ module.exports = function ( jq ) {
 		ให้ใช้ / แทน \
 		user ต้องรอให้การดาวน์โหลดเสร็จสมูรณ์ จึงคลิก 3th Party ได้
 		*/
+		console.log(common.downloadDicomList);
 		let thirdPartyLink = 'radiant://?n=f&v=';
 		if (common.downloadDicomList.length > 0) {
 			if (common.downloadDicomList.length <= 3) {
