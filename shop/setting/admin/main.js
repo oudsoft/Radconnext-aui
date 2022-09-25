@@ -49,6 +49,7 @@ $( document ).ready(function() {
 
     $('head').append('<link rel="stylesheet" href="../stylesheets/style.css" type="text/css" />');
     $('head').append('<link rel="stylesheet" href="../lib/print/print.min.css" type="text/css" />');
+    $('head').append('<link rel="stylesheet" href="../../case/css/scanpart.css" type="text/css" />');
     $('head').append('<link rel="stylesheet" href="' + ionCalendarCssUrl + '" type="text/css" />');
 
     $('body').append($('<div id="App"></div>'));

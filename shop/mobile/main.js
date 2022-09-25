@@ -13,6 +13,8 @@ const common = require('../home/mod/common-lib.js')($);
 const orderMng = require('./mod/order-mng-lib.js')($);
 
 let pageHandle = undefined;
+let wss = undefined;
+
 $( document ).ready(function() {
   const initPage = function() {
     let jqueryUiCssUrl = "../lib/jquery-ui.min.css";
@@ -39,6 +41,7 @@ $( document ).ready(function() {
 
     $('head').append('<link rel="stylesheet" href="../stylesheets/style.css" type="text/css" />');
     $('head').append('<link rel="stylesheet" href="../lib/print/print.min.css" type="text/css" />');
+    $('head').append('<link rel="stylesheet" href="../../case/css/scanpart.css" type="text/css" />');
     $('head').append('<link rel="stylesheet" href="' + ionCalendarCssUrl + '" type="text/css" />');
 
     $('head').append('<script src="' + utilityPlugin + '"></script>');
@@ -65,6 +68,7 @@ $( document ).ready(function() {
         await common.doResetSensitiveWord(sensitiveWordJSON);
       });
     }
+    wss = common.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.shopId, 'shop');
   }
 
 	initPage();

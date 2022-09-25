@@ -237,8 +237,28 @@ module.exports = function ( jq ) {
         $.notify("โปรดระบุข้อมูลลูกค้าก่อนบันทึกออร์เดอร์", "error");
       }
     });
-    $(saveNewOrderCmdBox).append($(saveNewOrderCmd)).append($(cancelCmd));
-
+    $(saveNewOrderCmdBox).append($(saveNewOrderCmd));
+		if (orderObj.id) {
+			let changelogs = JSON.parse(localStorage.getItem('changelogs'));
+			if (changelogs) {
+				let newMsgCounts = await changelogs.filter((item, i) =>{
+					if ((item.orderId == orderObj.id) && (item.status === 'New')) {
+						return item;
+					}
+				});
+				let viewLogCmd = undefined;
+				if (newMsgCounts.length > 0) {
+					let viewLogCmd = $('<input type="button" value=" การเปลี่ยนแปลง " class="action-btn"/>').css({'margin-left': '10px'});
+					$(viewLogCmd).on('click', (evt)=>{
+						common.doPopupOrderChangeLog(orderObj.id);
+					});
+					$(saveNewOrderCmdBox).append($(viewLogCmd));
+				} else {
+					$(viewLogCmd).remove();
+				}
+			}
+		}
+		$(saveNewOrderCmdBox).append($(cancelCmd));
 		//if (orderObj.Status != 1) {
 		if ([3, 4].includes(orderObj.Status)) {
 			$(editCustomerCmd).hide();

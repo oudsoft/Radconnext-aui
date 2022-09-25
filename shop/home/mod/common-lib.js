@@ -5,6 +5,12 @@ module.exports = function ( jq ) {
 
 	const shopSensitives = [6];
 
+	const fmtStr = function (str) {
+	  var args = [].slice.call(arguments, 1);
+	  var i = 0;
+	  return str.replace(/%s/g, () => args[i++]);
+	}
+
   const doCallApi = function(apiUrl, rqParams) {
     return new Promise(function(resolve, reject) {
       $('body').loading('start');
@@ -238,9 +244,137 @@ module.exports = function ( jq ) {
 		return wsm;
 	}
 
+	const doRenderEvtLogBox = function(foundItems){
+		let logBox = $('<div></div>').css({'width': '100%', 'margin-top': '20px', 'padding': '5px'});
+		for (let i=0; i < foundItems.length; i++) {
+			let evtBox = $('<div></div>').css({'width': '95%', 'padding': '5px', 'border': '2px solid #dddd'});
+			let foundItem = foundItems[i];
+			let d = new Date(foundItem.date);
+			let dd = doFormatDateStr(d);
+			let tt = doFormatTimeStr(d);
+			let diffItems = foundItem.diffItems;
+			if (diffItems.upItems.length > 0) {
+				$(evtBox).append($('<p><b>รายการเพิ่มมาใหม่ [' + dd + ' ' + tt +']</b></p>'));
+				for (let x=0; x < diffItems.upItems.length; x++) {
+					let evtMessageLine = fmtStr('%s. %s จำนวน <span class="qty">%s</span> %s', (x+1), diffItems.upItems[x].MenuName, doFormatNumber(Number(diffItems.upItems[x].Qty)), diffItems.upItems[x].Unit);
+					$(evtBox).append($('<p></p>').html(evtMessageLine));
+					$(evtBox).find('.qty').css({'min-width': '20px', 'background-color': 'grey', 'color': 'white', 'padding': '2px'});
+					let deleteEvtCmd = $('<span><b>ลบ</b></span>').css({'margin-left': '10px', 'background-color': 'red', 'color': 'white'});
+					$(deleteEvtCmd).on('click', (evt)=>{
+						doRemoveChangeLogAt(i, 'upItems', x);
+						$(evtBox).remove();
+					});
+					$(evtBox).append($(deleteEvtCmd));
+				}
+			}
+			if (diffItems.downItems.length > 0) {
+				$(evtBox).append($('<p><b>รายการถูกลดออกไป [' + dd + ' ' + tt +']</b></p>'));
+				for (let y=0; y < diffItems.downItems.length; x++) {
+					let evtMessageLine = fmtStr('%s. %s จำนวน <span class="qty">%s</span> %s', (y+1), diffItems.downItems[y].MenuName, doFormatNumber(Number(diffItems.downItems[y].Qty)), diffItems.downItems[y].Unit);
+					$(evtBox).append($('<p></p>').html(evtMessageLine));
+					$(evtBox).find('.qty').css({'min-width': '20px', 'background-color': 'grey', 'color': 'white', 'padding': '2px'});
+					let deleteEvtCmd = $('<span><b>ลบ</b></span>').css({'margin-left': '10px', 'background-color': 'red', 'color': 'white'});
+					$(deleteEvtCmd).on('click', (evt)=>{
+						doRemoveChangeLogAt(i, 'downItems', y);
+						$(evtBox).remove();
+					});
+					$(evtBox).append($(deleteEvtCmd));
+				}
+			}
+			if (diffItems.qtys.length > 0) {
+				$(evtBox).append($('<p><b>รายการคงอยู่แต่เปลี่ยนจำนวน [' + dd + ' ' + tt +']</b></p>'));
+				for (let z=0; z < diffItems.qtys.length; z++) {
+					let evtMessageLine = fmtStr('%s. %s จำนวน <span class="qty">%s</span> %s', (z+1), diffItems.qtys[z].MenuName, doFormatNumber(Number(diffItems.qtys[z].diff)), diffItems.qtys[z].Unit);
+					$(evtBox).append($('<p></p>').html(evtMessageLine));
+					$(evtBox).find('.qty').css({'min-width': '20px', 'background-color': 'grey', 'color': 'white', 'padding': '2px'});
+					let deleteEvtCmd = $('<span><b>ลบ</b></span>').css({'margin-left': '10px', 'background-color': 'red', 'color': 'white'});
+					$(deleteEvtCmd).on('click', (evt)=>{
+						doRemoveChangeLogAt(i, 'qtys', z);
+						$(evtBox).remove();
+					});
+					$(evtBox).append($(deleteEvtCmd));
+				}
+			}
+			$(logBox).append($(evtBox));
+		}
+		return $(logBox);
+	}
+
+	const doPopupOrderChangeLog = async function(orderId) {
+		let changelogs = JSON.parse(localStorage.getItem('changelogs'));
+		let foundItems = await changelogs.filter((item, i) =>{
+			if ((item.orderId == orderId) && (item.status === 'New')) {
+				return item;
+			}
+		});
+		let oldItems = await changelogs.filter((item, i) =>{
+			if ((item.orderId == orderId) && (item.status === 'Read')) {
+				return item;
+			}
+		});
+		if (foundItems.length > 0) {
+			let logBox = doRenderEvtLogBox(foundItems);
+			let oldItemsBox = undefined;
+			let readySwitchBox = $('<div id="ReadyState" style="position: relative; display: inline-block; float: right; margin-top: 15px;"></div>');
+			let readyOption = {switchTextOnState: 'ดูทั้งหมด', switchTextOffState: 'ปิดรายการเก่า',
+				onActionCallback: ()=>{
+					oldItemsBox = doRenderEvtLogBox(oldItems);
+					$(oldItemsBox).css({'background-color': '#dddd', 'width': '95%'});
+					$(oldItemsBox).insertAfter(readySwitchBox);
+					readySwitch.onAction();
+				},
+				offActionCallback: ()=>{
+					$(oldItemsBox).remove();
+					readySwitch.offAction();
+				}
+			};
+			let readySwitch = $(readySwitchBox).readystate(readyOption);
+			$(logBox).append($(readySwitchBox));
+
+			let logDlgOption = {
+				title: 'รายการแก้ไขออร์เดอร์',
+				msg: $(logBox),
+				width: '480px',
+				onOk: async function(evt) {
+					await doSetChangeStateLog(orderId);
+					dlgHandle.closeAlert();
+				},
+				onCancel: function(evt){
+					dlgHandle.closeAlert();
+				}
+			}
+			let dlgHandle = $('body').radalert(logDlgOption);
+			$(dlgHandle.cancelCmd).hide();
+			return dlgHandle;
+		} else {
+			return;
+		}
+	}
+
+	const doSetChangeStateLog = async function(orderId){
+		let changelogs = JSON.parse(localStorage.getItem('changelogs'));
+		let newChangelogs = [];
+		await changelogs.forEach((item, i) => {
+			if ((item.orderId == orderId) && (item.status === 'New')) {
+				item.status = 'Read';
+				newChangelogs.push(item);
+			} else {
+				newChangelogs.push(item);
+			}
+		});
+		localStorage.setItem('changelogs', JSON.stringify(newChangelogs));
+	}
+
+	const doRemoveChangeLogAt = function(logIndex, diffType, diffIndex){
+		let changelogs = JSON.parse(localStorage.getItem('changelogs'));
+		changelogs[logIndex].diffItems[diffType].splice(logIndex, 1);
+		localStorage.setItem('changelogs', JSON.stringify(changelogs));
+	}
+
   return {
 		fileUploadMaxSize,
 		shopSensitives,
+		fmtStr,
     doCallApi,
     doGetApi,
 		doUserLogout,
@@ -257,6 +391,7 @@ module.exports = function ( jq ) {
 		doCreateReportDocButtonCmd,
 		doCalOrderTotal,
 		doResetSensitiveWord,
-		doConnectWebsocketMaster
+		doConnectWebsocketMaster,
+		doPopupOrderChangeLog
 	}
 }

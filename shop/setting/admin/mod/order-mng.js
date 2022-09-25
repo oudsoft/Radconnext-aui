@@ -233,7 +233,19 @@ module.exports = function ( jq ) {
 
     let cancelCmd = $('<input type="button" value=" กลับ "/>').css({'margin-left': '10px'});
     $(cancelCmd).on('click', async(evt)=>{
-      await doShowOrderList(shopData, workAreaBox, selectDate);
+			if (evt.ctrlKey) {
+				let changelogs = JSON.parse(localStorage.getItem('changelogs'));
+				let logIndex = changelogs.findIndex((item, i)=>{
+					if (item.orderId == orderObj.id) {
+						return item;
+					}
+				});
+				changelogs[logIndex].status = 'New';
+				localStorage.setItem('changelogs', JSON.stringify(changelogs));
+      	common.doPopupOrderChangeLog(orderObj.id);
+			} else {
+				await doShowOrderList(shopData, workAreaBox, selectDate);
+			}
     });
     let saveNewOrderCmd = $('<input type="button" value=" บันทึก " class="action-btn"/>');;
 		$(saveNewOrderCmdBox).append($(saveNewOrderCmd));
@@ -275,7 +287,7 @@ module.exports = function ( jq ) {
 				if (newMsgCounts.length > 0) {
 					let viewLogCmd = $('<input type="button" value=" การเปลี่ยนแปลง " class="action-btn"/>').css({'margin-left': '10px'});
 					$(viewLogCmd).on('click', (evt)=>{
-						doPopupOrderChangeLog(orderObj.id);
+						common.doPopupOrderChangeLog(orderObj.id);
 					});
 					$(saveNewOrderCmdBox).append($(viewLogCmd));
 				}
@@ -984,74 +996,6 @@ module.exports = function ( jq ) {
 		}
 		let dlgHandle = $('body').radalert(editDlgOption);
 		return dlgHandle;
-	}
-
-	const doPopupOrderChangeLog = async function(orderId) {
-		let changelogs = JSON.parse(localStorage.getItem('changelogs'));
-		let foundItems = await changelogs.filter((item, i) =>{
-			if ((item.orderId == orderId) && (item.status === 'New')) {
-				return item;
-			}
-		});
-		if (foundItems.length > 0) {
-			let logBox = $('<div></div>').css({'width': '100%', 'margin-top': '20px'});
-			for (let i=0; i < foundItems.length; i++) {
-				let foundItem = foundItems[i];
-				let diffItems = foundItem.diffItems;
-				if (diffItems.upItems.length > 0) {
-					$(logBox).append($('<p><b>รายการเพิ่มมาใหม่</b></p>'));
-					for (let x=0; x < diffItems.upItems.length; x++) {
-						$(logBox).append($('<p>' + (x+1) + '. ' + diffItems.upItems[x].MenuName + ' จำนวน <b>' + common.doFormatNumber(Number(diffItems.upItems[x].Qty)) + '</b> ' + diffItems.upItems[x].Unit + '</p>'));
-					}
-				}
-				if (diffItems.downItems.length > 0) {
-					$(logBox).append($('<p><b>รายการถูกลดออกไป</b></p>'));
-					for (let y=0; y < diffItems.downItems.length; x++) {
-						$(logBox).append($('<p>' + (y+1) + '. ' + diffItems.downItems[y].MenuName + ' จำนวน <b>' + common.doFormatNumber(Number(diffItems.downItems[y].Qty))  + '</b> ' + diffItems.downItems[y].Unit + '</p>'));
-					}
-				}
-				if (diffItems.qtys.length > 0) {
-					$(logBox).append($('<p><b>รายการคงอยู่แต่เปลี่ยนจำนวน</b></p>'));
-					for (let z=0; z < diffItems.qtys.length; z++) {
-						$(logBox).append($('<p>' + (z+1) + '. ' + diffItems.qtys[z].MenuName + ' จำนวน <b>' + common.doFormatNumber(Number(diffItems.qtys[z].diff)) + '</b> ' + diffItems.qtys[z].Unit + '</p>'));
-					}
-				}
-				$(logBox).append($('<hr/>'));
-			}
-			let logDlgOption = {
-				title: 'รายการแก้ไขออร์เดอร์',
-				msg: $(logBox),
-				width: '520px',
-				onOk: async function(evt) {
-					await doChangeStateLog(orderId);
-					dlgHandle.closeAlert();
-				},
-				onCancel: function(evt){
-					dlgHandle.closeAlert();
-				}
-			}
-			let dlgHandle = $('body').radalert(logDlgOption);
-			$(dlgHandle.cancelCmd).hide();
-			return dlgHandle;
-		} else {
-			return;
-		}
-	}
-
-	const doChangeStateLog = async function(orderId){
-		let changelogs = JSON.parse(localStorage.getItem('changelogs'));
-		console.log(changelogs);
-		let newChangelogs = [];
-		await changelogs.forEach((item, i) => {
-			if ((item.orderId == orderId) && (item.status === 'New')) {
-				item.status = 'Read';
-				newChangelogs.push(item);
-			} else {
-				newChangelogs.push(item);
-			}
-		});
-		console.log(newChangelogs);
-		localStorage.setItem('changelogs', JSON.stringify(newChangelogs));
 	}
 
 	const doShowSummaryOrder = function(evt){

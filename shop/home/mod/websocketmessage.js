@@ -33,7 +33,7 @@ module.exports = function ( jq, wsm ) {
 		if (!changelogs) {
 			changelogs = [];
 		}
-		changelogs.push({orderId: orderId, status: status, diffItems: changeOrder.diffItems});
+		changelogs.push({orderId: orderId, status: status, diffItems: changeOrder.diffItems, date: new Date()});
 		localStorage.setItem('changelogs', JSON.stringify(changelogs));
 		$('.order-box').each(async(i, orderBox)=>{
 			let orderData = $(orderBox).data('orderData');
