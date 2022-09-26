@@ -202,7 +202,8 @@ module.exports = function ( jq ) {
         let shopRes = await common.doCallApi('/api/shop/menuitem/change/logo', {data: {MenuPicture: data.link}, id: itemId});
         setTimeout(async() => {
           await doShowMenuitemItem(shopData, workAreaBox, groupId);
-					$('body').loading({message: undefined});
+					//$('body').loading({message: undefined});
+					$('body').loading('stop');
         }, 400);
       },
 			progress: function(progress){
