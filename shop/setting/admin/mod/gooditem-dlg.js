@@ -301,10 +301,10 @@ module.exports = function ( jq ) {
 	const doShowGroupFilter = function(menugroups, successCallback) {
 		let groupFilterBox = $('<div></div>').css({'width': '100%'});
 		menugroups.forEach((group, i) => {
-			let groupImage = $('<img/>').attr('src', group.GroupPicture).css({'width': '220px', 'height': 'auto'});
+			let groupImage = $('<img/>').attr('src', group.GroupPicture).css({'width': '190px', 'height': 'auto'});
 			let imageBox = $('<div></div>').css({'width': '100%', 'text-align': 'center'}).append($(groupImage));
 			let nameBox = $('<div></div>').css({'width': '100%', 'text-align': 'left'}).append($('<span></span>').text(group.GroupName));
-			let groupBox = $('<div></div>').css({'width': '120px', 'display': 'inline-block', 'cursor': 'pointer', 'background-color': '#ddd', 'margin': '10px 0 0 10px'}).append($(imageBox)).append($(nameBox));
+			let groupBox = $('<div></div>').css({'width': '120px', 'display': 'inline-block', 'cursor': 'pointer', 'background-color': '#ddd', 'margin': '10px 0 0 10px', 'border': '2px ridge grey'}).append($(imageBox)).append($(nameBox));
 			$(groupBox).hover(()=>{
 				$(groupBox).css({'background-color': 'grey', 'color': 'white'});
 			},()=>{

@@ -330,15 +330,15 @@ module.exports = function ( jq ) {
 					caseId: caseId,
 					userId: userId,
 					data: saveData,
-					responseId: caseResponseId,
 					hospitalId: caseHospitalId,
 					pdfFileName: fileName
 				};
 
 				if ((params.caseId) && (Number(params.caseId) > 0)) {
 					if (!caseResponseId){
-						let saveDraftResponseData = {type: 'draft', caseId: caseId};
-						saveDraftRes = await doSaveDraft(saveDraftResponseData);
+						//let saveDraftResponseData = {type: 'draft', caseId: caseId};
+						//saveDraftRes = await doSaveDraft(saveDraftResponseData);
+						let saveResponseRes = await doCallSaveResponse(params);
 						caseResponseId = saveDraftRes.result.responseId;
 						params.responseId = caseResponseId;
 					}
@@ -1117,7 +1117,7 @@ module.exports = function ( jq ) {
 					}
 				});
 				if ((foundItem) && (foundItem === downloadData.dicomzipfilename)) {
-					let msgDiv = $('<p></p>').text('พบรายการไฟล์ ' + downloadData.dicomzipfilename + ' ในประวัติการดาวน์โหลด')
+					let msgDiv = $('<p></p>').text(downloadData.dicomzipfilename + ' completed.')
 					let msgBox = doCreateCustomNotify('ประวัติการดาวน์โหลด', msgDiv, ()=>{
 						onOpenThirdPartyCmdClick();
 					});
@@ -1530,7 +1530,7 @@ module.exports = function ( jq ) {
 						});
 						if ((foundItem) && (foundItem === dicomzipfilename)) {
 							doChangeStateDownloadDicomCmd(downloadDicomZipCmd);
-							let msgDiv = $('<p></p>').text('พบรายการไฟล์ ' + dicomzipfilename + ' ในประวัติการดาวน์โหลด')
+							let msgDiv = $('<p></p>').text(dicomzipfilename + ' completed.')
 							let msgBox = doCreateCustomNotify('ประวัติการดาวน์โหลด', msgDiv, ()=>{
 								/*
 								let newEvt = jQuery.Event("click");
@@ -1566,7 +1566,7 @@ module.exports = function ( jq ) {
 			//onOpenThirdPartyCmdClick();
 			let downloadData = $(downloadDicomZipCmd).data('downloadData');
 			let dicomzipfilename = downloadData.dicomzipfilename;
-			let msgDiv = $('<p></p>').text('พบรายการไฟล์ ' + dicomzipfilename + ' ในประวัติการดาวน์โหลด')
+			let msgDiv = $('<p></p>').text(dicomzipfilename + ' completed.');
 			let msgBox = doCreateCustomNotify('ประวัติการดาวน์โหลด', msgDiv, ()=>{
 				/*
 				let newEvt = jQuery.Event("click");
@@ -1771,17 +1771,21 @@ module.exports = function ( jq ) {
 	  $(titleBox).append($('<h4>' + title + '</h4>'));
 	  let bodyBox = $("<div></div>");
 		$(bodyBox).append($(msgDiv));
-	  $(bodyBox).append($('<span>คลิกที่ปุ่ม <b>ตกลง</b> เพื่อเปิดภาพและปิดการแจ้งเตือนนี้</span>'));
+	  //$(bodyBox).append($('<span>คลิกที่ปุ่ม <b>ตกลง</b> เพื่อเปิดภาพและปิดการแจ้งเตือนนี้</span>'));
 	  let footerBox = $("<div style='text-align: center; background-color: white; color: black;'></div>");
-	  let updateCmd = $('<input type="button" value="ตกลง" id="SuccessNotifyCmd"/>');
-		$(updateCmd).on('click', (evt)=>{
+	  let openCmd = $('<input type="button" value="Open" id="SuccessNotifyCmd"/>');
+		$(openCmd).on('click', (evt)=>{
 			evt.stopPropagation();
 			if (callback) {
 				callback();
 			}
 			$(msgBox).remove();
 		});
-	  $(footerBox).append($(updateCmd));
+		let closeCmd = $('<input type="button" value="Close" id="CancelNotifyCmd"/>');
+		$(closeCmd).on('click', (evt)=>{
+			$(msgBox).remove();
+		});
+	  $(footerBox).append($(openCmd)).append($(closeCmd).css({'margin-left': '10px'}));
 	  return $(msgBox).append($(titleBox)).append($(bodyBox)).append($(footerBox))
 	}
 

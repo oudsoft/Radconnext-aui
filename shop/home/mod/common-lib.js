@@ -367,7 +367,7 @@ module.exports = function ( jq ) {
 
 	const doRemoveChangeLogAt = function(logIndex, diffType, diffIndex){
 		let changelogs = JSON.parse(localStorage.getItem('changelogs'));
-		changelogs[logIndex].diffItems[diffType].splice(logIndex, 1);
+		changelogs[logIndex].diffItems[diffType].splice(diffIndex, 1);
 		localStorage.setItem('changelogs', JSON.stringify(changelogs));
 	}
 

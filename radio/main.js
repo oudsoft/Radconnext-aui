@@ -201,6 +201,7 @@ function doLoadMainPage(){
   document.addEventListener("autologout", onAutoLogoutTrigger);
   document.addEventListener("updateuserprofile", onUpdateUserProfileTrigger);
   document.addEventListener("newreportlocalresult", onNewReportLocalTrigger);
+  document.addEventListener("newreportlocalfail", onNewReportLocalFail);
 
   let userdata = JSON.parse(doGetUserData());
 
@@ -642,6 +643,25 @@ function onNewReportLocalTrigger(evt){
   let triggerData = evt.detail.data;
   console.log(triggerData);
   $.notify('ส่งผลอ่านของ ' + triggerData.patientFullName + ' เข้า PACS รพ. สำเร็จ', 'success');
+}
+
+function onNewReportLocalFail(evt){
+  let triggerData = evt.detail.data;
+  console.log(triggerData);
+  let msgBox = $('<div></div>');
+  let titleBox = $("<div style='text-align: center; background-color: white; color: black;'></div>");
+  $(titleBox).append($('<h4>แจ้งเตือน</h4>'));
+  let bodyBox = $("<div></div>");
+  $(bodyBox).append($('<p></p>').text('ระบบไม่สามารถส่งผลอ่านของ ' + triggerData.patientFullName + ' เข้า PACS ของโรงพยาบาลได้ในขณะนี้'));
+  //$(bodyBox).append($('<span>คลิกที่ปุ่ม <b>ตกลง</b> เพื่อเปิดภาพและปิดการแจ้งเตือนนี้</span>'));
+  let footerBox = $("<div style='text-align: center; background-color: white; color: black;'></div>");
+  let closeCmd = $('<input type="button" value="Close" id="CancelNotifyCmd"/>');
+  $(closeCmd).on('click', (evt)=>{
+    $(msgBox).remove();
+  });
+  $(footerBox).append($(closeCmd));
+  $(msgBox).append($(titleBox)).append($(bodyBox)).append($(footerBox))
+  $('body').append($(msgBox).css({'position': 'absolute', 'top': '50px', 'right': '2px', 'width' : '260px', 'border': '2px solid black', 'background-color': '#184175', 'color': 'white', 'padding': '5px'}))
 }
 
 function doSetupAutoReadyAfterLogin(){

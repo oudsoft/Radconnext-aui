@@ -102,6 +102,10 @@ module.exports = function ( jq, wsm) {
 			let eventName = 'newreportlocalresult';
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: {result: data.result, hospitalId: data.hospitalId, from: data.from, patientFullName: data.patientFullName}}});
 			document.dispatchEvent(event);
+		} else if (data.type == 'newreportlocalfail') {
+			let eventName = 'newreportlocalfail';
+			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: {result: data.result, hospitalId: data.hospitalId, from: data.from, patientFullName: data.patientFullName}}});
+			document.dispatchEvent(event);
 		} else if (data.type == 'wrtc') {
 			switch(data.wrtc) {
 				//when somebody wants to call us
