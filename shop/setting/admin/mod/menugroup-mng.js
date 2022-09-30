@@ -129,6 +129,7 @@ module.exports = function ( jq ) {
         setTimeout(async() => {
           await doShowMenugroupItem(shopData, workAreaBox);
 					$('body').loading({message: undefined});
+					$('body').loading('stop');
         }, 400);
       },
 			progress: function(progress){

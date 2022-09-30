@@ -74,7 +74,7 @@ $( document ).ready(function() {
       let transactionId = params.get('transactionId');
       if ((transactionId) && (transactionId !== '')) {
         let callURLTokenURL = '/api/tasks/find/transaction/' + transactionId;
-        $.get(callURLTokenURL, {}, function(data){
+        $.get(callURLTokenURL, {}, async function(data){
           if ((data) && (data.token)) {
             sessionStorage.setItem('logged', true);
             localStorage.setItem('token', data.token);
@@ -86,12 +86,17 @@ $( document ).ready(function() {
               userdata.userprofiles.push({Profile: profile.defaultRadioProfileV2});
             }
             doLoadMainPage();
-            doAutoAcceptCase(0);
+            //doAutoAcceptCase(0);
             wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
             doSetupAutoReadyAfterLogin();
-            let eventData = data.caseData;
-            eventData.startDownload = 1;
-            onOpenCaseTrigger(eventData);
+            let response = await common.doUpdateCaseStatus(quickCaseId, 8, 'Radiologist Open accepted case by Quick Link');
+            if (response.status.code == 200) {
+              let eventData = data.caseData;
+              eventData.startDownload = 1;
+              onOpenCaseTrigger(eventData);
+            } else {
+    					$.notify('เกิดข้อผิดพลาด ไม่สามารถอัพเดทสถานะเคสได้ในขณะนี้', 'error');
+    				}
           } else {
             doLoadLogin();
             //console.log(data);
@@ -567,7 +572,7 @@ function unlockAction(modalBox) {
         let welcomeMsg = 'Welcome back ' + userdata.username;
         $.notify(welcomeMsg, "success");
         resetScreen();
-        doAutoAcceptCase();
+        doAutoAcceptCase(1);
       } else {
         $.notify("รหัสผ่านของคุณไม่ถูกต้อง", "error");
       }
@@ -582,7 +587,7 @@ function unlockAction(modalBox) {
     $(passwordBox).find('#YourPassword').focus();
   } else {
     resetScreen();
-    doAutoAcceptCase();
+    doAutoAcceptCase(1);
   }
 }
 

@@ -534,18 +534,18 @@ module.exports = function ( jq ) {
           let goodItems = orderData.gooditems;
 					let itenNoCells = [];
           for (let i=0; i < goodItems.length; i++) {
-						let menuNameFrag = $('<span></span>').text(goodItems[i].MenuName);
+						let menuNameFrag = $('<span></span>').text(goodItems[i].MenuName).attr('title', goodItems[i].Desc);
 						let priceFrag = $('<span></span>').text(common.doFormatNumber(Number(goodItems[i].Price)));
 						let qtyFrag = $('<span></span>').text(common.doFormatQtyNumber(goodItems[i].Qty));
 						if ([1, 2].includes(orderData.Status)) {
-							$(menuNameFrag).css({'cursor': 'pointer', 'text-decoration': 'underline', 'text-decoration-style': 'dotted'});
+							//$(menuNameFrag).css({'cursor': 'pointer', 'text-decoration': 'underline', 'text-decoration-style': 'dotted'});
 							$(menuNameFrag).on('click', (evt)=>{
 								doEditMenuNameOnTheFly(evt, orderData.gooditems, i, async(newName)=>{
 									orderData.gooditems[i].MenuName = newName;
 									$(menuNameFrag).text(orderData.gooditems[i].MenuName);
 								});
 							});
-							$(priceFrag).css({'cursor': 'pointer', 'text-decoration': 'underline', 'text-decoration-style': 'dotted'});
+							//$(priceFrag).css({'cursor': 'pointer', 'text-decoration': 'underline', 'text-decoration-style': 'dotted'});
 							$(priceFrag).on('click', (evt)=>{
 								doEditPriceOnTheFly(evt, orderData.gooditems, i, async(newPrice)=>{
 									orderData.gooditems[i].Price = newPrice;
@@ -556,7 +556,7 @@ module.exports = function ( jq ) {
 				          $(totalValueCell).empty().append($('<span><b>' + common.doFormatNumber(total) + '</b></span>').css({'margin-right': '4px'}));
 								});
 							});
-							$(qtyFrag).css({'cursor': 'pointer', 'text-decoration': 'underline', 'text-decoration-style': 'dotted'});
+							//$(qtyFrag).css({'cursor': 'pointer', 'text-decoration': 'underline', 'text-decoration-style': 'dotted'});
 							$(qtyFrag).on('click', (evt)=>{
 								doEditQtyOnTheFly(evt, orderData.gooditems, i, async(newQty)=>{
 									orderData.gooditems[i].Qty = newQty;
@@ -566,6 +566,24 @@ module.exports = function ( jq ) {
 									total = await doCalOrderTotal(orderData.gooditems);
 				          $(totalValueCell).empty().append($('<span><b>' + common.doFormatNumber(total) + '</b></span>').css({'margin-right': '4px'}));
 								});
+							});
+							$(menuNameFrag).css({'cursor': 'pointer', 'background-color': '#dddd', 'color': 'black', 'padding': '2px'});
+							$(priceFrag).css({'cursor': 'pointer', 'background-color': '#dddd', 'color': 'black', 'padding': '2px'});
+							$(qtyFrag).css({'cursor': 'pointer', 'background-color': '#dddd', 'color': 'black', 'padding': '2px 10px 2px 10px'});
+							$(menuNameFrag).hover(()=>{
+								$(menuNameFrag).css({'background-color': 'grey', 'color': 'white', 'border': '1px solid black'});
+							},()=>{
+								$(menuNameFrag).css({'background-color': '#dddd', 'color': 'black', 'border': ''});
+							});
+							$(priceFrag).hover(()=>{
+								$(priceFrag).css({'background-color': 'grey', 'color': 'white', 'border': '1px solid black'});
+							},()=>{
+								$(priceFrag).css({'background-color': '#dddd', 'color': 'black', 'border': ''});
+							});
+							$(qtyFrag).hover(()=>{
+								$(qtyFrag).css({'background-color': 'grey', 'color': 'white', 'border': '1px solid black'});
+							},()=>{
+								$(qtyFrag).css({'background-color': '#dddd', 'color': 'black', 'border': ''});
 							});
 						}
             let goodItemRow = $('<tr></tr>');

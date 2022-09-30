@@ -202,7 +202,7 @@ module.exports = function ( jq ) {
         let shopRes = await common.doCallApi('/api/shop/menuitem/change/logo', {data: {MenuPicture: data.link}, id: itemId});
         setTimeout(async() => {
           await doShowMenuitemItem(shopData, workAreaBox, groupId);
-					//$('body').loading({message: undefined});
+					$('body').loading({message: undefined});
 					$('body').loading('stop');
         }, 400);
       },
@@ -279,7 +279,7 @@ module.exports = function ( jq ) {
   }
 
   const doOpenNewMenuitemForm = function(shopData, workAreaBox, groupId){
-    let newMenuitemForm = doCreateNewMenuitemForm(groupId);
+    let newMenuitemForm = doCreateNewMenuitemForm({menugroupId: groupId}, groupId);
     let radNewMenuitemFormBox = $('<div></div>');
     $(radNewMenuitemFormBox).append($(newMenuitemForm));
     const newmenuitemformoption = {

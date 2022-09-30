@@ -883,6 +883,7 @@ module.exports = function ( jq ) {
       } else {
         /*========================================================*/
         //let pthrna = $('.mainfull').find('#pthrna').prop('checked');
+				/*
         let caseDetail = $(table).find('#Detail').val();
         if (caseDetail !== '') {
           goToSaveCaseStep();
@@ -903,8 +904,9 @@ module.exports = function ( jq ) {
             }
           }
           let radConfirmBox = $('body').radalert(radconfirmoption);
-
         }
+				*/
+        $.notify('โปรดแนบประวัติผู้ป่วยอย่างน้อย 1 รูป/ไฟล์', 'error');									
       }
     });
 

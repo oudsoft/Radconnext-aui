@@ -285,7 +285,7 @@ module.exports = function ( jq ) {
 	}
 
 	const doOpenManageShop = function(shopData, uploadLogoCallback, editShopCallback){
-		shopmng.doShowShopMhg(shopData, uploadLogoCallback, editShopCallback);
+		shopmng.doShowShopMng(shopData, uploadLogoCallback, editShopCallback);
 		if (common.shopSensitives.includes(shopData.id)) {
 	    let sensitiveWordJSON = require('../../../../../api/shop/lib/sensitive-word.json');
 	    localStorage.setItem('sensitiveWordJSON', JSON.stringify(sensitiveWordJSON))

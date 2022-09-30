@@ -98,9 +98,9 @@ const doLoadMainPage = function(){
   $('head').append('<script src="' + excelexportjs + '"></script>');
   $('head').append('<script src="' + jquerySimpleUploadUrl + '"></script>');
 
-  $('head').append('<script src="' + patientHistoryPluginUrl + '"></script>');
+  $('head').append('<script src="' + patientHistoryPluginUrl + '?t=lkwqxf"></script>');
   $('head').append('<script src="' + countdownclockPluginUrl + '"></script>');
-  $('head').append('<script src="' + scanpartPluginUrl + '"></script>');
+  $('head').append('<script src="' + scanpartPluginUrl + '?t=lkwql2"></script>');
   $('head').append('<script src="' + customUrgentPlugin + '"></script>');
   $('head').append('<script src="' + controlPagePlugin + '"></script>');
   $('head').append('<script src="' + customSelectPlugin + '"></script>');

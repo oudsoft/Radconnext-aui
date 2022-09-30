@@ -259,7 +259,7 @@ module.exports = function ( jq ) {
 					let evtMessageLine = fmtStr('%s. %s จำนวน <span class="qty">%s</span> %s', (x+1), diffItems.upItems[x].MenuName, doFormatNumber(Number(diffItems.upItems[x].Qty)), diffItems.upItems[x].Unit);
 					$(evtBox).append($('<p></p>').html(evtMessageLine));
 					$(evtBox).find('.qty').css({'min-width': '20px', 'background-color': 'grey', 'color': 'white', 'padding': '2px'});
-					let deleteEvtCmd = $('<span><b>ลบ</b></span>').css({'margin-left': '10px', 'background-color': 'red', 'color': 'white'});
+					let deleteEvtCmd = $('<span><b>ลบ</b></span>').css({'margin-left': '10px', 'background-color': 'red', 'color': 'white', 'cursor': 'pointer'});
 					$(deleteEvtCmd).on('click', (evt)=>{
 						doRemoveChangeLogAt(i, 'upItems', x);
 						$(evtBox).remove();
@@ -273,7 +273,7 @@ module.exports = function ( jq ) {
 					let evtMessageLine = fmtStr('%s. %s จำนวน <span class="qty">%s</span> %s', (y+1), diffItems.downItems[y].MenuName, doFormatNumber(Number(diffItems.downItems[y].Qty)), diffItems.downItems[y].Unit);
 					$(evtBox).append($('<p></p>').html(evtMessageLine));
 					$(evtBox).find('.qty').css({'min-width': '20px', 'background-color': 'grey', 'color': 'white', 'padding': '2px'});
-					let deleteEvtCmd = $('<span><b>ลบ</b></span>').css({'margin-left': '10px', 'background-color': 'red', 'color': 'white'});
+					let deleteEvtCmd = $('<span><b>ลบ</b></span>').css({'margin-left': '10px', 'background-color': 'red', 'color': 'white', 'cursor': 'pointer'});
 					$(deleteEvtCmd).on('click', (evt)=>{
 						doRemoveChangeLogAt(i, 'downItems', y);
 						$(evtBox).remove();
@@ -287,7 +287,7 @@ module.exports = function ( jq ) {
 					let evtMessageLine = fmtStr('%s. %s จำนวน <span class="qty">%s</span> %s', (z+1), diffItems.qtys[z].MenuName, doFormatNumber(Number(diffItems.qtys[z].diff)), diffItems.qtys[z].Unit);
 					$(evtBox).append($('<p></p>').html(evtMessageLine));
 					$(evtBox).find('.qty').css({'min-width': '20px', 'background-color': 'grey', 'color': 'white', 'padding': '2px'});
-					let deleteEvtCmd = $('<span><b>ลบ</b></span>').css({'margin-left': '10px', 'background-color': 'red', 'color': 'white'});
+					let deleteEvtCmd = $('<span><b>ลบ</b></span>').css({'margin-left': '10px', 'background-color': 'red', 'color': 'white', 'cursor': 'pointer'});
 					$(deleteEvtCmd).on('click', (evt)=>{
 						doRemoveChangeLogAt(i, 'qtys', z);
 						$(evtBox).remove();

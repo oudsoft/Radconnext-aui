@@ -894,18 +894,24 @@ module.exports = function ( jq ) {
 			let selectedBox = $('<div style="display: table; width: 100%; border-collapse: collapse;"></div>');
 			let headerFieldRow = doCreateHeaderField();
 			$(headerFieldRow).appendTo($(selectedBox));
-			await scanparts.forEach((item, i) => {
-				let itemRow = $('<div style="display: table-row;  width: 100%; border: 2px solid black; background-color: #ccc;"></div>');
-				$(itemRow).appendTo($(selectedBox));
-				let itemCell = $('<div style="display: table-cell; padding: 2px;">' + (i+1) + '</div>');
-				$(itemCell).appendTo($(itemRow));
-				itemCell = $('<div style="display: table-cell; padding: 2px;">' + item.Code + '</div>');
-				$(itemCell).appendTo($(itemRow));
-				itemCell = $('<div style="display: table-cell; padding: 2px;">' + item.Name + '</div>');
-				$(itemCell).appendTo($(itemRow));
-				itemCell = $('<div style="display: table-cell; padding: 2px; text-align: right;">' + formatNumberWithCommas(item.Price) + '</div>');
-				$(itemCell).appendTo($(itemRow));
-			});
+			if (typeof scanparts === 'object') {
+				let scanpartValues = Object.values(scanparts);
+				scanparts = scanpartValues.slice(0, -1);
+			}
+			if ((scanparts) && (scanparts.length > 0)) {
+				await scanparts.forEach((item, i) => {
+					let itemRow = $('<div style="display: table-row;  width: 100%; border: 2px solid black; background-color: #ccc;"></div>');
+					$(itemRow).appendTo($(selectedBox));
+					let itemCell = $('<div style="display: table-cell; padding: 2px;">' + (i+1) + '</div>');
+					$(itemCell).appendTo($(itemRow));
+					itemCell = $('<div style="display: table-cell; padding: 2px;">' + item.Code + '</div>');
+					$(itemCell).appendTo($(itemRow));
+					itemCell = $('<div style="display: table-cell; padding: 2px;">' + item.Name + '</div>');
+					$(itemCell).appendTo($(itemRow));
+					itemCell = $('<div style="display: table-cell; padding: 2px; text-align: right;">' + formatNumberWithCommas(item.Price) + '</div>');
+					$(itemCell).appendTo($(itemRow));
+				});
+			}
 			resolve($(selectedBox));
 		});
 	}
