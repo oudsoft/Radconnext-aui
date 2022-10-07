@@ -259,12 +259,12 @@ module.exports = function ( jq ) {
 	function doCreateCaseItemCommand(ownerRow, caseItem) {
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
 		let operationCmdButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/arrow-down-icon.png" title="คลิกเพื่อเปิดรายการคำสั่งใช้งานของคุณ"/>');
-		$(operationCmdButton).click(async function() {
+		$(operationCmdButton).on ('click', async(evt)=> {
 			let casestatusId = caseItem.case.casestatusId;
 			let cando = await common.doGetApi('/api/cases/cando/' + casestatusId, {});
 			console.log(cando);
 			if (cando.status.code == 200) {
-				let cmdRow = $('<div class="cmd-row" style="display: tbable-row; width: 100%;"></div>');
+				let cmdRow = $('<div class="cmd-row" style="display: table-row; width: 100%;"></div>');
 				$(cmdRow).append($('<div style="display: table-cell; border-color: transparent;"></div>'));
 				let mainBoxWidth = parseInt($(".mainfull").css('width'), 10);
 				//console.log(mainBoxWidth);
@@ -305,6 +305,9 @@ module.exports = function ( jq ) {
 								break;
 								case 'callzoom':
 									doZoomCallRadio(caseItem);
+								break;
+								case 'log':
+									doOpenCaseEventLog(caseItem.case.id);
 								break;
 							}
 						});
@@ -537,11 +540,19 @@ module.exports = function ( jq ) {
 
 				let downlodDicomButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/zip-icon.png" title="Download Dicom in zip file."/>');
 				$(downlodDicomButton).click(function() {
-					let patientNameEN = incidents[i].case.patient.Patient_NameEN + '_' + incidents[i].case.patient.Patient_LastNameEN;
-					let savefile = patientNameEN + '-' + casedateSegment + '.zip';
+					//let patientNameEN = incidents[i].case.patient.Patient_NameEN + '_' + incidents[i].case.patient.Patient_LastNameEN;
+					//let savefile = patientNameEN + '-' + casedateSegment + '.zip';
+					let savefile = incidents[i].case.Case_DicomZipFilename;
 					common.doDownloadDicom(incidents[i].case.Case_OrthancStudyID, savefile);
 				});
 				$(downlodDicomButton).appendTo($(moreCmdBox));
+
+				let caseEventLogButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/event-log-icon.png" title="Open Case Event Log."/>');
+				$(caseEventLogButton).css({'width': '30px', 'height': 'auto'});
+				$(caseEventLogButton).click(function() {
+					doOpenCaseEventLog(incidents[i].case.id)
+				});
+				$(caseEventLogButton).appendTo($(operationCol));
 
 				if ((incidents[i].case.casestatus.id == 1) || (incidents[i].case.casestatus.id == 2) || (incidents[i].case.casestatus.id == 3) || (incidents[i].case.casestatus.id == 4) || (incidents[i].case.casestatus.id == 7)) {
 					let editCaseButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/update-icon-2.png" title="Edit Case Detail."/>');
@@ -809,6 +820,65 @@ module.exports = function ( jq ) {
 			} catch(e) {
 	      reject(e);
     	}
+		});
+	}
+
+	async function doOpenCaseEventLog(caseId){
+		let logs = await doRequestCaseKeepLog(caseId);
+		let keeplogs = logs.Logs;
+		let userProfiles = logs.UserProfiles
+		console.log(keeplogs);
+		let radAlertInfo = $('<div></div>');
+		let logTable = $('<table width="100%" cellpadding="0" cellspacing="0" border="1"></table>');
+		let logTitleRow = $('<tr style="background-color: grey; color: white;"></tr>');
+		$(logTable).append($(logTitleRow));
+		$(logTitleRow).append($('<td width="20%" align="center"><b>วันที่ เวลา</b></td>'));
+		$(logTitleRow).append($('<td width="10%" align="center"><b>ผู้ใช้งาน</b></td>'));
+		$(logTitleRow).append($('<td width="10%" align="center"><b>จากสถานะ</b></td>'));
+		$(logTitleRow).append($('<td width="10%" align="center"><b>ไปสู่สถานะ</b></td>'));
+		$(logTitleRow).append($('<td width="*" align="center"><b>รายละเอียด</b></td>'));
+		for (let i=0; i < keeplogs.length; i++){
+      let logItem = $('<tr></tr>');
+      let logAt = new Date(keeplogs[i].createdAt);
+      let logDate = logAt.toDateString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+      let logTime = logAt.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+			let userLog = userProfiles[i].User_NameTH + ' ' + userProfiles[i].User_LastNameTH;
+			let from = await common.allCaseStatus.find((item)=>{
+				if (item.value == keeplogs[i].from) {return item}
+			});
+			let to = await common.allCaseStatus.find((item)=>{
+				if (item.value == keeplogs[i].to) {return item}
+			});
+      $(logItem).append($('<td align="left">' + logDate + ' ' + logTime + '</td>'));
+      $(logItem).append($('<td align="center">' + userLog + '</td>'));
+      $(logItem).append($('<td align="center">' + from.DisplayText + '</td>'));
+      $(logItem).append($('<td align="center">' + to.DisplayText + '</td>'));
+      $(logItem).append($('<td align="left">' + keeplogs[i].remark + '</td>'));
+      $(logTable).append($(logItem));
+    }
+    $(radAlertInfo).append($(logTable))
+		const radAlertOption = {
+      title: 'บันทึกเหตุการณ์เคส',
+      msg: $(radAlertInfo),
+      width: '1080px',
+      onOk: function(evt) {
+        radInfoBox.closeAlert();
+      },
+    }
+    let radInfoBox = $('body').radalert(radAlertOption);
+    $(radInfoBox.cancelCmd).hide();
+	}
+
+	function doRequestCaseKeepLog(caseId){
+		return new Promise(async function(resolve, reject) {
+			let rqParams = {};
+			let apiUrl = '/api/keeplog/select/' + caseId;
+			try {
+				let response = await common.doCallApi(apiUrl, rqParams);
+				resolve(response);
+			} catch(e) {
+				reject(e);
+			}
 		});
 	}
 

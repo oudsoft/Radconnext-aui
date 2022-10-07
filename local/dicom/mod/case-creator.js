@@ -323,11 +323,15 @@ module.exports = function ( jq ) {
 			$(tableCell).appendTo($(tableRow));
 			//$(tableRow).appendTo($(table));
 
+			let patientNameTH = patientName;
+			if (defualtValue.patient.name_th) {
+				patientNameTH = defualtValue.patient.name_th;
+			}
 			//tableRow = $('<div style="display: table-row;"></div>');
 			tableCell = $('<div style="display: table-cell;">ขื่อผู้ป่วย (ภาษาไทย)</div>');
 			$(tableCell).appendTo($(tableRow));
 			tableCell = $('<div style="display: table-cell; padding: 5px;"><input type="text" id="PatientNameTH"/></div>');
-			$(tableCell).find('#PatientNameTH').val(patientName);
+			$(tableCell).find('#PatientNameTH').val(patientNameTH);
 			$(tableCell).appendTo($(tableRow));
 			$(tableRow).appendTo($(table));
 
@@ -409,9 +413,13 @@ module.exports = function ( jq ) {
 
 			let selectedResultBox = $('<div id="SelectedResultBox"></div>');
 			let saveScanpartOptionDiv = $('<div id="SaveScanpartOptionDiv" style="display: none;"><input type="checkbox" id="SaveScanpartOption" value="0" style="transform: scale(1.5)"><label for="SaveScanpartOption"> บันทึกรายการ Scan Part ไว้ใช้งานในครั้งต่อไป</label></div>');
+
 			let scanparts = [];
 			if (defualtValue.scanpart) {
 				scanparts = defualtValue.scanpart;
+			}
+			if (typeof scanparts.length === 'string') {
+				scanparts = [scanparts[0]];
 			}
 
 			let scanpartSettings = {
@@ -432,7 +440,10 @@ module.exports = function ( jq ) {
 					}
         },
 				updateSelectedItem: async function(content){
-					if (scanparts.length > 0) {
+					if (typeof scanparts.length === 'string') {
+						scanparts = [scanparts[0]];
+					}
+					if ((scanparts) && (scanparts.length > 0)) {
 						let key = '';
 						if (scanparts.length >= 1) {
 							scanpart.joinOptionToMain();
@@ -469,19 +480,22 @@ module.exports = function ( jq ) {
 				$(selectedResultBox).append($(yourSelectScanpart));
 				$(saveScanpartOptionDiv).show();
 			}
-			//console.log(defualtValue);
-			if ((defualtValue.scanpart) && (defualtValue.scanpart.length > 0)) {
+
+			console.log(scanparts);
+			if ((scanparts) && (scanparts.length > 0)) {
 				scanpartAutoGuide();
 			} else {
 				let studyDesc = defualtValue.studyDesc;
 				let protocalName = defualtValue.protocalName;
 				let auxScanpart = await common.doLoadScanpartAux(studyDesc, protocalName);
-				//console.log(auxScanpart);
+				console.log(auxScanpart);
 				if ((auxScanpart.Records) && (auxScanpart.Records.length > 0)) {
-					//scanparts = auxScanpart.Records[0].Scanparts;
-          let scanpartValues = Object.values(auxScanpart.Records[0].Scanparts);
-          scanparts = scanpartValues.slice(0, -1);
-					//console.log(scanparts);
+					if (typeof auxScanpart.Records[0].Scanparts === 'object') {
+	          let scanpartValues = Object.values(auxScanpart.Records[0].Scanparts);
+						console.log(scanpartValues);
+	          scanparts = scanpartValues.slice(0, -1);
+						console.log(scanparts);
+					}
 					scanpartAutoGuide();
 				} else {
 					$(saveScanpartOptionDiv).hide();
@@ -584,7 +598,7 @@ module.exports = function ( jq ) {
 		});
   }
 
-  const doCreateNewCaseSecondStep = function(defualtValue, options, scanparts) {
+  const doCreateNewCaseSecondStep = async function(defualtValue, options, scanparts) {
     $('body').loading('start');
     let tableWrapper = $('<div id="SecondStepWrapper" class="new-case-wrapper"></div>');
 
@@ -640,23 +654,36 @@ module.exports = function ( jq ) {
     $(tableCell).appendTo($(tableRow));
     tableCell = $('<div style="display: table-cell; padding: 5px;"></div>');
 
-    let patientHistoryBox = $('<div id="PatientHistoryBox"></div>').appendTo($(tableCell)).imagehistory( phProp ).data("custom-imagehistory");
-    if ((defualtValue.pn_history) && (defualtValue.pn_history.length > 0)) {
-      defualtValue.pn_history.forEach((item, i) => {
-        patientHistoryBox.images(item);
-      });
+    let patientHistoryBox = undefined;
+		let localApiRes = await common.doCallLocalApi('/api/orthanc/attach/file', {});
+		let attachFiles = localApiRes.result;
+		//console.log(attachFiles);
+		if (attachFiles.length > 0) {
+			pnHistories = [];
+			for (let a=0; a < attachFiles.length; a++) {
+				pnHistories.push({link: 'https://radconnext.info/img/usr/zip/' + attachFiles[a]})
+			}
+			defualtValue.pn_history = pnHistories;
+			phProp.fileType = 'application/zip';
+			patientHistoryBox = $('<div id="PatientHistoryBox"></div>').appendTo($(tableCell)).imagehistory( phProp ).data("custom-imagehistory");
+		}
+
+		if (patientHistoryBox) {
+	    if ((defualtValue.pn_history) && (defualtValue.pn_history.length > 0)) {
+	      defualtValue.pn_history.forEach((item, i) => {
+	        patientHistoryBox.images(item);
+	      });
+			}
     }
 
 		document.onpaste = function(pasteEvent) {
 			let phBox = $(tableCell).find('#PatientHistoryBox');
 			if ($(phBox)) {
 				let item = pasteEvent.clipboardData.items[0];
-				console.log(item);
-				console.log(item.type.toUpperCase());
 				let blob = item.getAsFile();
 				if (item.type.indexOf("image") === 0) {
 					patientHistoryBox.options.doUploadBlob(blob, 'image').then((data)=>{
-						//console.log(data);
+						console.log(data);
 					});
 				} else if ((item.type.toUpperCase() === 'APPLICATION/ZIP') || (item.type.toUpperCase() === 'APPLICATION/X-ZIP-COMPRESSED')) {
 					patientHistoryBox.options.doUploadBlob(blob, 'zip').then((data)=>{
@@ -906,7 +933,7 @@ module.exports = function ( jq ) {
           let radConfirmBox = $('body').radalert(radconfirmoption);
         }
 				*/
-        $.notify('โปรดแนบประวัติผู้ป่วยอย่างน้อย 1 รูป/ไฟล์', 'error');									
+        $.notify('โปรดแนบประวัติผู้ป่วยอย่างน้อย 1 รูป/ไฟล์', 'error');
       }
     });
 
@@ -1048,7 +1075,7 @@ module.exports = function ( jq ) {
 
 			casedata.Case_DicomZipFilename = dicomZipFileName;
 
-			rqParams = {id: defualtValue.caseId, data: casedata, urgenttypeId: urgenttypeId, cliamerightId: cliamerightId};
+			rqParams = {id: defualtValue.caseId, data: casedata, urgenttypeId: urgenttypeId, cliamerightId: cliamerightId, userId: userId};
 			let caseRes = await common.doCallApi('/api/cases/update', rqParams);
 			if (caseRes.status.code === 200) {
 				console.log(defualtValue);

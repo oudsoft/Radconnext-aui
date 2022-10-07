@@ -471,12 +471,10 @@ module.exports = function ( jq ) {
 
   const doDownloadDicom = function(studyID, dicomFilename){
 		$('body').loading('start');
+		/*
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		const hospitalId = userdata.hospitalId;
   	apiconnector.doCallDownloadDicom(studyID, hospitalId).then((response) => {
-  		console.log(response);
-  		//let openLink = response.archive.link;
-  		//window.open(openLink, '_blank');
 			var pom = document.createElement('a');
 			pom.setAttribute('href', response.link);
 			pom.setAttribute('download', dicomFilename);
@@ -485,7 +483,16 @@ module.exports = function ( jq ) {
   	}).catch((err)=>{
 			console.log(err);
 			$('body').loading('stop');
-		})
+		});
+		*/
+		let downloadURL = 'https://radconnext.info/img/usr/zip/' + dicomFilename;
+		console.log(downloadURL);
+		let pom = document.createElement('a');
+		pom.setAttribute('href', downloadURL);
+		pom.setAttribute('target', '_blank');
+		pom.setAttribute('download', dicomFilename);
+		pom.click();
+		$('body').loading('stop');
   }
 
 	const doDownloadLocalDicom = function(studyID, dicomFilename){
@@ -894,10 +901,6 @@ module.exports = function ( jq ) {
 			let selectedBox = $('<div style="display: table; width: 100%; border-collapse: collapse;"></div>');
 			let headerFieldRow = doCreateHeaderField();
 			$(headerFieldRow).appendTo($(selectedBox));
-			if (typeof scanparts === 'object') {
-				let scanpartValues = Object.values(scanparts);
-				scanparts = scanpartValues.slice(0, -1);
-			}
 			if ((scanparts) && (scanparts.length > 0)) {
 				await scanparts.forEach((item, i) => {
 					let itemRow = $('<div style="display: table-row;  width: 100%; border: 2px solid black; background-color: #ccc;"></div>');
@@ -1029,6 +1032,11 @@ module.exports = function ( jq ) {
 			case 'close':
 			$(cmdIcon).attr('src','/images/closed-icon.png');
 			$(cmdIcon).attr('title', 'Edit Result.');
+			break;
+
+			case 'log':
+			$(cmdIcon).attr('src','/images/event-log-icon.png');
+			$(cmdIcon).attr('title', 'Open Case Event Log.');
 			break;
 
 		}

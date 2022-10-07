@@ -85,7 +85,7 @@ const doLoadMainPage = function(){
   let printjs = 'https://radconnext.info/lib/print/print.min.js';
   let excelexportjs = 'https://radconnext.info/lib/excel/excelexportjs.js';
   let jquerySimpleUploadUrl = 'https://radconnext.info/lib/simpleUpload.min.js';
-  let patientHistoryPluginUrl = "https://radconnext.info/setting/plugin/jquery-patient-history-image-plugin.js?r=410ihj";
+  let patientHistoryPluginUrl = "https://radconnext.info/setting/plugin/jquery-patient-history-image-plugin.js";
 	let countdownclockPluginUrl = "https://radconnext.info/setting/plugin/jquery-countdown-clock-plugin.js";
 	let scanpartPluginUrl = "https://radconnext.info/setting/plugin/jquery-scanpart-plugin.js";
 	let customUrgentPlugin = "https://radconnext.info/setting/plugin/jquery-custom-urgent-plugin.js";
@@ -98,9 +98,9 @@ const doLoadMainPage = function(){
   $('head').append('<script src="' + excelexportjs + '"></script>');
   $('head').append('<script src="' + jquerySimpleUploadUrl + '"></script>');
 
-  $('head').append('<script src="' + patientHistoryPluginUrl + '?t=lkwqxf"></script>');
+  $('head').append('<script src="' + patientHistoryPluginUrl + '?t=xirzmooki"></script>');
   $('head').append('<script src="' + countdownclockPluginUrl + '"></script>');
-  $('head').append('<script src="' + scanpartPluginUrl + '?t=lkwql2"></script>');
+  $('head').append('<script src="' + scanpartPluginUrl + '?t=siql2"></script>');
   $('head').append('<script src="' + customUrgentPlugin + '"></script>');
   $('head').append('<script src="' + controlPagePlugin + '"></script>');
   $('head').append('<script src="' + customSelectPlugin + '"></script>');
