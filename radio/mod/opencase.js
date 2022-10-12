@@ -762,13 +762,7 @@ module.exports = function ( jq ) {
 			$(hrBox).append($(hrTable));
 			if ((hrlinks) && (hrlinks.length > 0)){
 	      await hrlinks.forEach((item, i) => {
-					/*
-					let clipIcon = new Image();
-					clipIcon.src = '/images/clip-icon.png';
-					$(clipIcon).css({"position": "relative", "display": "inline-block", "width": "25px", "height": "auto", "margin-top": "2px"});
-					$(hrBox).append($(clipIcon));
-					*/
-					//let patientHRLink = $('<span style="position: relative; display: inline-block; text-decoration: underline; cursor: pointer; color: blue;"></span>');
+					//console.log(item);
 					let filePaths = item.link.split('/');
 					let fileNames = filePaths[filePaths.length-1];
 					let fileName = fileNames.split('.');
@@ -780,7 +774,11 @@ module.exports = function ( jq ) {
 					let patientHRButton = $('<div class="action-btn" style="position: relative; display: inline-block; cursor: pointer; text-align: center;">' + linkText + '</div>');
 
 					$(patientHRButton).on("click", function(evt){
-	          doOpenHR(item.link, patientFullName, casedate);
+						if (fileExt === 'zip') {
+							let dwnList = doDownloadDicom(fileNames);
+						} else {
+	          	doOpenHR(item.link, patientFullName, casedate);
+						}
 	    		});
 					let hrRow = $('<tr></tr>');
 					let hrCell = $('<td width="100%" align="left"></td>');
@@ -1583,7 +1581,7 @@ module.exports = function ( jq ) {
 				onOpenThirdPartyCmdClick();
 			});
 			//$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
-			$('body').append($(msgBox).css({'position': 'absolute', 'top': '60px', 'right': '2px', 'width' : '260px', 'border': '2px solid black', 'background-color': '#184175', 'color': 'white', 'padding': '5px'}));
+			$('body').append($(msgBox).css({'position': 'absolute', 'top': '60px', 'right': '2px', 'width' : '260px', 'border': '2px solid black', 'background-color': '#2579B8', 'color': 'white', 'padding': '5px'}));
 			resolve();
 		});
 	}

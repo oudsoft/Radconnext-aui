@@ -98,7 +98,7 @@ const doLoadMainPage = function(){
   $('head').append('<script src="' + excelexportjs + '"></script>');
   $('head').append('<script src="' + jquerySimpleUploadUrl + '"></script>');
 
-  $('head').append('<script src="' + patientHistoryPluginUrl + '?t=xirzmooki"></script>');
+  $('head').append('<script src="' + patientHistoryPluginUrl + '?t=x3x4xm"></script>');
   $('head').append('<script src="' + countdownclockPluginUrl + '"></script>');
   $('head').append('<script src="' + scanpartPluginUrl + '?t=siql2"></script>');
   $('head').append('<script src="' + customUrgentPlugin + '"></script>');

@@ -116,17 +116,27 @@ module.exports = function ( jq ) {
     return x.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
+
 	const strToDateFmt = function(strToken) {
 		var yy = strToken.substr(0, 4);
 		var mo = strToken.substr(4, 2);
 		var dd = strToken.substr(6, 2);
 		return Number(dd) + '/' + Number(mo) + '/' + (Number(yy) + 543);
 	}
-
 	const strToTimeFmt = function(strToken) {
 		var hh = strToken.substr(0, 2);
 		var mn = strToken.substr(2, 2);
 		return hh + '.' + mn;
+	}
+
+	const strToDateTime = function(strDateToken, strTimeToken) {
+		var yy = strDateToken.substr(0, 4);
+		var mo = strDateToken.substr(4, 2);
+		var dd = strDateToken.substr(6, 2);
+		var hh = strTimeToken.substr(0, 2);
+		var mn = strTimeToken.substr(2, 2);
+		var ss = strTimeToken.substr(4, 2);
+		return yy + '-' + mo + '-' + dd + ' ' + hh + ':' + mn + ':' + ss;
 	}
 
 	const doOpenSelectFile = function(evt, hospitalId){
@@ -324,6 +334,7 @@ module.exports = function ( jq ) {
     let billType = undefined;
     let hospitalId = undefined;
     let monthSelected = undefined;
+		let cutoffTimeSelected =undefined;
 
     let cancelHosCmd = $('<input type="button" value=" ยกเลิก " style="margin-left: 10px;"/>');
     $(cancelHosCmd).on('click', (evt)=>{
@@ -355,10 +366,15 @@ module.exports = function ( jq ) {
 				$(hosLabelCol).append($('<span style="margin-left: 4px;">&gt;&gt;</span>'));
         $(hosValueCol).append($(hosSelectedLabel));
 
+				let cutoffTimeOption = $('<select></select>');
+				$(cutoffTimeOption).append($('<option value="1">วันเวลาส่งอ่านผล</option>'));
+				$(cutoffTimeOption).append($('<option value="2">วันเวลาสแกน</option>'));
+
         let okCmd = $('<input type="button" value=" ตกลง " style="margin-left: 10px;"/>');
         $(okCmd).on('click', (evt)=>{
           monthSelected = $(monthOption).val();
-          doCreateReportContent(billType, hospitalId, monthSelected);
+					cutoffTimeSelected = $(cutoffTimeOption).val();
+          doCreateReportContent(billType, hospitalId, monthSelected, cutoffTimeSelected);
           $(okCmd).val(' พิมพ์ ');
           $(okCmd).unbind('click');
           $(okCmd).click(function(prntEvt){
@@ -370,8 +386,12 @@ module.exports = function ( jq ) {
 					$(exportCmd).insertAfter($(okCmd));
         });
 
-        $(monthLabelCol).append($('<span>เดือนที่ต้องการออกบิล</span>'));
-        $(monthValueCol).append($(monthOption)).append($(okCmd)).append($(cancelMonthCmd));
+        $(monthLabelCol).append($('<span>เดือน</span>'));
+        $(monthValueCol).append($(monthOption).css({'margin-left': '4px'}));
+				$(monthLabelCol).append($('<span>จับเวลาที่</span>').css({'margin-left': '4px'}));
+				$(monthValueCol).append($(cutoffTimeOption).css({'margin-left': '4px'}));
+
+				$(monthValueCol).append($(okCmd)).append($(cancelMonthCmd));
 
 				let priceSettingBox = doCreateSettingPriceChart(hospitalId);
 				$(mainForm).append($(priceSettingBox))
@@ -487,12 +507,15 @@ module.exports = function ( jq ) {
 		return $(exportCmd);
 	}
 
-  const doCreateReportContentForm = function(contents){
+  const doCreateReportContentForm = function(contents, cutoffTimeSelected){
 		return new Promise(async function(resolve, reject) {
+			/*
+			cutoffTimeSelected 1=updatedAt, 2=scan
+			*/
 	    const reportViewBox = $('<div id="ReportViewBox" style="position: relative; width: 100%; padding: 5p; margin-top: 8px;"></div>');
 	    const contentRow = '<tr></tr>';
-	    const upperHeaderFeilds = [{name: 'ลำดับที่', width: 5}, {name: 'วันเดือนปี', width: 6}, {name: 'เวลา', width: 5}, {name: 'วันเดือนปี', width: 6}, {name: 'เวลา', width: 5}, {name: 'วันเดือนปี', width: 6}, {name: 'เวลา', width: 5}, {name: 'HN', width: 8}, {name: 'ชื่อ-สกุล', width: 15}, {name: 'รายการ', width: 15}, {name: 'รังสีแพทย์', width: 12}, {name: 'รหัส', width: 8}, {name: 'ราคาที่', width: 10}];
-	    const lowerHeaderFeilds = ['', 'ที่สแกน', '', 'ส่งอ่านผล', '', 'ส่งผลอ่าน', '', '', '', '', '', 'กรมบัญชีกลาง', 'เรียกเก็บ'];
+	    const upperHeaderFeilds = [{name: 'ลำดับที่', width: 5}, {name: 'วันเดือนปี', width: 6}, {name: 'เวลา', width: 5}, {name: 'วันเดือนปี', width: 6}, {name: 'เวลา', width: 5}, {name: 'วันเดือนปี', width: 6}, {name: 'เวลา', width: 5}, {name: 'วันเดือนปี', width: 6}, {name: 'เวลา', width: 5}, , {name: 'ทัน', width: 5}, {name: 'HN', width: 8}, {name: 'ชื่อ-สกุล', width: 15}, {name: 'รายการ', width: 15}, {name: 'รังสีแพทย์', width: 12}, {name: 'รหัส', width: 8}, {name: 'ราคาที่', width: 10}];
+	    const lowerHeaderFeilds = ['', 'ที่สแกน', '', 'ส่งอ่านผล', '', 'กำหนดรับผลอ่าน', '', 'รังสีแพทย์ส่งผลอ่าน', '', 'ไม่ทัน', '', '', '', '', 'กรมบัญชีกลาง', 'เรียกเก็บ'];
 	    if (contents.length > 0){
 	      let contentTable = $('<table id ="ContentTable" width="100%" cellpadding="5" cellspacing="0" border="1px solid black"></table>');
 	      let upperHeaderRow = $(contentRow);
@@ -532,10 +555,35 @@ module.exports = function ( jq ) {
 						*/
 						let fmtScanDate = strToDateFmt(item.scanDate);
 						let fmtScanTime = strToTimeFmt(item.scanTime);
-						let fmtCaseCreateDate = fmtReportDate(item.createdAt);
-						let fmtCaseCreateTime = fmtReportTime(item.createdAt);
+						let fmtCaseCreateDate = fmtReportDate(item.updatedAt);
+						let fmtCaseCreateTime = fmtReportTime(item.updatedAt);
+
+						let fmtScanDateTime = strToDateTime(item.scanDate, item.scanTime);
+						let scanDateTime = new Date(fmtScanDateTime);
+						let urgentType = JSON.parse(item.urgenttype.UGType_WorkingStep);
+						let urgentShiftTimeVal = (Number(urgentType.dd)* 24*60*60*1000) + (Number(urgentType.hh)*60*60*1000) + (Number(urgentType.mn)*60*1000);
+						let urgentTime = undefined;
+						if (cutoffTimeSelected == 1) {
+							urgentTime = (new Date(item.updatedAt)).getTime() + urgentShiftTimeVal;
+						} else {
+							urgentTime = (new Date(item.updatedAt)).getTime() + urgentShiftTimeVal;
+						}
+						let urgentDate = new Date(urgentTime);
+
+						let fmtCaseUrgentDate = fmtReportDate(urgentDate);
+						let fmtCaseUrgentTime = fmtReportTime(urgentDate);
+
+
 						let fmtReportCreateDate = fmtReportDate(item.reportCreatedAt);
 						let fmtReportCreateTime = fmtReportTime(item.reportCreatedAt);
+
+						let reportAtDateTime = new Date(item.reportCreatedAt);
+
+						let isCutoff = true;
+						if (urgentDate.getTime() < reportAtDateTime.getTime()) {
+							isCutoff = false;
+						}
+
 						let isOutTime = common.doCheckOutTime(item.reportCreatedAt);
 						let fmtPrice = undefined;
 						if (scanParts[j].PR) {
@@ -551,8 +599,15 @@ module.exports = function ( jq ) {
 						$(itemRow).append('<td align="left">' + fmtScanTime + '</td>');
 						$(itemRow).append('<td align="left">' + fmtCaseCreateDate + '</td>');
 						$(itemRow).append('<td align="left">' + fmtCaseCreateTime + '</td>');
+						$(itemRow).append('<td align="left">' + fmtCaseUrgentDate + '</td>');
+						$(itemRow).append('<td align="left">' + fmtCaseUrgentTime + '</td>');
 	          $(itemRow).append('<td align="left">' + fmtReportCreateDate + '</td>');
 						$(itemRow).append('<td align="left">' + fmtReportCreateTime + '</td>');
+						if (isCutoff) {
+							$(itemRow).append('<td align="left">ทัน</td>');
+						} else {
+							$(itemRow).append('<td align="left">ไม่ทัน</td>');
+						}
 	          $(itemRow).append('<td align="left">' + item.patient.Patient_HN + '</td>');
 	          $(itemRow).append('<td align="left">' + item.patient.Patient_NameTH + ' ' + item.patient.Patient_LastNameTH + '</td>');
 	          $(itemRow).append('<td align="left">' + scanParts[j].Name + '</td>');
@@ -580,7 +635,7 @@ module.exports = function ( jq ) {
 		});
   }
 
-  const doCreateReportContent = function (billType, hospitalId, monthSelected){
+  const doCreateReportContent = function (billType, hospitalId, monthSelected, cutoffTimeSelected){
 		$('body').loading('start');
     let dateFrags = monthSelected.split('-');
     let dateFmt = dateFrags[1] + '-' + dateFrags[0] + '-01';
@@ -601,7 +656,7 @@ module.exports = function ( jq ) {
     common.doCallApi(billContentUrl, callParams).then(async (callRes)=>{
       if (callRes.status.code == 200){
 				console.log(callRes.Contents);
-        let reportViewBox = await doCreateReportContentForm(callRes.Contents);
+        let reportViewBox = await doCreateReportContentForm(callRes.Contents, cutoffTimeSelected);
         $(".mainfull").append($(reportViewBox));
 				$('body').loading('stop');
       } else {

@@ -421,14 +421,14 @@ module.exports = function ( jq ) {
 			wsm.send(JSON.stringify(data.data));
 		} else if (data.type == 'newdicom') {
 			let eventName = 'triggernewdicom'
-			let triggerData = {dicom : data.dicom};
+			let triggerData = {dicom : data.dicom, result: data.result};
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: triggerData}});
 			document.dispatchEvent(event);
 		} else if (data.type == 'updatedicom') {
 			let eventName = 'triggerupdatedicom'
-			let triggerData = {dicom : data.dicom};
+			let triggerData = {dicom : data.dicom, result: data.result};
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: triggerData}});
-			document.dispatchEvent(event);			
+			document.dispatchEvent(event);
 		}
 	}
 

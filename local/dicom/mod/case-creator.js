@@ -419,8 +419,16 @@ module.exports = function ( jq ) {
 				scanparts = defualtValue.scanpart;
 			}
 			if (typeof scanparts.length === 'string') {
-				scanparts = [scanparts[0]];
+				let tmps = [];
+				let scpl = Number(scanparts.length);
+				for (let i=0; i < scpl; i++){
+					if (scanparts[i].Code) {
+						tmps.push(scanparts[i]);
+					}
+				}
+				scanparts = tmps;
 			}
+			console.log(scanparts);
 
 			let scanpartSettings = {
         iconCmdUrl: '/images/case-incident.png',
@@ -493,7 +501,15 @@ module.exports = function ( jq ) {
 					if (typeof auxScanpart.Records[0].Scanparts === 'object') {
 	          let scanpartValues = Object.values(auxScanpart.Records[0].Scanparts);
 						console.log(scanpartValues);
-	          scanparts = scanpartValues.slice(0, -1);
+	          //scanparts = scanpartValues.slice(0, -1);
+						let tmps = [];
+						let scpl = scanpartValues.length;
+						for (let i=0; i < scpl; i++){
+							if (scanpartValues[i].Code) {
+								tmps.push(scanpartValues[i]);
+							}
+						}
+						scanparts = tmps;
 						console.log(scanparts);
 					}
 					scanpartAutoGuide();
@@ -655,7 +671,8 @@ module.exports = function ( jq ) {
     tableCell = $('<div style="display: table-cell; padding: 5px;"></div>');
 
     let patientHistoryBox = undefined;
-		let localApiRes = await common.doCallLocalApi('/api/orthanc/attach/file', {});
+		let patientNameEN = defualtValue.patient.name; /*.split('^').join(' '); */
+		let localApiRes = await common.doCallLocalApi('/api/orthanc/attach/file', {PatientNameEN: patientNameEN});
 		let attachFiles = localApiRes.result;
 		//console.log(attachFiles);
 		if (attachFiles.length > 0) {
@@ -665,6 +682,9 @@ module.exports = function ( jq ) {
 			}
 			defualtValue.pn_history = pnHistories;
 			phProp.fileType = 'application/zip';
+			patientHistoryBox = $('<div id="PatientHistoryBox"></div>').appendTo($(tableCell)).imagehistory( phProp ).data("custom-imagehistory");
+		} else {
+			//phProp.fileType = 'application/zip';
 			patientHistoryBox = $('<div id="PatientHistoryBox"></div>').appendTo($(tableCell)).imagehistory( phProp ).data("custom-imagehistory");
 		}
 
@@ -840,7 +860,7 @@ module.exports = function ( jq ) {
           let currentCaseStatusApiUrl = '/api/cases/status/' + defualtValue.caseId;
           let getRes = await common.doGetApi(currentCaseStatusApiUrl, {});
           if ((getRes.status.code == 200) && (getRes.canupdate == true)) {
-            doSaveUpdateCaseStep(defualtValue, options, patientHistory, scanparts, radioSelected);
+            doSaveUpdateCaseStep(defualtValue, options, patientHistory, scanparts, radioSelected, defualtValue.caseId);
           } else if ((getRes.status.code == 200) && (parseInt(getRes.current) == 9)) {
             let radAlertMsg = $('<div></div>');
             $(radAlertMsg).append($('<p>เนื่องจากเคสที่คุณกำลังพยายามแก้ไข ไม่อยู่ในสถานะที่จะแก้ไขได้อีกต่อไป</p>'));
@@ -997,16 +1017,19 @@ module.exports = function ( jq ) {
 					console.log(rqParams);
 
 		      let caseRes = await common.doCallApi('/api/cases/add', rqParams);
+					console.log(caseRes);
 		      if (caseRes.status.code === 200) {
-						console.log('caseActions=>', caseRes.actions);
 		        $.notify("บันทึกเคสใหม่เข้าสู่ระบบเรียบร้อยแล้ว", "success");
+						let hrPatientFiles = caseData.Case_PatientHRLink;
+						let caseId = caseRes.Record.id;
+						doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, 'new', false);
 						if (userdata.usertypeId == 2) {
+							/*
 							let isActive = $('#CaseMainCmd').hasClass('NavActive');
 							if (!isActive) {
-								let hrPatientFiles = caseData.Case_PatientHRLink;
-								doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, false);
 								$('#CaseMainCmd').click();
 							}
+							*/
 							$('#NewStatusSubCmd').click(); // <- Tech Page
 						} else if (userdata.usertypeId == 5) {
 							$('#HomeMainCmd').click(); // <- Refer Page
@@ -1027,10 +1050,10 @@ module.exports = function ( jq ) {
 		}
 	}
 
-  const doTransferDicomZip = function(dicomZipFileName, hrPatientFiles, defualtValue, isChangeRadio) {
+  const doTransferDicomZip = function(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, event, isChangeRadio) {
     return new Promise(async function(resolve, reject) {
       let transerDicomUrl = '/api/orthanc/transfer/dicom';
-      let transferParams = {DicomZipFileName: dicomZipFileName, StudyTags: defualtValue.studyTags, HrPatientFiles: hrPatientFiles, OldHrPatientFiles: defualtValue.pn_history, ChangeRadioOption: isChangeRadio};
+      let transferParams = {DicomZipFileName: dicomZipFileName, StudyTags: defualtValue.studyTags, HrPatientFiles: hrPatientFiles, OldHrPatientFiles: defualtValue.pn_history, ChangeRadioOption: isChangeRadio, userId: userId, caseId: caseId, event: event};
 			if (defualtValue.caseId) {
 				transferParams.caseId = defualtValue.caseId;
 			}
@@ -1041,7 +1064,7 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doSaveUpdateCaseStep = async function (defualtValue, options, phrImages, scanparts, radioSelected){
+	const doSaveUpdateCaseStep = async function (defualtValue, options, phrImages, scanparts, radioSelected, caseId){
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
 		const hospitalId = userdata.hospitalId;
 		const userId = userdata.id
@@ -1055,7 +1078,7 @@ module.exports = function ( jq ) {
 			} else if ((statusId == 3)||(statusId == 4)||(statusId == 7)) {
 				$('#NegativeStatusSubCmd').click();
 			}
-			doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, isChangeRadio);
+			doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, 'update', isChangeRadio);
 		}
 
 		let updateCaseData = await doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId);
@@ -1071,6 +1094,7 @@ module.exports = function ( jq ) {
 			let casedata = common.doPrepareCaseParams(updateCaseData);
 			let currentTime = new Date().toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 			currentTime = currentTime.split(':').join('');
+			console.log(defualtValue);
 			let dicomZipFileName = fmtStr('%s_%s-%s-%s-%s.zip', patientData.Patient_NameEN, patientData.Patient_LastNameEN, defualtValue.studyTags.MainDicomTags.StudyDate, defualtValue.studyTags.MainDicomTags.StudyTime, currentTime);
 
 			casedata.Case_DicomZipFilename = dicomZipFileName;

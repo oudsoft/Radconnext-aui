@@ -688,7 +688,9 @@ module.exports = function ( jq ) {
 			console.log(apiRes);
 			let response = apiRes.Records[0];
 			let resPatient = response.case.patient;
-  		let patient = {id: resPatient.Patient_HN, name: resPatient.Patient_NameEN, name_th: resPatient.Patient_NameTH, age: resPatient.Patient_Age, sex: resPatient.Patient_Sex, patientCitizenID: resPatient.Patient_CitizenID};
+			let patientNameEN = resPatient.Patient_NameEN + ' ' + resPatient.Patient_LastNameEN;
+			let patientNameTH = resPatient.Patient_NameTH + ' ' + resPatient.Patient_LastNameTH;
+  		let patient = {id: resPatient.Patient_HN, name: patientNameEN, name_th: patientNameTH, age: resPatient.Patient_Age, sex: resPatient.Patient_Sex, patientCitizenID: resPatient.Patient_CitizenID};
 			let defualtValue = {caseId: response.case.id, patient: patient, bodypart: response.case.Case_BodyPart, scanpart: response.case.Case_ScanPart, studyID: response.case.Case_OrthancStudyID, acc: response.case.Case_ACC, mdl: response.case.Case_Modality};
 			defualtValue.pn_history = response.case.Case_PatientHRLink;
 			defualtValue.status = response.case.casestatusId;
@@ -704,7 +706,8 @@ module.exports = function ( jq ) {
 			defualtValue.studyInstanceUID = response.case.Case_StudyInstanceUID;
 			defualtValue.headerCreateCase = 'แก้ไขเคส';
 			defualtValue.createdAt = response.case.createdAt;
-
+			defualtValue.scanpart = response.case.Case_ScanPart;
+			defualtValue.studyTags = response.StudyTags.StudyTags;
 			//let orthancRes = await common.doGetOrthancStudyDicom(defualtValue.studyID);
 			let studyTags = await common.doGetSeriesList(defualtValue.studyID)
 			let seriesList = studyTags.Series;

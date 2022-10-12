@@ -145,16 +145,23 @@ module.exports = function ( jq ) {
 	  $(radAlertBox.cancelCmd).hide();
 	}
 
-	const doCreateCustomNotify = function(){
+	const doCreateCustomNotify = function(result, callback){
 	  let msgBox = $('<div></div>');
 	  let titleBox = $("<div id='notify-title' style='background-color: white; color: black; font-weight: bold; text-align: center;'></div>");
 	  $(titleBox).append($('<h4>แจ้งส่งภาพเข้าระบบสำเร็จ</h4>'));
 	  let boyBox = $("<div id='notify-body'></div>");
-	  $(boyBox).append($('<span>คลิกที่ปุ่ม <b>ตกลง</b> เพื่อปิดการแจ้งเตือนนี้</span>'));
+		if (result.mark.radioAutoCall == 0) {
+			$(boyBox).append($('<p>ระบบไม่พบการการตั้งค่าโปรไฟล์เพื่อเรียกสายของรังสีแพทย์ ' + result.mark.radioNameTH + '</p>'));
+		}
+	  $(boyBox).append($('<p>คลิกที่ปุ่ม <b>ตกลง</b> เพื่อปิดการแจ้งเตือนนี้</p>'));
 	  let footerBox = $("<div id='notify-footer' style='text-align: center;'></div>");
 	  let updateCmd = $('<input type="button" value="ตกลง" id="UpdateDicomCmd"/>');
 		$(updateCmd).on('click', (evt)=>{
-			$(msgBox).remove()
+			evt.stopPropagation();
+			$(msgBox).remove();
+			if (callback) {
+				callback();
+			}
 		});
 
 	  $(footerBox).append($(updateCmd));
@@ -204,30 +211,25 @@ module.exports = function ( jq ) {
 	}
 
 	const onNewDicomTransferTrigger = async function(evt) {
-		/*
-		let trigerData = evt.detail.data;
-		let studyID = trigerData.dicom.ID;
-		let localOrthancRes = await common.doCallApi('/api/cases/newcase/trigger', {studyID: studyID});
-		console.log(localOrthancRes);
-		*/
 		console.log('==onNewDicomTransferTrigger==');
+		let trigerData = evt.detail.data;
+		console.log(trigerData);
+
 		$('body').loading('stop');
-		let msgBox = doCreateCustomNotify();
-		$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
+		let msgBox = doCreateCustomNotify(trigerData.result, ()=>{});
+		//$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
+		$('body').append($(msgBox).css({'position': 'absolute', 'top': '60px', 'right': '2px', 'width' : '260px', 'border': '2px solid black', 'background-color': '#2579B8', 'color': 'white', 'padding': '5px'}));
 	}
 
 	const onUpdateDicomTransferTrigger = async function(evt) {
-		/*
-		let trigerData = evt.detail.data;
-		let isChangeRadio = trigerData.isChangeRadio;
-		let caseId = trigerData.caseId;
-		let localOrthancRes = await common.doCallApi('/api/cases/updatecase/trigger', {studyID: studyID});
-		console.log(localOrthancRes);
-		*/
 		console.log('==onUpdateDicomTransferTrigger==');
+		let trigerData = evt.detail.data;
+		console.log(trigerData);
+
 		$('body').loading('stop');
-		let msgBox = doCreateCustomNotify();
-		$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
+		let msgBox = doCreateCustomNotify(trigerData.result, ()=>{});
+		//$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
+		$('body').append($(msgBox).css({'position': 'absolute', 'top': '60px', 'right': '2px', 'width' : '260px', 'border': '2px solid black', 'background-color': '#2579B8', 'color': 'white', 'padding': '5px'}));
 	}
 
 	const onNewReportTrigger = async function(evt) {
