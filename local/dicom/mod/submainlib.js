@@ -150,7 +150,7 @@ module.exports = function ( jq ) {
 	  let titleBox = $("<div id='notify-title' style='background-color: white; color: black; font-weight: bold; text-align: center;'></div>");
 	  $(titleBox).append($('<h4>แจ้งส่งภาพเข้าระบบสำเร็จ</h4>'));
 	  let boyBox = $("<div id='notify-body'></div>");
-		if (result.mark.radioAutoCall == 0) {
+		if ((result) && (result.mark) && (result.mark.radioAutoCall == 0)) {
 			$(boyBox).append($('<p>ระบบไม่พบการการตั้งค่าโปรไฟล์เพื่อเรียกสายของรังสีแพทย์ ' + result.mark.radioNameTH + '</p>'));
 		}
 	  $(boyBox).append($('<p>คลิกที่ปุ่ม <b>ตกลง</b> เพื่อปิดการแจ้งเตือนนี้</p>'));

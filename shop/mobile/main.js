@@ -11,6 +11,7 @@ window.$.ajaxSetup({
 const common = require('../home/mod/common-lib.js')($);
 
 const orderMng = require('./mod/order-mng-lib.js')($);
+const orderProc = require('./mod/order-proc-lib.js')($);
 
 let pageHandle = undefined;
 let wss = undefined;
@@ -75,9 +76,13 @@ $( document ).ready(function() {
 
   pageHandle = doCreatePageLayout();
   orderMng.setupPageHandle(pageHandle);
+  orderProc.setupPageHandle(pageHandle);
 
-
-  orderMng.doShowOrderList(userdata.shopId, pageHandle.mainContent);
+  if (userdata.usertypeId == 5) {
+    orderProc.doShowOrderList(userdata.shopId, pageHandle.mainContent);
+  } else {
+    orderMng.doShowOrderList(userdata.shopId, pageHandle.mainContent);
+  }
   $('body').loading('stop');
 });
 
