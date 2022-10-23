@@ -99,8 +99,8 @@ const doLoadMainPage = function(){
   $('head').append('<script src="' + jquerySimpleUploadUrl + '"></script>');
 
   $('head').append('<script src="' + patientHistoryPluginUrl + '?t=x3x4xm"></script>');
-  $('head').append('<script src="' + countdownclockPluginUrl + '"></script>');
-  $('head').append('<script src="' + scanpartPluginUrl + '?t=siql2"></script>');
+  $('head').append('<script src="' + countdownclockPluginUrl + '?t=miskiy"></script>');
+  $('head').append('<script src="' + scanpartPluginUrl + '?t=mix6ox"></script>');
   $('head').append('<script src="' + customUrgentPlugin + '"></script>');
   $('head').append('<script src="' + controlPagePlugin + '"></script>');
   $('head').append('<script src="' + customSelectPlugin + '"></script>');
@@ -172,6 +172,7 @@ const doLoadMainPage = function(){
 			});
 
       $(document).on('opennewstatuscase', async (evt, data)=>{
+        let userdata = JSON.parse(localStorage.getItem('userdata'));
 				let titlePage = $('<div></div>');
 				let logoPage = $('<img src="/images/case-incident-icon-2.png" width="40px" height="auto" style="position: relative; display: inline-block; top: 10px;"/>');
 				$(logoPage).appendTo($(titlePage));
@@ -262,10 +263,18 @@ const doLoadMainPage = function(){
 
 const doInitDefualPage = function(){
   $('body').loading('start');
+  let userdata = JSON.parse(localStorage.getItem('userdata'));
   casecounter.doSetupCounter().then(async(loadRes)=>{
     actionAfterSetupCounter();
     submain.doInitShowMasterNotify();
     $('body').loading('stop');
+  });
+  let hospitalId = userdata.hospitalId;
+  let apiUrl = '/api/cases/options/' + hospitalId;
+  let rqParams = {};
+  common.doGetApi(apiUrl, rqParams).then(async (response)=>{
+    let caseoptions = response.Options;
+    localStorage.setItem('caseoptions', JSON.stringify(caseoptions));
   });
 }
 

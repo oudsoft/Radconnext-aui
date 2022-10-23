@@ -446,7 +446,8 @@ module.exports = function ( jq ) {
 	  localStorage.removeItem('token');
 		localStorage.removeItem('userdata');
 		localStorage.removeItem('masternotify');
-		//localStorage.removeItem('dicomfilter');
+		//localStorage.removeItem('caseoptions');
+		//localStorage.removeItem('rememberwantsavescanpart');
 		sessionStorage.removeItem('logged');
 	  let url = '/index.html';
 	  window.location.replace(url);
@@ -522,11 +523,21 @@ module.exports = function ( jq ) {
 
 	const doCountImageLocalDicom = function(studyID){
 		return new Promise(async function(resolve, reject) {
-			$('body').loading('start');
 			const dicomUrl = '/api/orthanc/study/count/instances';
-			let dicomStudiesRes = await doCallLocalApi(dicomUrl, {StudyID: studyID});
-			resolve(dicomStudiesRes.result);
-			$('body').loading('stop');
+			const rqParams = {StudyID: studyID};
+			$.post(dicomUrl, rqParams, function(response){
+				resolve(response.result);
+			});
+		});
+	}
+
+	const doSeekingAttachFile = function(patientNameEN){
+		return new Promise(async function(resolve, reject) {
+			const dicomUrl = '/api/orthanc/attach/file';
+			const rqParams = {PatientNameEN: patientNameEN};
+			$.post(dicomUrl, rqParams, function(response){
+				resolve(response);
+			});
 		});
 	}
 
@@ -827,10 +838,15 @@ module.exports = function ( jq ) {
 			let hospitalId = userdata.hospitalId;
 			let userId = userdata.id;
 			let rqParams = { hospitalId: hospitalId, userId: userId, studyDesc: studyDesc, protocolName: protocolName};
-			let apiUrl = '/api/scanpartaux/select';
+			let apiUrl = 'https://radconnext.info/api/scanpartaux/select';
 			try {
+				/*
 				let response = await doCallApi(apiUrl, rqParams);
 				resolve(response);
+				*/
+				$.post(apiUrl, rqParams, function(response){
+					resolve(response);
+				});
 			} catch(e) {
 	      reject(e);
     	}
@@ -887,14 +903,16 @@ module.exports = function ( jq ) {
 		return new Promise(async function(resolve, reject) {
 			const doCreateHeaderField = function() {
 	      let headerFieldRow = $('<div style="display: table-row;  width: 100%; border: 2px solid black; background-color: ' + headBackgroundColor + '; color: white;"></div>');
-				let fieldCell = $('<div style="display: table-cell; padding: 2px;">ลำดับที่</div>');
+				let fieldCell = $('<div style="display: table-cell; padding: 2px; text-align: center;">ลำดับที่</div>');
 	      $(fieldCell).appendTo($(headerFieldRow));
 	      fieldCell = $('<div style="display: table-cell; padding: 2px;">รหัส</div>');
 	      $(fieldCell).appendTo($(headerFieldRow));
 	      fieldCell = $('<div style="display: table-cell; padding: 2px;">ชื่อ</div>');
 	      $(fieldCell).appendTo($(headerFieldRow));
-	      fieldCell = $('<div style="display: table-cell; padding: 2px;">ราคา</div>');
+	      fieldCell = $('<div style="display: table-cell; padding: 2px; text-align: right;">ราคา</div>');
 	      $(fieldCell).appendTo($(headerFieldRow));
+				fieldCell = $('<div style="display: table-cell; padding: 2px;"></div>');
+				$(fieldCell).appendTo($(headerFieldRow));
 	      return $(headerFieldRow);
 	    };
 
@@ -905,7 +923,7 @@ module.exports = function ( jq ) {
 				await scanparts.forEach((item, i) => {
 					let itemRow = $('<div style="display: table-row;  width: 100%; border: 2px solid black; background-color: #ccc;"></div>');
 					$(itemRow).appendTo($(selectedBox));
-					let itemCell = $('<div style="display: table-cell; padding: 2px;">' + (i+1) + '</div>');
+					let itemCell = $('<div style="display: table-cell; padding: 2px; text-align: center;">' + (i+1) + '</div>');
 					$(itemCell).appendTo($(itemRow));
 					itemCell = $('<div style="display: table-cell; padding: 2px;">' + item.Code + '</div>');
 					$(itemCell).appendTo($(itemRow));
@@ -913,6 +931,18 @@ module.exports = function ( jq ) {
 					$(itemCell).appendTo($(itemRow));
 					itemCell = $('<div style="display: table-cell; padding: 2px; text-align: right;">' + formatNumberWithCommas(item.Price) + '</div>');
 					$(itemCell).appendTo($(itemRow));
+
+					let removeCmd = $('<img/>')
+					$(removeCmd).attr('src', '/images/minus-sign-red-icon.png');
+					$(removeCmd).attr('title', 'ลบ Scan Part');
+					$(removeCmd).css({'cursor': 'pointer', 'width': '25px', 'height': 'auto'});
+					$(removeCmd).on('click', (evt)=>{
+						scanparts.splice(i, 1);
+						$(itemRow).remove();
+					});
+					itemCell = $('<div style="display: table-cell; padding: 2px;"></div>').css({'text-align': 'right', 'vertical-align': 'middle'});
+					$(itemCell).append($(removeCmd));
+					$(itemRow).append($(itemCell))
 				});
 			}
 			resolve($(selectedBox));
@@ -1301,6 +1331,7 @@ module.exports = function ( jq ) {
 		doDownloadLocalDicom,
 		doDeleteLocalDicom,
 		doCountImageLocalDicom,
+		doSeekingAttachFile,
     doPreparePatientParams,
     doPrepareCaseParams,
 		doGetSeriesList,

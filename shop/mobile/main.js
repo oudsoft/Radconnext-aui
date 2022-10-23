@@ -26,7 +26,7 @@ $( document ).ready(function() {
     let momentWithLocalesPlugin = "../lib/moment-with-locales.min.js";
     let ionCalendarPlugin = "../lib/ion.calendar.min.js";
     let ionCalendarCssUrl = "../stylesheets/ion.calendar.css";
-
+    let printjs = '../lib/print/print.min.js';
     let utilityPlugin = "../lib/plugin/jquery-radutil-plugin.js";
     let html5QRCodeUrl = "../lib/html5-qrcode.min.js";
 
@@ -39,6 +39,7 @@ $( document ).ready(function() {
 
     $('head').append('<script src="' + momentWithLocalesPlugin + '"></script>');
     $('head').append('<script src="' + ionCalendarPlugin + '"></script>');
+    $('head').append('<script src="' + printjs + '"></script>');
 
     $('head').append('<link rel="stylesheet" href="../stylesheets/style.css" type="text/css" />');
     $('head').append('<link rel="stylesheet" href="../lib/print/print.min.css" type="text/css" />');

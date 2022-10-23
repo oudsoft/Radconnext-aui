@@ -285,8 +285,8 @@ module.exports = function ( jq ) {
 				let allImageInstances = await doCallCountInstanceImage(dicomSeries, patientName);
 				*/
 				let allSeries = dicomSeries.length;
-				let allImageInstances = await common.doCountImageLocalDicom(dicomID);
-				casecreator.doCreateNewCaseFirstStep(defualtValue, allSeries, allImageInstances);
+				//let allImageInstances = await common.doCountImageLocalDicom(dicomID);
+				casecreator.doCreateNewCaseFirstStep(defualtValue, allSeries);
 			});
 
 			let aiInterfaceButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/ai-icon.png" title="ขอผลอ่านจาก AI"/>');

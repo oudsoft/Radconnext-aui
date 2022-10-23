@@ -637,6 +637,13 @@ module.exports = function ( jq ) {
 		$(pdfBox).append($(reportPdf));
 		$(reportBox).append($(pdfBox).css({'display': 'none'}));
 
+		let printShortCutCmd = common.doCreateTextCmd(' พิมพ์์ ', 'green', 'white', 'green', 'black');
+		$(printShortCutCmd).on('click', (evt)=>{
+			let pngReportLink = link + '/' + shareCode + '.png';
+			console.log(pngReportLink);
+			let newWin = window.open(pngReportLink, '_blank');
+			newWin.print();
+		}).css({'display': 'inline-block', 'width': '120px', 'float': 'right', 'margin-right': '5px'});
 		let toggleReportBoxCmd = common.doCreateTextCmd(' เสร็จ ', 'green', 'white', 'green', 'black');
 		$(toggleReportBoxCmd).on('click', (evt)=>{
 			let hasHiddenReportBox = ($(mainBox).css('display') == 'none');
@@ -654,7 +661,8 @@ module.exports = function ( jq ) {
 		let docNoes = shareCode.split('-');
 		let docTitleBox = $('<span><b>' + docTitle + ' ' + docNoes[docNoes.length-1] + '</b></span>').css({'display': 'inline-block', 'float': 'left', 'margin-left': '50px'});
 		let toggleReportBox = $('<div></div>').css({'position': 'relative', 'width': '100%'});
-		$(toggleReportBox).append($(docTitleBox)).append($(toggleReportBoxCmd).css({'text-align': 'center'}));
+		$(toggleReportBox).append($(docTitleBox)).append($(toggleReportBoxCmd).css({'text-align': 'center'})).append($(printShortCutCmd).css({'text-align': 'center'}));
+
 		let mainBox = $('<div></div>').css({'position': 'relative', 'width': '100%', 'top': '18px', 'diaplay': 'none'});
 		return $(mainBox).append($(toggleReportBox)).append($(reportBox));
 	}

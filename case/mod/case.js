@@ -445,7 +445,8 @@ module.exports = function ( jq ) {
 				let dataRow = $('<tr class="case-row"></tr>');
 				$(dataRow).css(rowStyleClass);
 				let caseDate = util.formatDateTimeStr(incidents[i].case.createdAt);
-				let casedatetime = caseDate.split('T');
+				//console.log(caseDate);
+				let casedatetime = caseDate.split(' ');
 				let casedateSegment = casedatetime[0].split('-');
 				casedateSegment = casedateSegment.join('');
 				let casedate = util.formatStudyDate(casedateSegment);
@@ -470,11 +471,9 @@ module.exports = function ( jq ) {
 				$(dataRow).append($('<td align="center">'+ incidents[i].Radiologist.User_NameTH + ' ' + incidents[i].Radiologist.User_LastNameTH + '</td>'));
 				let caseStatusCol = $('<td align="center"><span id="CaseStatusName">'+ incidents[i].case.casestatus.CS_Name_EN + '</span></td>');
 				$(dataRow).append($(caseStatusCol));
-				if ((incidents[i].case.casestatus.id == 1) || (incidents[i].case.casestatus.id == 2) || (incidents[i].case.casestatus.id == 8) /* || (incidents[i].case.casestatus.id == 9) */ ) {
-					//let caseTask = await common.doCallApi('/api/tasks/select/'+ incidents[i].case.id, {});
-					//{"status":{"code":200},"Records":[{"caseId":217,"username":"sutin","radioUsername":"test0003","triggerAt":"2020-12-13T07:13:52.968Z"}]}
+				/*
+				if ((incidents[i].case.casestatus.id == 1) || (incidents[i].case.casestatus.id == 2) || (incidents[i].case.casestatus.id == 8)) {
 					let task = await common.doFindTaksOfCase(myTasks.Records, incidents[i].case.id);
-					//if ((caseTask.Records) && (caseTask.Records.length > 0) && (caseTask.Records[0]) && (caseTask.Records[0].triggerAt)){
 					console.log(myTasks.Records);
 					if ((task) && (task.triggerAt)) {
 						let caseTriggerAt = new Date(task.triggerAt);
@@ -484,15 +483,9 @@ module.exports = function ( jq ) {
 						let clockCountdownDiv = $('<div id="ClockCountDownBox"></div>');
 						$(clockCountdownDiv).countdownclock({countToHH: hh, countToMN: mn});
 						$(caseStatusCol).append($(clockCountdownDiv));
-					} else {
-						//Warning Case Please Cancel Case by Cancel Cmd.
-						/*
-						let taskWarningBox = $('<div style="position: relative; width: 100%; text-align: center; color: red;"></div>');
-						$(taskWarningBox).append($('<span>กรุณาส่งใหม่</span>'));
-						$(caseStatusCol).append($(taskWarningBox));
-						*/
 					}
 				}
+				*/
 				let commandCol = $('<td align="center"></td>');
 				$(commandCol).appendTo($(dataRow));
 				$(rwTable).append($(dataRow));
@@ -842,9 +835,8 @@ module.exports = function ( jq ) {
 		$(logTitleRow).append($('<td width="*" align="center"><b>รายละเอียด</b></td>'));
 		for (let i=0; i < keeplogs.length; i++){
       let logItem = $('<tr></tr>');
-      let logAt = new Date(keeplogs[i].createdAt);
-      let logDate = logAt.toDateString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
-      let logTime = logAt.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+			let logDatetime = util.formatDateTimeDDMMYYYYJSON(keeplogs[i].createdAt);
+			let logDatetimeText = util.fmtStr('%s-%s-%s %s:%s:%s', logDatetime.DD, logDatetime.MM, logDatetime.YY, logDatetime.HH, logDatetime.MN, logDatetime.SS);
 			let userLog = userProfiles[i].User_NameTH + ' ' + userProfiles[i].User_LastNameTH;
 			let from = await common.allCaseStatus.find((item)=>{
 				if (item.value == keeplogs[i].from) {return item}
@@ -852,11 +844,33 @@ module.exports = function ( jq ) {
 			let to = await common.allCaseStatus.find((item)=>{
 				if (item.value == keeplogs[i].to) {return item}
 			});
-      $(logItem).append($('<td align="left">' + logDate + ' ' + logTime + '</td>'));
+      $(logItem).append($('<td align="left">' + logDatetimeText + '</td>'));
       $(logItem).append($('<td align="center">' + userLog + '</td>'));
       $(logItem).append($('<td align="center">' + from.DisplayText + '</td>'));
       $(logItem).append($('<td align="center">' + to.DisplayText + '</td>'));
-      $(logItem).append($('<td align="left">' + keeplogs[i].remark + '</td>'));
+			let remarkCell = $('<td align="left"></td>');
+      $(logItem).append($(remarkCell));
+			if (keeplogs[i].triggerAt) {
+				let yymmddhhmnss = keeplogs[i].triggerAt;
+				let yymmddhhmnText = util.fmtStr('%s-%s-%s %s:%s:', yymmddhhmnss.DD, yymmddhhmnss.MM, yymmddhhmnss.YY, yymmddhhmnss.HH, yymmddhhmnss.MN, yymmddhhmnss.SS);
+				let triggerDT = new Date(yymmddhhmnText);
+				//console.log(triggerDT);
+				let d = new Date();
+				//console.log(d);
+				if (triggerDT.getTime() > d.getTime()) {
+					let diffTime = Math.abs(triggerDT - d);
+					let hh = parseInt(diffTime/(1000*60*60));
+					let mn = parseInt((diffTime - (hh*1000*60*60))/(1000*60));
+					let clockCountdownDiv = $('<span id="ClockCountDownBox"></span>');
+					$(clockCountdownDiv).countdownclock({countToHH: hh, countToMN: mn});
+					let remarkSpan = $('<span></span>').text(keeplogs[i].remark);
+					$(remarkCell).append($(remarkSpan)).append($(clockCountdownDiv).css({'margin-left': '5px', 'font-weight': 'bold'}));
+				} else {
+					$(remarkCell).text(keeplogs[i].remark);
+				}
+			} else {
+				$(remarkCell).text(keeplogs[i].remark);
+			}
       $(logTable).append($(logItem));
     }
     $(radAlertInfo).append($(logTable))

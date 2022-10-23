@@ -213,9 +213,9 @@ module.exports = function ( jq ) {
 	}
 
 	const formatDateTimeStr = function(dt){
-	  d = new Date(dt);
+	  let d = new Date(dt);
 		d.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' });
-		var yy, mm, dd, hh, mn, ss;
+		let yy, mm, dd, hh, mn, ss;
 	  yy = d.getFullYear();
 	  if (d.getMonth() + 1 < 10) {
 	    mm = '0' + (d.getMonth() + 1);
@@ -242,7 +242,41 @@ module.exports = function ( jq ) {
 	  } else {
 	    ss = '' + d.getSeconds();
 	  }
-		var td = `${yy}-${mm}-${dd}T${hh}:${mn}:${ss}`;
+		let td = `${yy}-${mm}-${dd} ${hh}:${mn}:${ss}`;
+		return td;
+	}
+
+	const formatDateTimeDDMMYYYYJSON = function(dt){
+	  let d = new Date(dt);
+		d.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' });
+		let yy, mm, dd, hh, mn, ss;
+	  yy = d.getFullYear();
+	  if (d.getMonth() + 1 < 10) {
+	    mm = '0' + (d.getMonth() + 1);
+	  } else {
+	    mm = '' + (d.getMonth() + 1);
+	  }
+	  if (d.getDate() < 10) {
+	    dd = '0' + d.getDate();
+	  } else {
+	    dd = '' + d.getDate();
+	  }
+	  if (d.getHours() < 10) {
+	    hh = '0' + d.getHours();
+	  } else {
+		   hh = '' + d.getHours();
+	  }
+	  if (d.getMinutes() < 10){
+		   mn = '0' + d.getMinutes();
+	  } else {
+	    mn = '' + d.getMinutes();
+	  }
+	  if (d.getSeconds() < 10) {
+		   ss = '0' + d.getSeconds();
+	  } else {
+	    ss = '' + d.getSeconds();
+	  }
+		let td = {YY: yy, MM: mm, DD: dd, HH: hh, MN: mn, SS: ss};
 		return td;
 	}
 
@@ -533,6 +567,12 @@ module.exports = function ( jq ) {
 	});
 	*/
 
+	const fmtStr = function (str) {
+	  var args = [].slice.call(arguments, 1);
+	  var i = 0;
+	  return str.replace(/%s/g, () => args[i++]);
+	}
+
 	return {
 		formatDateStr,
 		getTodayDevFormat,
@@ -551,6 +591,7 @@ module.exports = function ( jq ) {
 		getDatetimeValue,
 		formatDateDev,
 		formatDateTimeStr,
+		formatDateTimeDDMMYYYYJSON,
 		formatStartTimeStr,
 		formatFullDateStr,
 		formatTimeHHMNStr,
@@ -570,6 +611,7 @@ module.exports = function ( jq ) {
 		doCreateDownloadXLSX,
 		doShowLogWindow,
 		//dicomZipSyncWorker,
+		fmtStr,
 		/*  Web Socket Interface */
 		wsm
 	}
