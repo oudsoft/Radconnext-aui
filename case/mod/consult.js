@@ -434,7 +434,7 @@ module.exports = function ( jq ) {
 		return new Promise(async function(resolve, reject) {
 			let consultTask = await common.doCallApi('/api/consult/tasks/select/'+ consultItem.consult.id, {});
 			let consultDate = util.formatDateTimeStr(consultItem.consult.createdAt);
-			let consultdatetime = consultDate.split('T');
+			let consultdatetime = consultDate.split(' ');
 			let consultdateSegment = consultdatetime[0].split('-');
 			consultdateSegment = consultdateSegment.join('');
 			let consultdate = util.formatStudyDate(consultdateSegment);
@@ -790,7 +790,7 @@ module.exports = function ( jq ) {
 	const doCreateSearchConsultItemRow = function(consultItem){
 		return new Promise(async function(resolve, reject) {
 			let consultDate = util.formatDateTimeStr(consultItem.createdAt);
-			let consultdatetime = consultDate.split('T');
+			let consultdatetime = consultDate.split(' ');
 			let consultdateSegment = consultdatetime[0].split('-');
 			consultdateSegment = consultdateSegment.join('');
 			let consultdate = util.formatStudyDate(consultdateSegment);

@@ -118,10 +118,10 @@ module.exports = function ( jq ) {
         let customerRes = await common.doCallApi('/api/shop/customer/add', params);
         if (customerRes.status.code == 200) {
           $.notify("เพิ่มรายการลูกค้าสำเร็จ", "success");
-          let customers = JSON.parse(localStorage.getItem('customers'));
-          customers.push(newCustomerData);
+					let newCustomer = customerRes.Record;
+					let customers = customerRes.Records;
           localStorage.setItem('customers', JSON.stringify(customers));
-          successCallback(customers);
+          successCallback(newCustomer);
         } else if (customerRes.status.code == 201) {
           $.notify("ไม่สามารถเพิ่มรายการลูกค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
         } else {

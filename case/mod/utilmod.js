@@ -286,12 +286,22 @@ module.exports = function ( jq ) {
 	}
 
 	const formatFullDateStr = function(fullDateTimeStr){
-		let dtStrings = fullDateTimeStr.split('T');
+		let dtStrings = '';
+		if (fullDateTimeStr.indexOf('T') >= 0) {
+			dtStrings = fullDateTimeStr.split('T');
+		} else if (fullDateTimeStr.indexOf(' ') >= 0) {
+			dtStrings = fullDateTimeStr.split(' ');
+		}
 		return `${dtStrings[0]}`;;
 	}
 
 	const formatTimeHHMNStr = function(fullDateTimeStr){
-		let dtStrings = fullDateTimeStr.split('T');
+		let dtStrings = '';
+		if (fullDateTimeStr.indexOf('T') >= 0) {
+			dtStrings = fullDateTimeStr.split('T');
+		} else if (fullDateTimeStr.indexOf(' ') >= 0) {
+			dtStrings = fullDateTimeStr.split(' ');
+		}
 		let ts = dtStrings[1].split(':');
 		return `${ts[0]}:${ts[1]}`;;
 	}
@@ -351,10 +361,12 @@ module.exports = function ( jq ) {
 	}
 
 	const doResetPingCounter = function(){
-		if ((wsm.readyState == 0) || (wsm.readyState == 1)){
-			wsm.send(JSON.stringify({type: 'reset', what: 'pingcounter'}));
-		} else {
-			$.notify("คุณไม่อยู่ในสถานะการเชื่อมต่อกับเซิร์ฟเวอร์ โปรดรีเฟรช (F5) หรือ Logout แล้ว Login ใหม่ อีกครั้ง", "warn");
+		if (wsm) {
+			if ((wsm.readyState == 0) || (wsm.readyState == 1)){
+				wsm.send(JSON.stringify({type: 'reset', what: 'pingcounter'}));
+			} else {
+				//$.notify("คุณไม่อยู่ในสถานะการเชื่อมต่อกับเซิร์ฟเวอร์ โปรดรีเฟรช (F5) หรือ Logout แล้ว Login ใหม่ อีกครั้ง", "warn");
+			}
 		}
 	}
 
@@ -362,7 +374,7 @@ module.exports = function ( jq ) {
 		if ((wsm.readyState == 0) || (wsm.readyState == 1)){
 			wsm.send(JSON.stringify({type: 'set', what: 'screenstate', value: state}));
 		} else {
-			$.notify("คุณไม่อยู่ในสถานะการเชื่อมต่อกับเซิร์ฟเวอร์ โปรดรีเฟรช (F5) หรือ Logout แล้ว Login ใหม่ อีกครั้ง", "warn");
+			//$.notify("คุณไม่อยู่ในสถานะการเชื่อมต่อกับเซิร์ฟเวอร์ โปรดรีเฟรช (F5) หรือ Logout แล้ว Login ใหม่ อีกครั้ง", "warn");
 		}
 	}
 

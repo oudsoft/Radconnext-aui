@@ -591,7 +591,7 @@ module.exports = function ( jq ) {
 		rqParams.Patient_NameEN = patientNameEN;
 		rqParams.Patient_LastNameEN = patientLastNameEN;
 		rqParams.Patient_CitizenID = newCaseData.patientCitizenID;
-		rqParams.Patient_Birthday = '';
+		rqParams.Patient_Birthday = newCaseData.patientBirthDate;
 		rqParams.Patient_Age = newCaseData.patientAge;
 		rqParams.Patient_Sex = newCaseData.patientSex;
 		rqParams.Patient_Tel = '';
@@ -902,34 +902,47 @@ module.exports = function ( jq ) {
 	const doRenderScanpartSelectedBox = function(scanparts) {
 		return new Promise(async function(resolve, reject) {
 			const doCreateHeaderField = function() {
-	      let headerFieldRow = $('<div style="display: table-row;  width: 100%; border: 2px solid black; background-color: ' + headBackgroundColor + '; color: white;"></div>');
-				let fieldCell = $('<div style="display: table-cell; padding: 2px; text-align: center;">ลำดับที่</div>');
+	      //let headerFieldRow = $('<div style="display: table-row;  width: 100%; border: 2px solid black; background-color: ' + headBackgroundColor + '; color: white;"></div>');
+				let headerFieldRow = $('<tr></tr>').css({'background-color': headBackgroundColor, 'color': 'white'})
+				//let fieldCell = $('<div style="display: table-cell; padding: 2px; text-align: center;">ลำดับที่</div>');
+				let fieldCell = $('<td></td>').attr({'width': '10%', 'align': 'left'}).text('ลำดับที่').css({'padding-left': '2px'});
 	      $(fieldCell).appendTo($(headerFieldRow));
-	      fieldCell = $('<div style="display: table-cell; padding: 2px;">รหัส</div>');
+	      //fieldCell = $('<div style="display: table-cell; padding: 2px;">รหัส</div>');
+				fieldCell = $('<td></td>').attr({'width': '20%', 'align': 'left'}).text('รหัส').css({'padding-left': '2px'});
 	      $(fieldCell).appendTo($(headerFieldRow));
-	      fieldCell = $('<div style="display: table-cell; padding: 2px;">ชื่อ</div>');
+	      //fieldCell = $('<div style="display: table-cell; padding: 2px;">ชื่อ</div>');
+				fieldCell = $('<td></td>').attr({'width': '40%', 'align': 'left'}).text('ชื่อ').css({'padding-left': '2px'});
 	      $(fieldCell).appendTo($(headerFieldRow));
-	      fieldCell = $('<div style="display: table-cell; padding: 2px; text-align: right;">ราคา</div>');
+	      //fieldCell = $('<div style="display: table-cell; padding: 2px; text-align: right;">ราคา</div>');
+				fieldCell = $('<td></td>').attr({'width': '20%', 'align': 'left'}).text('ราคา').css({'padding-left': '2px'});
 	      $(fieldCell).appendTo($(headerFieldRow));
-				fieldCell = $('<div style="display: table-cell; padding: 2px;"></div>');
+				//fieldCell = $('<div style="display: table-cell; padding: 2px;"></div>');
+				fieldCell = $('<td></td>').attr({'width': '*', 'align': 'left'});
 				$(fieldCell).appendTo($(headerFieldRow));
 	      return $(headerFieldRow);
 	    };
 
-			let selectedBox = $('<div style="display: table; width: 100%; border-collapse: collapse;"></div>');
+			//let selectedBox = $('<div style="display: table; width: 100%; border-collapse: collapse;"></div>');
+			let selectedBox = $('<table width="100%" cellspacing="0" cellpadding="0" border="1"></table>');
+
 			let headerFieldRow = doCreateHeaderField();
 			$(headerFieldRow).appendTo($(selectedBox));
 			if ((scanparts) && (scanparts.length > 0)) {
 				await scanparts.forEach((item, i) => {
-					let itemRow = $('<div style="display: table-row;  width: 100%; border: 2px solid black; background-color: #ccc;"></div>');
+					//let itemRow = $('<div style="display: table-row;  width: 100%; border: 2px solid black; background-color: #ccc;"></div>');
+					let itemRow = $('<tr></tr>').css({'background-color': '#ccc'})
 					$(itemRow).appendTo($(selectedBox));
-					let itemCell = $('<div style="display: table-cell; padding: 2px; text-align: center;">' + (i+1) + '</div>');
+					//let itemCell = $('<div style="display: table-cell; padding: 2px; text-align: center;">' + (i+1) + '</div>');
+					let itemCell = $('<td></td>').attr({'align': 'left'}).text((i+1)).css({'padding-left': '10px'});
 					$(itemCell).appendTo($(itemRow));
-					itemCell = $('<div style="display: table-cell; padding: 2px;">' + item.Code + '</div>');
+					//itemCell = $('<div style="display: table-cell; padding: 2px;">' + item.Code + '</div>');
+					itemCell = $('<td></td>').attr({'align': 'left'}).text(item.Code).css({'padding-left': '2px'});
 					$(itemCell).appendTo($(itemRow));
-					itemCell = $('<div style="display: table-cell; padding: 2px;">' + item.Name + '</div>');
+					//itemCell = $('<div style="display: table-cell; padding: 2px;">' + item.Name + '</div>');
+					itemCell = $('<td></td>').attr({'align': 'left'}).text(item.Name).css({'padding-left': '2px'});
 					$(itemCell).appendTo($(itemRow));
-					itemCell = $('<div style="display: table-cell; padding: 2px; text-align: right;">' + formatNumberWithCommas(item.Price) + '</div>');
+					//itemCell = $('<div style="display: table-cell; padding: 2px; text-align: right;">' + formatNumberWithCommas(item.Price) + '</div>');
+					itemCell = $('<td></td>').attr({'align': 'left'}).text(formatNumberWithCommas(item.Price)).css({'padding-left': '2px'});
 					$(itemCell).appendTo($(itemRow));
 
 					let removeCmd = $('<img/>')
@@ -940,7 +953,8 @@ module.exports = function ( jq ) {
 						scanparts.splice(i, 1);
 						$(itemRow).remove();
 					});
-					itemCell = $('<div style="display: table-cell; padding: 2px;"></div>').css({'text-align': 'right', 'vertical-align': 'middle'});
+					//itemCell = $('<div style="display: table-cell; padding: 2px;"></div>').css({'text-align': 'right', 'vertical-align': 'middle'});
+					itemCell = $('<td></td>').attr({'align': 'center', 'valign': 'middle'});
 					$(itemCell).append($(removeCmd));
 					$(itemRow).append($(itemCell))
 				});

@@ -99,7 +99,7 @@ const doLoadMainPage = function(){
   $('head').append('<script src="' + jquerySimpleUploadUrl + '"></script>');
 
   $('head').append('<script src="' + patientHistoryPluginUrl + '?t=x3x4xm"></script>');
-  $('head').append('<script src="' + countdownclockPluginUrl + '?t=miskiy"></script>');
+  $('head').append('<script src="' + countdownclockPluginUrl + '?t=marmix"></script>');
   $('head').append('<script src="' + scanpartPluginUrl + '?t=mix6ox"></script>');
   $('head').append('<script src="' + customUrgentPlugin + '"></script>');
   $('head').append('<script src="' + controlPagePlugin + '"></script>');

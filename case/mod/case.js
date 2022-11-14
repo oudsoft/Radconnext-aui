@@ -587,7 +587,7 @@ module.exports = function ( jq ) {
 					$(closeCaseButton).click(async function() {
 						if (incidents[i].case.casestatus.id == 12) {
 							let closeCaseStatus = 6;
-							let closeDescription = '';
+							let closeDescription = 'Hospital try for close case from Edit mode';
 							await common.doUpdateCaseStatusByShortCut(incidents[i].case.id, closeCaseStatus, closeDescription);
 							casecounter.doSetupCounter();
 							$('#SuccessStatusSubCmd').click();
@@ -852,11 +852,11 @@ module.exports = function ( jq ) {
       $(logItem).append($(remarkCell));
 			if (keeplogs[i].triggerAt) {
 				let yymmddhhmnss = keeplogs[i].triggerAt;
-				let yymmddhhmnText = util.fmtStr('%s-%s-%s %s:%s:', yymmddhhmnss.DD, yymmddhhmnss.MM, yymmddhhmnss.YY, yymmddhhmnss.HH, yymmddhhmnss.MN, yymmddhhmnss.SS);
+				let yymmddhhmnText = util.fmtStr('%s-%s-%s %s:%s:%s', yymmddhhmnss.YY, yymmddhhmnss.MM, yymmddhhmnss.DD, yymmddhhmnss.HH, yymmddhhmnss.MN, yymmddhhmnss.SS);
 				let triggerDT = new Date(yymmddhhmnText);
-				//console.log(triggerDT);
+				console.log(triggerDT);
 				let d = new Date();
-				//console.log(d);
+				console.log(d);
 				if (triggerDT.getTime() > d.getTime()) {
 					let diffTime = Math.abs(triggerDT - d);
 					let hh = parseInt(diffTime/(1000*60*60));
@@ -912,7 +912,7 @@ module.exports = function ( jq ) {
 		let radioSockets = await common.doCallApi(callSocketUrl, rqParams);
 		if (radioSockets.length > 0) {
 			//radio online
-			let callZoomMsg = {type: 'callzoom', sendTo: radioSockets[0].id, openurl: zoomMeeting.join_url, password: zoomMeeting.password, topic: zoomMeeting.topic, sender: userdata.username}
+			let callZoomMsg = {type: 'callzoom', sendTo: radioSockets[0].id, openurl: zoomMeeting.join_url, password: zoomMeeting.password, topic: zoomMeeting.topic, sender: userdata.username, hospitalId: userdata.hospitalId}
 			//let myWsm = main.doGetWsm();
 			//console.log(JSON.stringify(callZoomMsg));
 			const main = require('../main.js');

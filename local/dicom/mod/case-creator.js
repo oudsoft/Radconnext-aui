@@ -37,9 +37,9 @@ module.exports = function ( jq ) {
     let bodypart = $(form).find('#Bodypart').val();
     let price = 0;
     //if (!(/^[a-zA-Z]\w{1,65}$/.test(patientNameEN))) {
-		if (!(/[a-zA-Z\s]+$/.test(patientNameEN))) {
+		if (!(/[a-zA-Z\s_]+$/.test(patientNameEN))) {
       $(form).find('#PatientNameEN').css("border","4px solid red");
-      $(form).find('#PatientNameEN').notify("ชื่อผู้ป่วยภาษาอังกฤษ ต้องไม่มีอักษรภาษาไทย พิมพ์ ชื่อ เว้นวรรค นามสกุล", "error");
+      $(form).find('#PatientNameEN').notify("ชื่อผู้ป่วย (ภาษาอังกฤษ) ต้องไม่มีอักขระพิเศษ หรือ อักษรไทย", "error");
       $(form).find('#PatientNameEN').focus();
       return false;
     } else if (hn === '') {
@@ -269,12 +269,13 @@ module.exports = function ( jq ) {
 			    let manufacturer = defualtValue.manufacturer;
 			    let stationName = defualtValue.stationName;
 			    let studyInstanceUID = defualtValue.studyInstanceUID;
+					let patientBirthDate = defualtValue.patientBirthDate;
 			    let radioId = drReader;
 					let option = {scanpart: {save: wantSaveScanpart}}; //0 or 1
 					let optionLocalSave = option;
 					optionLocalSave.scanpart.userId = userdata.userId;
 					localStorage.setItem('rememberwantsavescanpart', JSON.stringify(optionLocalSave));
-			    let newCase = {patientNameTH, patientNameEN, patientHistory, scanpartItems, studyID, patientSex, patientAge, patientRights, patientCitizenID, price, hn, acc, department, drOwner, bodyPart, scanPart, drReader, urgenttypeId, detail, mdl, studyDesc, protocalName, manufacturer, stationName, studyInstanceUID, radioId, option: option};
+			    let newCase = {patientNameTH, patientNameEN, patientHistory, scanpartItems, studyID, patientSex, patientAge, patientBirthDate, patientRights, patientCitizenID, price, hn, acc, department, drOwner, bodyPart, scanPart, drReader, urgenttypeId, detail, mdl, studyDesc, protocalName, manufacturer, stationName, studyInstanceUID, radioId, option: option};
 			    resolve(newCase);
 				});
 			}
@@ -327,8 +328,17 @@ module.exports = function ( jq ) {
 			let tableRow = $('<div style="display: table-row;"></div>');
 			let tableCell = $('<div style="display: table-cell; width: 240px;">ขื่อผู้ป่วย (ภาษาอังกฤษ)</div>');
 			$(tableCell).appendTo($(tableRow));
-			tableCell = $('<div style="display: table-cell; padding: 5px;"><input type="text" id="PatientNameEN"/></div>');
-			$(tableCell).find('#PatientNameEN').val(patientName);
+			tableCell = $('<div style="display: table-cell; padding: 5px;"></div>');
+			let patientNameENInput = $('<input type="text" id="PatientNameEN"/>');
+			let patientNameRegEx = /[^a-zA-Z\s_]+$/g;
+			let patientNameENFormat = patientName.replace(patientNameRegEx, '_');
+			$(patientNameENInput).val(patientNameENFormat);
+			$(patientNameENInput).on('keyup', function(evt) {
+				let patientNameENInputValue = $(patientNameENInput).val();
+				patientNameENFormat = patientNameENInputValue.replace(patientNameRegEx, '_');
+				$(patientNameENInput).val(patientNameENFormat);
+			});
+			$(tableCell).append($(patientNameENInput));
 			$(tableCell).appendTo($(tableRow));
 			//$(tableRow).appendTo($(table));
 

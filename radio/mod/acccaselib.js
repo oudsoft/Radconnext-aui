@@ -83,7 +83,9 @@ module.exports = function ( jq ) {
 			if (currentCaseRes.current == 2){
 			//if (caseItem.casestatusId == 2) {
 				let newCaseStatus = 8;
-	      let response = await common.doUpdateCaseStatus(caseItem.id, newCaseStatus, 'Radiologist Open accepted case by Web App');
+				let radioName = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
+				let actionRemark = 'รังสีแพทย์ ' + radioName + ' เปิดเคสเพื่ออ่านผลสำเร็จ'
+	      let response = await common.doUpdateCaseStatus(caseItem.id, newCaseStatus, actionRemark);
 				if (response.status.code == 200) {
 		      eventData.statusId = newCaseStatus;
 					eventData.startDownload = 0;
@@ -108,7 +110,7 @@ module.exports = function ( jq ) {
   const doCreateCaseItemRow = function(caseItem, caseTask) {
     return new Promise(async function(resolve, reject) {
 			let caseDate = util.formatDateTimeStr(caseItem.createdAt);
-			let casedatetime = caseDate.split('T');
+			let casedatetime = caseDate.split(' ');
 			let casedateSegment = casedatetime[0].split('-');
 			casedateSegment = casedateSegment.join('');
 			let casedate = util.formatStudyDate(casedateSegment);
@@ -142,8 +144,10 @@ module.exports = function ( jq ) {
       caseColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
 			if (caseItem.casestatusId != 9) {
 	      if ((caseTask) && (caseTask.triggerAt)){
+					let now = new Date();
 	        let caseTriggerAt = new Date(caseTask.triggerAt);
-	        let diffTime = Math.abs(caseTriggerAt - new Date());
+	        //let diffTime = Math.abs(caseTriggerAt - new Date());
+					let diffTime = caseTriggerAt.getTime() - now.getTime();
 	        let hh = parseInt(diffTime/(1000*60*60));
 	        let mn = parseInt((diffTime - (hh*1000*60*60))/(1000*60));
 	        let clockCountdownDiv = $('<div></div>').css({'width': '100%', 'text-align': 'center'});

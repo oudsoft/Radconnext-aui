@@ -230,7 +230,19 @@ module.exports = function ( jq ) {
   			$(menuitemFormTable).append($(fieldRow));
       }
 		}
-    let fieldRow = $('<tr></tr>');
+		if (menuitemData.Qty) {
+    	let fieldRow = $('<tr></tr>');
+			let labelField = $('<td width="40%" align="left">จำนวน <span style="color: red;">*</span></td>').css({'padding': '5px'});
+			let inputField = $('<td width="*" align="left"></td>').css({'padding': '5px'});
+			let inputValue = $('<input type="number" id="Qty" size="10"/>');
+			$(inputValue).val(menuitemData.Qty);
+			$(inputField).append($(inputValue));
+			$(fieldRow).append($(labelField));
+			$(fieldRow).append($(inputField));
+			$(menuitemFormTable).append($(fieldRow));
+		}
+
+		let fieldRow = $('<tr></tr>');
 		let labelField = $('<td width="40%" align="left">กลุ่มเมนู <span style="color: red;">*</span></td>').css({'padding': '5px'});
 		let inputField = $('<td width="*" align="left"></td>').css({'padding': '5px'});
 		let inputValue = $('<select id="GroupId"></select>');
@@ -274,6 +286,7 @@ module.exports = function ( jq ) {
 				}
 			}
 		}
+		menuitemDataForm.Qty = $('#Qty').val();
     menuitemDataForm.menugroupId = $('#GroupId').val();
 		return menuitemDataForm;
   }

@@ -286,7 +286,7 @@ module.exports = function ( jq ) {
   function doCreateCaseItemRow(caseItem) {
     return new Promise(async function(resolve, reject) {
       let caseDate = util.formatDateTimeStr(caseItem.case.createdAt);
-			let casedatetime = caseDate.split('T');
+			let casedatetime = caseDate.split(' ');
       let casedateSegment = casedatetime[0].split('-');
       casedateSegment = casedateSegment.join('');
       let casedate = util.formatStudyDate(casedateSegment);

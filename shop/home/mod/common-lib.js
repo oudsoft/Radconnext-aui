@@ -57,7 +57,7 @@ module.exports = function ( jq ) {
     return Number(num).toLocaleString('en', options);
   }
 
-	function doFormatQtyNumber(num){
+	const doFormatQtyNumber = function(num){
 	  if ((Number(num) === num) && (num % 1 !== 0)) {
 	    return doFormatNumber(num);
 	  } else {

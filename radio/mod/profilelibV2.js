@@ -24,6 +24,7 @@ module.exports = function ( jq ) {
     let activeRow = $('<tr></tr>');
     let lockRow = $('<tr></tr>');
     let offlineRow = $('<tr></tr>');
+		let phoneRetryOptionRow = $('<tr id="PhoneRetryOptionRow"></tr>');
     let commandRow = $('<tr></tr>');
 
     let activeNameCell = $('<td><b>Active</b></td>').css({'padding': '5px', 'vertical-align': 'middle'});
@@ -35,6 +36,9 @@ module.exports = function ( jq ) {
     let offlineNameCell = $('<td><b>Offline</b></td>').css({'padding': '5px', 'vertical-align': 'middle'});
     let offlineControlCell = $('<td id="OfflineControl"></td>');
 
+		let phoneRetryOptionNameCell = $('<td><b>Phone Calling</b></td>').css({'padding': '5px', 'vertical-align': 'middle'});
+    let phoneRetryOptionControlCell = $('<td id="PhoneRetryOptionControl"></td>');
+
     let commandCell = $('<td colspan="2" id="ProfilePageCmd" align="center"></td>');
 
     $(headerRow).append($('<td class="header-cell" width="15%">สถานะ</td>'));
@@ -43,8 +47,9 @@ module.exports = function ( jq ) {
     $(activeRow).append($(activeNameCell)).append($(activeControlCell));
     $(lockRow).append($(lockNameCell)).append($(lockControlCell));
     $(offlineRow).append($(offlineNameCell)).append($(offlineControlCell));
+		$(phoneRetryOptionRow).append($(phoneRetryOptionNameCell)).append($(phoneRetryOptionControlCell));
     $(commandRow).append($(commandCell));
-    return $(blankTable).append(headerRow).append($(activeRow)).append($(lockRow)).append($(offlineRow)).append($(commandRow));
+    return $(blankTable).append(headerRow).append($(activeRow)).append($(lockRow)).append($(offlineRow)).append($(phoneRetryOptionRow)).append($(commandRow));
   }
 
 	const onActionCommonHandle = function(evt) {
@@ -127,31 +132,37 @@ module.exports = function ( jq ) {
 	const manSelectActiveHandle = function(evt){
 		let phoneCallOptionBox = $('#ActiveControl').find('#PhoneCallOptionBox');
 		$(phoneCallOptionBox).hide();
+		doControlPhoneRetryOption();
 	}
 
 	const autoSelectActiveHandle = function(evt){
 		let phoneCallOptionBox = $('#ActiveControl').find('#PhoneCallOptionBox');
 		$(phoneCallOptionBox).show();
+		doControlPhoneRetryOption();
 	}
 
 	const manSelectLockHandle = function(evt){
 		let phoneCallOptionBox = $('#LockControl').find('#PhoneCallOptionBox');
 		$(phoneCallOptionBox).hide();
+		doControlPhoneRetryOption();
 	}
 
 	const autoSelectLockHandle = function(evt){
 		let phoneCallOptionBox = $('#LockControl').find('#PhoneCallOptionBox');
 		$(phoneCallOptionBox).show();
+		doControlPhoneRetryOption();
 	}
 
 	const manSelectOfflineHandle = function(evt){
 		let phoneCallOptionBox = $('#OfflineControl').find('#PhoneCallOptionBox');
 		$(phoneCallOptionBox).hide();
+		doControlPhoneRetryOption();
 	}
 
 	const autoSelectOfflineHandle = function(evt){
 		let phoneCallOptionBox = $('#OfflineControl').find('#PhoneCallOptionBox');
 		$(phoneCallOptionBox).show();
+		doControlPhoneRetryOption();
 	}
 
 	const changePasswordCmdClick = function(evt){
@@ -166,6 +177,22 @@ module.exports = function ( jq ) {
 	const switchLabelStyle = {'position': 'relative', 'top': '10px', 'margin-left': '5px'};
 	const radioLabelStyle = {'position': 'relative', 'top': '-1px', 'margin-left': '15px'};
 	const radioBtnStyle = {'transform': 'scale(2.5)'};
+
+	const doControlPhoneRetryOption = function(){
+		let allState = doCheckAllManAutoCallOption();
+		if ((allState.activeState == 1) && (allState.lockState ==1) && (allState.offlineState ==1)) {
+			$('#PhoneRetryOptionRow').hide();
+		} else {
+			$('#PhoneRetryOptionRow').show();
+		}
+	}
+
+	const doCheckAllManAutoCallOption = function() {
+		let activeState = $('#ActiveControl').find('input[name="ManAutoActiveGroup"]:checked').val();
+		let lockState = $('#LockControl').find('input[name="ManAutoLockGroup"]:checked').val();
+		let offlineState = $('#OfflineControl').find('input[name="ManAutoOfflineGroup"]:checked').val();
+		return {activeState, lockState, offlineState};
+	}
 
 	const doCreateManAutoRadioBox = function(groupName, manCallback, autoCallback){
 		let wrapperBox = $('<div id="ManAutoOptionBox" style="position: relative; display: inline-block; margin-left: 30px; top: 10px;"></div>');
@@ -363,6 +390,45 @@ module.exports = function ( jq ) {
 		return $(wrapperBox).append($(controlElem));
 	}
 
+	const doCreatePhoneRetryOptionControlBox = function(phoneRetry){
+		let wrapperBox = $('<div id="PhoneRetryOptionControlBox" style="position: relative; display: block; top: 10px; padding: 10px;"></div>');
+		let phoneRetryOptionTable = $('<table cellspacing="0" cellpadding="0" border="0" width="100%"></table>');
+		let noActionControlCaseStatusSelect = $('<select id="NoActionControlCaseStatusSelect"></select>');
+		$(noActionControlCaseStatusSelect).append($('<option value="3">ปฏิเสธเคส</option>'));
+		$(noActionControlCaseStatusSelect).append($('<option value="0">ไม่ปฏิเสธเคส</option>'));
+		$(noActionControlCaseStatusSelect).val(phoneRetry.noactioncasestatus);
+		let retrytimeSelect = $('<select id="RetrytimeSelect"></select>');
+		$(retrytimeSelect).append($('<option value="0">ไม่โทรซ้ำ</option>'));
+		$(retrytimeSelect).append($('<option value="1">โทรซ้ำ 1 ครั้ง</option>'));
+		$(retrytimeSelect).append($('<option value="2">โทรซ้ำ 2 ครั้ง</option>'));
+		$(retrytimeSelect).append($('<option value="3">โทรซ้ำ 3 ครั้ง</option>'));
+		$(retrytimeSelect).append($('<option value="4">โทรซ้ำ 4 ครั้ง</option>'));
+		$(retrytimeSelect).append($('<option value="5">โทรซ้ำ 5 ครั้ง</option>'));
+
+		let retrysecondSelect = $('<select id="RetrysecondSelect"></select>').css({'margin-left': '20px', 'display': 'none'});
+		$(retrysecondSelect).append($('<option value="60">ภายใน 1 นาที</option>'));
+		$(retrysecondSelect).append($('<option value="180">ภายใน 3 นาที</option>'));
+		$(retrysecondSelect).append($('<option value="300">ภายใน 5 นาที</option>'));
+		$(retrysecondSelect).append($('<option value="600">ภายใน 10 นาที</option>'));
+		$(retrysecondSelect).append($('<option value="900">ภายใน 15 นาที</option>'));
+
+		$(retrytimeSelect).on('change', (evt)=>{
+			let retrytimeValue = $(retrytimeSelect).val();
+			if (retrytimeValue == 0) {
+				$(retrysecondSelect).hide();
+			} else {
+				$(retrysecondSelect).show();
+			}
+		});
+		$(retrysecondSelect).val(phoneRetry.retrysecond);
+		$(retrytimeSelect).val(phoneRetry.retrytime).change();
+
+		let noactionRow = $('<tr></tr>').css({'height': '50px'}).append($('<td align="left" width="30%">การทำงานเมื่อกดตัดสาย</td>')).append($('<td align="left" width="*"></td>').append($(noActionControlCaseStatusSelect)));
+		let retryRow = $('<tr></tr>').css({'height': '50px'}).append($('<td align="left">การจัดการกรณ๊ไม่ได้รับสาย</td>')).append($('<td align="left"></td>').append($(retrytimeSelect)).append($(retrysecondSelect)));
+		$(phoneRetryOptionTable).append($(noactionRow)).append($(retryRow));
+		return $(wrapperBox).append($(phoneRetryOptionTable));
+	}
+
   const doCreateProfilePage = function(){
     return new Promise(async function(resolve, reject) {
       $('body').loading('start');
@@ -393,7 +459,7 @@ module.exports = function ( jq ) {
 
 				let phoneCallActiveBox = doCreatePhoneCallActiveContolSwitch(myProfile.Profile.activeState.phoneCall, myProfile.Profile.activeState.phoneCallOptions);
 				let manAutoOptionAciveBox = $(phoneCallActiveBox).find('#ManAutoOptionBox');
-				console.log(myProfile.Profile.activeState.phoneCall);
+				//console.log(myProfile.Profile.activeState.phoneCall);
 				if (myProfile.Profile.activeState.phoneCall == 0){
 					$(manAutoOptionAciveBox).hide();
 				} else if (myProfile.Profile.activeState.phoneCall == 1){
@@ -440,6 +506,17 @@ module.exports = function ( jq ) {
 				let autoLogoutControlBox = doCreateAutoLogoutControlBox(myProfile.Profile.offlineState.autoLogout);
 				profileTable.find('#OfflineControl').append($(autoLogoutControlBox));
 
+				let phoneRetry = myProfile.Profile.phoneRetry;
+				if (!phoneRetry){
+					phoneRetry = {
+						retrytime: 2, //0, 1, 2 ,3 ,4, 5
+						retrysecond: 180, //60, 120, 180, 240
+						noactioncasestatus: 3 // ถ้าไม่รับสาย หรือ ปฏิเสธสาย จะให้เคสมีสถานะใด 3=reject
+					}
+				}
+				let phoneRetryOptionControlBox = doCreatePhoneRetryOptionControlBox(phoneRetry)
+				profileTable.find('#PhoneRetryOptionControl').append($(phoneRetryOptionControlBox));
+
 				let cmdBar = doCreatePageCmd(myProfilePage, (ob)=>{doCallSaveMyProfile(ob);});
 				profileTable.find('#ProfilePageCmd').append($(cmdBar));
 
@@ -465,7 +542,6 @@ module.exports = function ( jq ) {
     $(backCmd).appendTo($(cmdBar));
     $(backCmd).on('click', (evt)=>{$('#AcceptedCaseCmd').click()});
     $(saveCmd).on('click', (evt)=>{
-
 			let activeWebNotify = pageHandle.find('#ActiveControl').find('#WebNotifySwitchBox').find('input[type=checkbox]').prop('checked');
 			let activeLineNotify = pageHandle.find('#ActiveControl').find('#LineBotNotifySwitchBox').find('input[type=checkbox]').prop('checked');
 			let activePhoneCall = pageHandle.find('#ActiveControl').find('#PhoneCallSwitchBox').find('input[type=checkbox]').prop('checked');
@@ -495,6 +571,19 @@ module.exports = function ( jq ) {
 			let offlinePhoneCall24HL = pageHandle.find('#OfflineControl').find('#PhoneCallOptionBox').find('#Option24HRLInput').val();
 			let offlinePhoneCall24HU = pageHandle.find('#OfflineControl').find('#PhoneCallOptionBox').find('#Option24HRUInput').val();
 			let offlineAutoLogoutMinut = pageHandle.find('#OfflineControl').find('#AutoLogoutControlBox').find('#AutoLogoutMinuteInput').val();
+
+
+
+			let noactioncasestatus = pageHandle.find('#PhoneRetryOptionControlBox').find('#NoActionControlCaseStatusSelect').val();
+			let retrytime = pageHandle.find('#PhoneRetryOptionControlBox').find('#RetrytimeSelect').val();
+			let retrysecond = pageHandle.find('#PhoneRetryOptionControlBox').find('#RetrysecondSelect').val();
+
+			let phoneRetryOptions = {
+				retrytime: retrytime? retrytime:2,
+				retrysecond: retrysecond? retrysecond:180,
+				noactioncasestatus: noactioncasestatus? noactioncasestatus:3
+			}
+			//console.log(phoneRetryOptions);
 
 			let verifyProfile1 = ((lockAutoLockScreenMinut > -1) && (lockAutoLockScreenMinut < 61));
 			let verifyProfile2 = ((offlineAutoLogoutMinut <= 0) || ((offlineAutoLogoutMinut > 0) && (offlineAutoLogoutMinut > lockAutoLockScreenMinut)));
@@ -549,7 +638,8 @@ module.exports = function ( jq ) {
 								}
 							},
 							autoLogout: offlineAutoLogoutMinut
-						}
+						},
+						phoneRetry: phoneRetryOptions
 					};
 					console.log(profileValue);
 					saveCallBack(profileValue);

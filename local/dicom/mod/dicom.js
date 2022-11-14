@@ -195,6 +195,7 @@ module.exports = function ( jq ) {
 						defualtValue.headerCreateCase = 'ส่งอ่านผล';
 						defualtValue.urgenttype = 'standard';
 						defualtValue.studyTags = dj[i];
+						defualtValue.patientBirthDate  = dj[i].PatientMainDicomTags.PatientBirthDate;
 
  						let no = (i + 1 + startRef);
 						let studyDate = '<span style="float: left;">' + studydate + '</span>';

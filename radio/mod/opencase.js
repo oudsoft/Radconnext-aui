@@ -48,11 +48,13 @@ module.exports = function ( jq ) {
 				pom.setAttribute('download', outputFilename);
 				pom.click();
 				successCallback();
+				util.doResetPingCounter();
 			}
   	});
 	}
 
 	const doDownloadDicom = function(caseDicomZipFilename) {
+		util.doResetPingCounter();
 		let dicomZipLink = '/img/usr/zip/' + caseDicomZipFilename;
 		let pom = document.createElement('a');
 		pom.setAttribute('target', "_blank");
@@ -335,24 +337,32 @@ module.exports = function ( jq ) {
 				};
 
 				if ((params.caseId) && (Number(params.caseId) > 0)) {
-					if (!caseResponseId){
-						//let saveDraftResponseData = {type: 'draft', caseId: caseId};
-						//saveDraftRes = await doSaveDraft(saveDraftResponseData);
-						let saveResponseRes = await doCallSaveResponse(params);
-						caseResponseId = saveResponseRes.result.responseId;
+					if (caseResponseId){
 						params.responseId = caseResponseId;
 					}
-					saveNewResponseData.responseid = caseResponseId;
-					saveNewResponseData.reportPdfLinkPath = '/img/usr/pdf/' + fileName;
-
 					//doCreateResultManagementDialog(saveNewResponseData);
 					//let saveResponseRes = doCallSaveResult(params);
 					//->ตรงนี้คืออะไร
 					//-> ตรงนี้คือการสั่งให้เซิร์ฟเวอร์สร้างผลอ่าน pdf ไว้ก่อนล่วงหน้า
-
+					params.reporttype = 'normal';
 					let saveResponseApiURL = '/api/uicommon/radio/saveresponse';
-					$.post(saveResponseApiURL, params, function(saveResponseRes){
-						doCreateResultManagementDialog(saveNewResponseData);
+					$.post(saveResponseApiURL, params, async function(saveResponseRes){
+						if ((saveResponseRes.result) && (saveResponseRes.result.responseId)) {
+							caseResponseId = saveResponseRes.result.responseId;
+							saveNewResponseData.responseid = caseResponseId;
+							saveNewResponseData.reportPdfLinkPath = '/img/usr/pdf/' + fileName;
+							doCreateResultManagementDialog(saveNewResponseData);
+						} else {
+							let callRes = await doCallDraftRespons(caseId);
+							if (callRes.Record.length > 0) {
+								caseResponseId = callRes.Record[0].id;
+								saveNewResponseData.responseid = caseResponseId;
+								saveNewResponseData.reportPdfLinkPath = '/img/usr/pdf/' + fileName;
+								doCreateResultManagementDialog(saveNewResponseData);
+							} else {
+								console.log({error: 'not found case responseId'});
+							}
+						}
 					}).catch((err) => {
 						console.log(err);
 						$.notify("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ โปรดแจ้งผู้ดูแลระบบ", "error");
@@ -912,7 +922,7 @@ module.exports = function ( jq ) {
 					let backward = backwards[i];
 					let caseCreateAt = util.formatDateTimeStr(backward.createdAt);
 					//console.log(caseCreateAt);
-					let casedatetime = caseCreateAt.split('T');
+					let casedatetime = caseCreateAt.split(' ');
 					let casedateSegment = casedatetime[0].split('-');
 					casedateSegment = casedateSegment.join('');
 					let casedate = casedateSegment;
@@ -998,7 +1008,7 @@ module.exports = function ( jq ) {
 		$(summaryFirstLine).append($('<span style="margin-left: 4px; color: black;">' + selectedCase.case.hospital.Hos_Name + '</span>'));
 
 		let caseCreateAt = util.formatDateTimeStr(selectedCase.case.createdAt);
-		let casedatetime = caseCreateAt.split('T');
+		let casedatetime = caseCreateAt.split(' ');
 		let casedateSegment = casedatetime[0].split('-');
 		casedateSegment = casedateSegment.join('');
 		let casedate = casedateSegment;
@@ -1169,7 +1179,7 @@ module.exports = function ( jq ) {
 			caseId = selectedCase.case.id;
 
 			let caseCreateAt = util.formatDateTimeStr(selectedCase.case.createdAt);
-			let casedatetime = caseCreateAt.split('T');
+			let casedatetime = caseCreateAt.split(' ');
 			let casedateSegment = casedatetime[0].split('-');
 			casedateSegment = casedateSegment.join('');
 			let casedate = casedateSegment;
@@ -1262,6 +1272,7 @@ module.exports = function ( jq ) {
 					let draftbackup = {caseId: caseId, content: responseHTML, backupAt: new Date()};
 					localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
 					keypressCount = 0;
+					util.doResetPingCounter();
 				} else {
 					keypressCount += 1;
 				}

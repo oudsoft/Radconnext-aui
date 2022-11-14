@@ -334,9 +334,11 @@ function doLoadMainPage(){
           util.doResetPingCounter();
           $('body').loading('stop');
         });
+        util.doResetPingCounter();
       });
       $(document).on('opencase', async (evt, caseData)=>{
         onOpenCaseTrigger(caseData);
+        util.doResetPingCounter();
       });
       $(document).on('openprofile', async (evt, data)=>{
         let profileTitlePage = profile.doCreateProfileTitlePage();
@@ -344,6 +346,7 @@ function doLoadMainPage(){
         profile.doCreateProfilePage().then((profilePage)=>{
           $(".mainfull").empty().append($(profilePage));
           common.doScrollTopPage();
+          util.doResetPingCounter();
         }).catch(async (err)=>{
           if (err.error.code == 210){
             let rememberme = localStorage.getItem('rememberme');
@@ -367,6 +370,7 @@ function doLoadMainPage(){
         template.doCreateTemplatePage().then((templatePage)=>{
           $(".mainfull").empty().append($(templatePage));
           common.doScrollTopPage();
+          util.doResetPingCounter();
         }).catch(async (err)=>{
           if (err.error.code == 210){
             let rememberme = localStorage.getItem('rememberme');
@@ -377,6 +381,7 @@ function doLoadMainPage(){
               template.doCreateTemplatePage().then((templatePage)=>{
                 $(".mainfull").empty().append($(templatePage));
                 common.doScrollTopPage();
+                util.doResetPingCounter();
               });
             } else {
               common.doUserLogout(wsm);
@@ -393,44 +398,52 @@ function doLoadMainPage(){
 
       $('.mainfull').bind('paste', (evt)=>{
         common.onSimpleEditorPaste(evt);
+        util.doResetPingCounter();
       });
       $('#quickreply').bind('paste', (evt)=>{
         common.onSimpleEditorPaste(evt);
+        util.doResetPingCounter();
       });
       $(document).on('draftbackupsuccess', async (evt, data)=>{
         //Paste ครั้งแรก ของการเปิด case ให้เซฟทันที
         let backupDraftCounter = opencase.getBackupDraftCounter();
+        //console.log(backupDraftCounter);
         if (backupDraftCounter == 0){
-          let apiUri = undefined;
-          let responseId = opencase.getCaseResponseId();
-    			if (responseId){
-    				apiUri = '/api/caseresponse/update';
-    			} else {
-    				apiUri = '/api/caseresponse/add';
-    			}
-
           let type = 'draft';
-    			let caseId = data.caseId
+          let caseId = data.caseId
+          //console.log(caseId);
           let responseHTML = data.content;
           if (responseHTML) {
-      			let responseText = toAsciidoc(responseHTML);
-      			let userdata = JSON.parse(localStorage.getItem('userdata'));
-      			let userId = userdata.id;
-
-      			let saveData = {Response_HTML: responseHTML, Response_Text: responseText, Response_Type: type};
-      			let params = {caseId: caseId, userId: userId, data: saveData, responseId: responseId};
-
-            $.post(apiUri, params, function(saveRes){
-              opencase.setCaseResponseId(saveRes.result.responseId);
-              opencase.setBackupDraftCounter(backupDraftCounter+1);
-      			}).fail(function(error) {
-      				console.log('1st Paste Backup Error', error);
-      			});
+            let responseText = toAsciidoc(responseHTML);
+            let userdata = JSON.parse(localStorage.getItem('userdata'));
+            let userId = userdata.id;
+            let saveData = {Response_HTML: responseHTML, Response_Text: responseText, Response_Type: type};
+            $.post('/api/caseresponse/select/' + caseId, {}, function(callRes){
+              //console.log(callRes);
+              let apiUri = undefined;
+              let params = undefined;
+              if (callRes.Record.length > 0) {
+                let responseId = callRes.Record[0].id;
+                opencase.setCaseResponseId(responseId);
+                params = {caseId: caseId, userId: userId, data: saveData, responseId: responseId};
+                apiUri = '/api/caseresponse/update';
+              } else {
+                params = {caseId: caseId, userId: userId, data: saveData};
+                apiUri = '/api/caseresponse/add';
+              }
+              $.post(apiUri, params, function(saveRes){
+                //console.log(saveRes);
+                if ((saveRes.result) && (saveRes.result.responseId)) {
+                  opencase.setCaseResponseId(saveRes.result.responseId);
+                }
+                opencase.setBackupDraftCounter(backupDraftCounter+1);
+              }).fail(function(error) {
+                console.log('1st Paste Backup Error', error);
+              });
+            });
           }
         }
       });
-
-      $('body').loading('stop');
     });
   });
 }
@@ -484,6 +497,7 @@ function doLoadDefualtPage(autoSelectPage) {
       }
     });
     */
+    util.doResetPingCounter();
     if (autoSelectPage == 1) {
       if (loadRes.newList.Records.length > 0 ) {
         $('#NewCaseCmd').click();
@@ -624,7 +638,9 @@ function onUnLockScreenTrigger(evt){
 }
 
 function onAutoLogoutTrigger(evt){
-  doLoadLogin();
+  //doLoadLogin();
+  let myWsm = doGetWsm();
+  common.doUserLogout(myWsm);
 }
 
 function onUpdateUserProfileTrigger(evt){

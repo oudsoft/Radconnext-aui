@@ -672,7 +672,7 @@ module.exports = function ( jq ) {
 						    wrtcCommon.doSetupRemoteConn(myRemoteConn);
 								$(startCmd).click();
 								let myInfo = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
-								let callZoomMsg = {type: 'callzoom', sendTo: radioUsername, topic: joinTopic, sender: userdata.username, senderInfo: myInfo, bodyPart: caseBodypart, radioId: radioId};
+								let callZoomMsg = {type: 'callzoom', sendTo: radioUsername, topic: joinTopic, sender: userdata.username, senderInfo: myInfo, bodyPart: caseBodypart, radioId: radioId, hospitalId: userdata.hospitalId};
 								wsm.send(JSON.stringify(callZoomMsg));
 								$.notify('ระบบฯได้ส่งคำขอแจ้งเปิด Viedo Conference ไปยังรังสีแพทย์สำเร็จ โปรดรอให้รังสีแพทย์เตรียมความพร้อม', 'succes');
 							}

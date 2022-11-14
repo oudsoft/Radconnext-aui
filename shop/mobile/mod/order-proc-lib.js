@@ -71,7 +71,7 @@ module.exports = function ( jq ) {
     $(sucOrderSheetBox).empty().append($('<h2>รายการส่ง</h2>'));
 		$('#OrderListBox').remove();
 		let selectDate = orderDate;
-		let newStatuses = [1, 2];
+		let newStatuses = [1, 2, 3, 4];
 		let sucItemStatuses = ['Suc'];
 		let orderListBox = await doCreateOrderList(shopId, sucOrderSheetBox, selectDate, newStatuses, sucItemStatuses);
 		$(sucOrderSheetBox).append($(orderListBox));
@@ -165,7 +165,9 @@ module.exports = function ( jq ) {
 				let cookItems = [];
 				for (let i=0; i < orders.length; i++) {
 					for (let j=0; j < orders[i].Items.length; j ++) {
-						if ((orderStatuses.includes(orders[i].Status)) && (itemStatuses.includes(orders[i].Items[j].ItemStatus))) {
+						console.log((orderStatuses.includes(Number(orders[i].Status))));
+						console.log((itemStatuses.includes(orders[i].Items[j].ItemStatus)));
+						if ((orderStatuses.includes(Number(orders[i].Status))) && (itemStatuses.includes(orders[i].Items[j].ItemStatus))) {
 							let cookItem = {item: {index: j, goodId: orders[i].Items[j].id, name: orders[i].Items[j].MenuName, desc: orders[i].Items[j].Desc, qty: orders[i].Items[j].Qty, price: orders[i].Items[j].Price, unit: orders[i].Items[j].Unit, picture: orders[i].Items[j].MenuPicture, status: orders[i].Items[j].ItemStatus}};
 							cookItem.orderId = orders[i].id;
 							cookItem.index = i;
@@ -200,7 +202,6 @@ module.exports = function ( jq ) {
 					$(orderListBox).append($(notFoundOrderDatbox));
 	        resolve($(orderListBox));
 	      }
-
       });
 		});
 	}
@@ -257,10 +258,27 @@ module.exports = function ( jq ) {
 			}
 		}
 		let cookPropBox = $('body').radalert(cookPropOption);
-		$(cookPropBox.okCmd).hide();
 		let cookPropTable = doRenderCookPropertyTable(cookData);
-		let accrejCmdTable = doRenderAccRejCmd(cookData, cookPropBox, onAccCmdClickEvt, onRejCmdClickEvt);
-		$(propTable).append($(cookPropTable)).append($(accrejCmdTable));
+		if (cookData.item.status == 'New') {
+			$(cookPropBox.okCmd).hide();
+			$(cookPropBox.cancelCmd).show();
+			let accrejCmdTable = doRenderAccRejCmd(cookData, cookPropBox, onAccCmdClickEvt, onRejCmdClickEvt);
+			$(propTable).append($(cookPropTable)).append($(accrejCmdTable));
+		} else if (cookData.item.status == 'Rej') {
+			$(cookPropBox.okCmd).hide();
+			$(cookPropBox.cancelCmd).show();
+			let resetCmdTable = doRenderResetCmd(cookData, cookPropBox, onResetCmdClickEvt);
+			$(propTable).append($(cookPropTable)).append($(resetCmdTable));
+		} else if (cookData.item.status == 'Acc') {
+			$(cookPropBox.okCmd).hide();
+			$(cookPropBox.cancelCmd).show();
+			let deliretCmdTable = doRenderDeliRetCmd(cookData, cookPropBox, onDeliCmdClickEvt, onRetCmdClickEvt);
+			$(propTable).append($(cookPropTable)).append($(deliretCmdTable));
+		} else {
+			$(cookPropBox.okCmd).show();
+			$(cookPropBox.cancelCmd).hide();
+			$(propTable).append($(cookPropTable));
+		}
 	}
 
 	const onAccCmdClickEvt = async function(evt, cookData) {
@@ -275,7 +293,27 @@ module.exports = function ( jq ) {
     let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
 		console.log(menuitemRes);
 		$(tabSheetBoxHandle).find('#NewOrderTab').click();
+	}
 
+	const onResetCmdClickEvt = async function(evt, cookData) {
+		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'New'};
+    let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
+		console.log(menuitemRes);
+		$(tabSheetBoxHandle).find('#NewOrderTab').click();
+	}
+
+	const onDeliCmdClickEvt = async function(evt, cookData) {
+		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'Suc'};
+    let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
+		console.log(menuitemRes);
+		$(tabSheetBoxHandle).find('#SucOrderTab').click();
+	}
+
+	const onRetCmdClickEvt = async function(evt, cookData) {
+		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'New'};
+    let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
+		console.log(menuitemRes);
+		$(tabSheetBoxHandle).find('#NewOrderTab').click();
 	}
 
 	const doRenderCookPropertyTable = function(cookData) {
@@ -317,6 +355,50 @@ module.exports = function ( jq ) {
 		});
 		$(leftCell).append($(rejCmd));
 		$(rightCell).append($(accCmd));
+		$(firstRow).append($(leftCell).attr({'width': '50%', 'align': 'center'})).append($(rightCell).attr({'width': '*', 'align': 'center'}));
+		return $(tableActionCmd).append($(firstRow));
+	}
+
+	const doRenderDeliRetCmd = function(cookData, dialogHandle, deliCallback, retCallback) {
+		let tableActionCmd = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
+		let firstRow = $('<tr></tr>');
+		let leftCell = $('<td></td>');
+		let rightCell = $('<td></td>');
+		let deliCmd = $('<input type="button" value=" ส่งมอบ "/>');
+		$(deliCmd).on('click', (evt)=>{
+			dialogHandle.closeAlert();
+			deliCallback(evt, cookData);
+		});
+		let retCmd = $('<input type="button" value=" ส่งกลับ "/>');
+		$(retCmd).on('click', (evt)=>{
+			dialogHandle.closeAlert();
+			retCallback(evt, cookData);
+		});
+		$(leftCell).append($(retCmd));
+		$(rightCell).append($(deliCmd));
+		$(firstRow).append($(leftCell).attr({'width': '50%', 'align': 'center'})).append($(rightCell).attr({'width': '*', 'align': 'center'}));
+		return $(tableActionCmd).append($(firstRow));
+	}
+
+	const doRenderResetCmd = function(cookData, dialogHandle, resetCallback){
+		let tableActionCmd = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
+		let firstRow = $('<tr></tr>');
+		let leftCell = $('<td></td>');
+		let rightCell = $('<td></td>');
+		let resetCmd = $('<input type="button" value=" ดึงกลับ "/>');
+		$(resetCmd).on('click', (evt)=>{
+			dialogHandle.closeAlert();
+			resetCallback(evt, cookData);
+		});
+		/*
+		let retCmd = $('<input type="button" value=" ส่งกลับ "/>');
+		$(retCmd).on('click', (evt)=>{
+			dialogHandle.closeAlert();
+			retCallback(evt, cookData);
+		});
+		*/
+		$(leftCell).append($('<span></span>'));
+		$(rightCell).append($(resetCmd));
 		$(firstRow).append($(leftCell).attr({'width': '50%', 'align': 'center'})).append($(rightCell).attr({'width': '*', 'align': 'center'}));
 		return $(tableActionCmd).append($(firstRow));
 	}

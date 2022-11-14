@@ -155,7 +155,19 @@ module.exports = function ( jq ) {
       $(customerContent).append($('<h2>ข้อมูลลูกค้า</h2>'));
     }
     if ((orderData) && (orderData.gooditems)) {
-      orderObj.gooditems = orderData.gooditems;
+			if (orderData.BeforeItems) {
+				await orderData.gooditems.forEach(async(srcItem, i) => {
+					let foundItem = await orderData.BeforeItems.find((destItem) => {
+						if (destItem.id === srcItem.id) {
+							return destItem;
+						}
+					});
+					srcItem.ItemStatus = foundItem.ItemStatus;
+				});
+				orderObj.gooditems = orderData.gooditems;
+			} else {
+      	orderObj.gooditems = orderData.gooditems;
+			}
     } else {
       orderObj.gooditems = [];
     }
@@ -190,29 +202,33 @@ module.exports = function ( jq ) {
 		let callCreateCloseOrderCmd = common.doCreateTextCmd(' คิดเงิน ', '#F5500E', 'white', '#5D6D7E', '#FF5733');
 		$(callCreateCloseOrderCmd).on('click', async (evt)=>{
 			if (orderObj.customer) {
-				let params = undefined;
-				let orderRes = undefined;
-				if ((orderData) && (orderData.id)) {
-					params = {data: {Items: orderObj.gooditems, Status: orderObj.Status, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, id: orderData.id};
-					orderRes = await common.doCallApi('/api/shop/order/update', params);
-					if (orderRes.status.code == 200) {
-						$.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
-						doShowCloseOrderDlg();
+				if ((orderObj.gooditems) && (orderObj.gooditems.length > 0)) {
+					let params = undefined;
+					let orderRes = undefined;
+					if ((orderData) && (orderData.id)) {
+						params = {data: {Items: orderObj.gooditems, Status: orderObj.Status, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, id: orderData.id};
+						orderRes = await common.doCallApi('/api/shop/order/update', params);
+						if (orderRes.status.code == 200) {
+							$.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
+							doShowCloseOrderDlg();
+						} else {
+							$.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+						}
 					} else {
-						$.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+						params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopData.id, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
+	          orderRes = await common.doCallApi('/api/shop/order/add', params);
+	          if (orderRes.status.code == 200) {
+	            $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
+							orderObj.id = orderRes.Records[0].id;
+							orderData = orderRes.Records[0];
+							doShowCloseOrderDlg();
+	          } else {
+	            $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+	          }
 					}
 				} else {
-					params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopData.id, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
-          orderRes = await common.doCallApi('/api/shop/order/add', params);
-          if (orderRes.status.code == 200) {
-            $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
-						orderObj.id = orderRes.Records[0].id;
-						orderData = orderRes.Records[0];
-						doShowCloseOrderDlg();
-          } else {
-            $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
-          }
-				}
+	        $.notify("ยังไม่พบรายการสินค้าเพื่อคิดเงิน โปรดใส่รายการสินค้า", "error");
+	      }
 			} else {
         $.notify("โปรดระบุข้อมูลลูกค้าก่อนบันทึกออร์เดอร์", "error");
       }

@@ -202,7 +202,7 @@ module.exports = function ( jq ) {
 							let textCmdCallback = async function(evt){
 								let docParams = {orderId: orders[i].id, shopId: shopId};
 								let docRes = await common.doCallApi('/api/shop/invoice/create/report', docParams);
-								console.log(docRes);
+								//console.log(docRes);
 								if (docRes.status.code == 200) {
 									let report = docRes.result;
 									let reportBox = orderForm.doCreateReportBox(report, 'ใบแจ้งหนี้');

@@ -189,7 +189,7 @@ module.exports = function ( jq ) {
       //let caseTask = await common.doCallApi('/api/tasks/select/'+ caseItem.id, {});
 			if ((caseTask) && (caseTask.triggerAt)){
 				let caseDate = util.formatDateTimeStr(caseItem.createdAt);
-				let casedatetime = caseDate.split('T');
+				let casedatetime = caseDate.split(' ');
 				let casedateSegment = casedatetime[0].split('-');
 				casedateSegment = casedateSegment.join('');
 				let casedate = util.formatStudyDate(casedateSegment);
@@ -216,8 +216,10 @@ module.exports = function ( jq ) {
 
 	      caseColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
 	      //if ((caseTask) && (caseTask.triggerAt)){
+					let now = new Date();
 	        let caseTriggerAt = new Date(caseTask.triggerAt);
-	        let diffTime = Math.abs(caseTriggerAt - new Date());
+	        //let diffTime = Math.abs(caseTriggerAt - new Date());
+					let diffTime = caseTriggerAt.getTime() - now.getTime();
 	        let hh = parseInt(diffTime/(1000*60*60));
 	        let mn = parseInt((diffTime - (hh*1000*60*60))/(1000*60));
 	        let clockCountdownDiv = $('<div></div>').css({'width': '100%', 'text-align': 'center'});;
@@ -284,7 +286,7 @@ module.exports = function ( jq ) {
 		return new Promise(async function(resolve, reject) {
 			let consultTask = await common.doCallApi('/api/consult/tasks/select/'+ consultItem.id, {});
 			let consultDate = util.formatDateTimeStr(consultItem.createdAt);
-			let consultdatetime = consultDate.split('T');
+			let consultdatetime = consultDate.split(' ');
 			let consultdateSegment = consultdatetime[0].split('-');
 			consultdateSegment = consultdateSegment.join('');
 			let consultdate = util.formatStudyDate(consultdateSegment);
@@ -862,7 +864,7 @@ module.exports = function ( jq ) {
 	const doCreateSearchConsultItemRow = function(consultItem){
 		return new Promise(async function(resolve, reject) {
 			let consultDate = util.formatDateTimeStr(consultItem.createdAt);
-			let consultdatetime = consultDate.split('T');
+			let consultdatetime = consultDate.split(' ');
 			let consultdateSegment = consultdatetime[0].split('-');
 			consultdateSegment = consultdateSegment.join('');
 			let consultdate = util.formatStudyDate(consultdateSegment);
