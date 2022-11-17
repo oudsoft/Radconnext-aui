@@ -97,10 +97,11 @@ module.exports = function ( jq ) {
     }
   }
 
-  function doControlShowCustomUrget(tableWrapper, ugValue, defualtValue, ugentId) {
-		common.doCallSelectUrgentType(ugValue).then((ugtypeRes)=>{
-			let ugentId = ugtypeRes.Records[0].id;
-			let acceptStep = JSON.parse(ugtypeRes.Records[0].UGType_AcceptStep);
+  function doControlShowCustomUrget(tableWrapper, ugdata, defualtValue, ugentId) {
+		//common.doCallSelectUrgentType(ugValue).then((ugtypeRes)=>{
+			//let ugentId = ugtypeRes.Records[0].id;
+			//let acceptStep = JSON.parse(ugtypeRes.Records[0].UGType_AcceptStep);
+			let acceptStep = ugdata.UGType_AcceptStep;
 			let acceptText = common.doDisplayCustomUrgentResult(acceptStep.dd, acceptStep.hh, acceptStep.mn, defualtValue.createdAt);
 
 			let workingStepFrom = (acceptStep.dd * 24 * 60 * 60 * 1000) + (acceptStep.hh * 60 * 60 * 1000) + (acceptStep.mn * 60 * 1000);
@@ -117,7 +118,8 @@ module.exports = function ( jq ) {
 
 			let wkFromDateTime = new Date(y, m, d, h, mn);
 
-			let workingStep = JSON.parse(ugtypeRes.Records[0].UGType_WorkingStep);
+			//let workingStep = JSON.parse(ugtypeRes.Records[0].UGType_WorkingStep);
+			let workingStep = ugdata.UGType_WorkingStep;
 			let workingText = common.doDisplayCustomUrgentResult(workingStep.dd, workingStep.hh, workingStep.mn, wkFromDateTime);
 			let ugData = {Accept: acceptStep, Working: workingStep};
 			$('#CustomUrgentPlugin').empty();
@@ -145,7 +147,7 @@ module.exports = function ( jq ) {
 					$(tableWrapper).find('#Urgenttype').prop('disabled', true);
 				}
 			}
-		});
+		//});
 	}
 
 	function doOpenCustomUrgentPopup(tableWrapper, mode, defualtValue, ugentId, urgentData) {
@@ -236,7 +238,7 @@ module.exports = function ( jq ) {
 						scanpartItem.push(thisScanPart);
 					}
 					setTimeout(()=>{
-	          resolve2($(scanpartItem));
+	          resolve2(scanpartItem);
 	        }, 500);
 				});
 				Promise.all([promiseList]).then((ob)=>{
@@ -300,7 +302,6 @@ module.exports = function ( jq ) {
 		let rqParams = {};
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		let options = JSON.parse(localStorage.getItem('caseoptions'));
-
 		/*
 		let hospitalId = userdata.hospitalId;
 		let apiUrl = '/api/cases/options/' + hospitalId;
@@ -603,6 +604,7 @@ module.exports = function ( jq ) {
 						if ($(nextTable).prop('id')) {
 							$(nextTable).show();
 						} else {
+							//console.log(scanparts);
 							doCreateNewCaseSecondStep(defualtValue, options, scanparts);
 						}
 					}
@@ -792,25 +794,44 @@ module.exports = function ( jq ) {
     tableCell = $('<div style="display: table-cell;">ประเภทความเร่งด่วน</div>');
     $(tableCell).appendTo($(tableRow));
 
-    if (defualtValue.urgenttype === 'standard') {
-      tableCell = $('<div style="display: table-cell; padding: 5px;"><select id="Urgenttype"></select></div>');
-      options.urgents.forEach((item) => {
-        $(tableCell).find('#Urgenttype').append($('<option value="' + item.Value + '">' + item.DisplayText + '</option>'));
-      });
-      $(tableCell).find('#Urgenttype').append($('<option value="-1">กำหนดเวลารับผลอ่าน</option>'));
+		console.log(options);
+		console.log(scanparts);
 
-      $(tableCell).find('#Urgenttype').on('change', (evt) => {
-        let ugValue = $(tableWrapper).find('#Urgenttype').val();
+		let caseUrgentType = await common.doArrangeNewUrgent(scanparts, options.sumass);
+
+		console.log(caseUrgentType);
+
+    if (defualtValue.urgenttype === 'standard') {
+			let ugTypeSelector = $('<select id="Urgenttype"></select>');
+      tableCell = $('<div style="display: table-cell; padding: 5px;"></div>').append($(ugTypeSelector));
+			$(ugTypeSelector).append($('<option value="0">ระบุประเภทความเร่งด่วน</option>'));
+      //options.urgents.forEach((item) => {
+			let newUrgentTypes = caseUrgentType.newUrgentTypes;
+			newUrgentTypes.forEach((item) => {
+        //$(tableCell).find('#Urgenttype').append($('<option value="' + item.Value + '">' + item.DisplayText + '</option>'));
+				let newOption = $('<option value="' + item.id + '">' + item.UGType_Name + '</option>');
+				$(newOption).data('ugdata', item);
+				$(ugTypeSelector).append($(newOption));
+      });
+      //$(tableCell).find('#Urgenttype').append($('<option value="-1">กำหนดเวลารับผลอ่าน</option>'));
+			$(ugTypeSelector).append($('<option value="-1">กำหนดเวลารับผลอ่าน</option>'));
+
+      //$(tableCell).find('#Urgenttype').on('change', (evt) => {
+			$(ugTypeSelector).on('change', (evt) => {
+				var ugdata = $(ugTypeSelector).find(":selected").data('ugdata');
+				console.log(ugdata);
+        let ugValue = $(ugTypeSelector).find(":selected").val();
+				console.log(ugValue);
         if (!ugValue) {
           ugValue = $(tableCell).find('#Urgenttype').val();
         }
         if (ugValue == -1) {
           let eventData = {name: 'usecustomurgent'};
-          $(tableWrapper).find('#Urgenttype').trigger('usecustomurgent', [eventData]);
+          $(ugTypeSelector).trigger('usecustomurgent', [eventData]);
         } else {
           if (ugValue > 0) {
             let ugentId = ugValue;
-            doControlShowCustomUrget(tableWrapper, ugValue, defualtValue, ugentId)
+            doControlShowCustomUrget(tableWrapper, ugdata, defualtValue, ugentId)
             if (defualtValue.urgenttype === 'custom') {
               $('#Urgenttype').remove();
             }
@@ -818,18 +839,28 @@ module.exports = function ( jq ) {
         }
       });
 
-      if ((defualtValue.urgent) && (defualtValue.urgent > 0)) {
-        $(tableCell).find('#Urgenttype').val(defualtValue.urgent);
-        $(tableCell).find('#Urgenttype').change();
-      } else {
-        $(tableCell).find('#Urgenttype').prepend($('<option value="0">ระบุประเภทความเร่งด่วน</option>'));
-        $(tableCell).find('#Urgenttype').val(0);
-      }
+      //if ((defualtValue.urgent) && (defualtValue.urgent > 0)) {
+			console.log(caseUrgentType.meshUrgentTypes);
+			setTimeout(()=>{
+				if ((caseUrgentType.meshUrgentTypes) && (caseUrgentType.meshUrgentTypes.length > 0)) {
+					let ugSelected = caseUrgentType.meshUrgentTypes[0].sumaseId;
+	        //$(tableCell).find('#Urgenttype').val(defualtValue.urgent);
+					$(ugTypeSelector).val(ugSelected).change();
+	      } else {
+	        //$(tableCell).find('#Urgenttype').prepend($('<option value="0">ระบุประเภทความเร่งด่วน</option>'));
+	        //$(tableCell).find('#Urgenttype').val(0);
+					$(ugTypeSelector).val(0);
+	      }
+			}, 400);
     } else if (defualtValue.urgenttype === 'custom') {
       tableCell = $('<div style="display: table-cell; padding: 5px;"></div>');
       let ugValue = defualtValue.urgent;
-      let ugentId = ugValue;
-      doControlShowCustomUrget(tableWrapper, ugValue, defualtValue, ugentId);
+			let ugtypeRes = common.doCallSelectUrgentType(ugValue);
+			let ugentId = ugtypeRes.Records[0].id;
+			let acceptStep = JSON.parse(ugtypeRes.Records[0].UGType_AcceptStep);
+			let workingStep = JSON.parse(ugtypeRes.Records[0].UGType_WorkingStep);
+			let ugdata = {UGType_AcceptStep: acceptStep, UGType_WorkingStep: workingStep};
+      doControlShowCustomUrget(tableWrapper, ugdata, defualtValue, ugentId);
     }
 
     $('<div id="CustomUrgentPlugin"></div>').appendTo($(tableCell));

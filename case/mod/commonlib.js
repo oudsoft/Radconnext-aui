@@ -1311,6 +1311,91 @@ module.exports = function ( jq ) {
     });
   }
 
+	const doFilterMajorType = function(masters, majorType) {
+		return new Promise(async function(resolve, reject) {
+			let result = await masters.filter((item) => {
+				if (item.MajorType == majorType) {
+					return item;
+				}
+			});
+			resolve(result);
+		})
+	}
+
+	const doFindMemberInMains = function(mains, members) {
+		return new Promise(function(resolve, reject) {
+			let	promiseList = new Promise(async function(resolve2, reject2){
+				for (let i = 0; i < members.length; i++) {
+					let memberItem = members[i];
+					let result = await mains.filter((item)=>{
+						if (item.id == memberItem.id) {
+							return item;
+						}
+					});
+					if (result.length == 0) {
+						mains.push(memberItem);
+					}
+				}
+				setTimeout(()=>{
+          resolve2(mains);
+        }, 100);
+			});
+			Promise.all([promiseList]).then((ob)=>{
+				resolve(ob[0]);
+			});
+		});
+	}
+
+	const doSelectUrgentMesh = function(scanparts) {
+		return new Promise(function(resolve, reject) {
+			if (scanparts.length == 1) {
+				resolve(scanparts[0]);
+			} else {
+				let lastTTMinus = 0;
+				let mesh = undefined;
+				let	promiseList = new Promise(async function(resolve2, reject2){
+					for (let i=0; i < scanparts.length; i++) {
+						let workingStep = scanparts[i].UGType_WorkingStep;
+						let workingStepMinus = Number(workingStep.mn) + (Number(workingStep.hh) * 60) + (Number(workingStep.dd) * 60 * 24);
+						if (workingStepMinus > lastTTMinus) {
+							lastTTMinus = workingStepMinus;
+							mesh = scanparts[i];
+						}
+					}
+					setTimeout(()=>{
+						resolve2(mesh);
+					}, 100);
+				});
+				Promise.all([promiseList]).then((ob)=>{
+					resolve(ob[0]);
+				});
+			}
+		});
+	}
+
+	const doArrangeNewUrgent = function(scanparts, sumass) {
+		return new Promise(function(resolve, reject) {
+			let newUrgentTypes = [];
+			let meshUrgentTypes = [];
+			let	promiseList = new Promise(async function(resolve2, reject2){
+				for (let i = 0; i < scanparts.length; i++) {
+					let majorType = scanparts[i].MajorType;
+					let majors = await doFilterMajorType(sumass, majorType);
+					newUrgentTypes = await doFindMemberInMains(newUrgentTypes, majors);
+					meshUrgentTypes.push(scanparts[i]);
+				}
+				setTimeout(async()=>{
+					let mesh = await doSelectUrgentMesh(meshUrgentTypes);
+					meshUrgentTypes = [mesh];
+					resolve2({newUrgentTypes, meshUrgentTypes});
+				}, 100);
+			});
+			Promise.all([promiseList]).then((ob)=>{
+				resolve(ob[0]);
+			});
+		});
+	}
+
   return {
 		/* Constant share */
 		caseReadWaitStatus,
@@ -1386,6 +1471,10 @@ module.exports = function ( jq ) {
 		doCheckOutTime,
 		doCallPriceChart,
 		doCreateOpenCaseData,
-		doAddNotifyCustomStyle
+		doAddNotifyCustomStyle,
+		doFilterMajorType,
+		doFindMemberInMains,
+		doSelectUrgentMesh,
+		doArrangeNewUrgent
 	}
 }

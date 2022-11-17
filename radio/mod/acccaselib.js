@@ -274,6 +274,8 @@ module.exports = function ( jq ) {
 	      let caseHearder = doCreateHeaderRow();
 	      $(myAccCaseView).append($(caseHearder));
 	      let caseLists = myAccCase.Records;
+				console.log(caseLists);
+				console.log(myTaksCase);
 	      if (caseLists.length > 0) {
 	        for (let i=0; i < caseLists.length; i++) {
 	          let caseItem = caseLists[i];
