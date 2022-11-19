@@ -41,6 +41,7 @@ module.exports = function ( jq ) {
       let userItemPerPage = userDefualtSetting.itemperpage;
   		let queryString = localStorage.getItem('dicomfilter');
       let localOrthancRes = await common.doCallLocalApi('/api/orthanc/study/list/lastmonth', {});
+			//let localOrthancRes = await common.doCallLocalApi('/api/orthanc/study/list/today', {});
 
       if (localOrthancRes.status.code == 200) {
         doCreateDicomListTitlePage(queryString);

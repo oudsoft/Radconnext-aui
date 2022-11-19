@@ -135,6 +135,11 @@ module.exports = function ( jq, wsm ) {
 			let eventName = 'triggerrezip';
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: {studyID: data.studyID, dicomZipFilename: data.dicomZipFilename}}});
 			document.dispatchEvent(event);
+		} else if (data.type == 'caseeventlog') {
+			let eventName = 'caseeventlog';
+			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.data}});
+			document.dispatchEvent(event);
+
     } else {
 			console.log('Nothing Else');
 		}

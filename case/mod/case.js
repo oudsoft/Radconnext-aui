@@ -391,8 +391,18 @@ module.exports = function ( jq ) {
 			$(itemColumn).append(caseRADI);
 			$(itemColumn).appendTo($(itemRow));
 
+			let caseEventLog = $('<span id="CaseStatusName"></span>');
+			$(caseEventLog).css({'cursor': 'pointer'});
+			$(caseEventLog).text(caseSTAT)
+			$(caseEventLog).on('caseeventlog', (evt)=>{
+				let logData = evt.detail.data;
+				console.log(logData);
+			});
+			$(caseEventLog).on('click', (evt)=>{
+				doOpenCaseEventLog(caseItem.case.id);
+			});
 			itemColumn = $('<div style="display: table-cell; text-align: left; vertical-align: middle;"></div>');
-			$(itemColumn).append($('<span id="CaseStatusName">' + caseSTAT + '</span>'));
+			$(itemColumn).append($(caseEventLog));
 			$(itemColumn).appendTo($(itemRow));
 
 			let caseCMD = doCreateCaseItemCommand(itemRow, caseItem);

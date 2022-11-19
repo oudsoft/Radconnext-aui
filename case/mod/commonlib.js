@@ -1346,7 +1346,7 @@ module.exports = function ( jq ) {
 		});
 	}
 
-	const doSelectUrgentMesh = function(scanparts) {
+	const doSelectUrgentMesh = function(scanparts, sumass) {
 		return new Promise(function(resolve, reject) {
 			if (scanparts.length == 1) {
 				resolve(scanparts[0]);
@@ -1355,11 +1355,20 @@ module.exports = function ( jq ) {
 				let mesh = undefined;
 				let	promiseList = new Promise(async function(resolve2, reject2){
 					for (let i=0; i < scanparts.length; i++) {
-						let workingStep = scanparts[i].UGType_WorkingStep;
-						let workingStepMinus = Number(workingStep.mn) + (Number(workingStep.hh) * 60) + (Number(workingStep.dd) * 60 * 24);
-						if (workingStepMinus > lastTTMinus) {
-							lastTTMinus = workingStepMinus;
-							mesh = scanparts[i];
+						let sumas = await sumass.find((item)=>{
+							if (item.id == scanparts[i].sumaseId) {
+								return item;
+							}
+						});
+						if (sumas) {
+							let workingStep = sumas.UGType_WorkingStep;
+							let workingStepMinus = Number(workingStep.mn) + (Number(workingStep.hh) * 60) + (Number(workingStep.dd) * 60 * 24);
+							if (workingStepMinus > lastTTMinus) {
+								lastTTMinus = workingStepMinus;
+								mesh = scanparts[i];
+							}
+						} else {
+							mesh = scanparts[0];
 						}
 					}
 					setTimeout(()=>{
@@ -1385,7 +1394,7 @@ module.exports = function ( jq ) {
 					meshUrgentTypes.push(scanparts[i]);
 				}
 				setTimeout(async()=>{
-					let mesh = await doSelectUrgentMesh(meshUrgentTypes);
+					let mesh = await doSelectUrgentMesh(meshUrgentTypes, sumass);
 					meshUrgentTypes = [mesh];
 					resolve2({newUrgentTypes, meshUrgentTypes});
 				}, 100);

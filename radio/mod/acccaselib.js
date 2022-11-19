@@ -145,11 +145,16 @@ module.exports = function ( jq ) {
 			if (caseItem.casestatusId != 9) {
 	      if ((caseTask) && (caseTask.triggerAt)){
 					let now = new Date();
+					console.log(now);
+					console.log(caseTask.triggerAt);
 	        let caseTriggerAt = new Date(caseTask.triggerAt);
-	        //let diffTime = Math.abs(caseTriggerAt - new Date());
+					//caseTriggerAt.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' });
+					caseTriggerAt = new Date(caseTriggerAt.getTime() + (3600000 * 1));
+	        console.log(caseTriggerAt);
 					let diffTime = caseTriggerAt.getTime() - now.getTime();
 	        let hh = parseInt(diffTime/(1000*60*60));
 	        let mn = parseInt((diffTime - (hh*1000*60*60))/(1000*60));
+					console.log(hh, mn);
 	        let clockCountdownDiv = $('<div></div>').css({'width': '100%', 'text-align': 'center'});
 	        $(clockCountdownDiv).countdownclock({countToHH: hh, countToMN: mn});
 	        $(caseColumn).append($(clockCountdownDiv));
@@ -268,17 +273,15 @@ module.exports = function ( jq ) {
       $('body').loading('start');
       let myAccCase = await doCallMyAccCase();
 			let myTaksCase = await doCallMyTasksCase();
-			//console.log(myTaksCase);
 			if (myAccCase.status.code == 200){
 	      let myAccCaseView = $('<div style="display: table; width: 100%; border-collapse: collapse;"></div>');
 	      let caseHearder = doCreateHeaderRow();
 	      $(myAccCaseView).append($(caseHearder));
 	      let caseLists = myAccCase.Records;
-				console.log(caseLists);
-				console.log(myTaksCase);
 	      if (caseLists.length > 0) {
 	        for (let i=0; i < caseLists.length; i++) {
 	          let caseItem = caseLists[i];
+						console.log(myTaksCase);
 						let task = await doFindTaksOfCase(myTaksCase.Records, caseItem.id);
 		        let caseRow = await doCreateCaseItemRow(caseItem, task);
 						if (caseRow){
