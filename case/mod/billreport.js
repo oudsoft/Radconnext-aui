@@ -556,7 +556,8 @@ module.exports = function ( jq ) {
 
 						let fmtScanDateTime = strToDateTime(item.scanDate, item.scanTime);
 						let scanDateTime = new Date(fmtScanDateTime);
-						let urgentType = JSON.parse(item.urgenttype.UGType_WorkingStep);
+						//let urgentType = JSON.parse(item.urgenttype.UGType_WorkingStep);
+						let urgentType = item.urgenttype.UGType_WorkingStep;
 						let urgentShiftTimeVal = (Number(urgentType.dd)* 24*60*60*1000) + (Number(urgentType.hh)*60*60*1000) + (Number(urgentType.mn)*60*1000);
 						let urgentTime = undefined;
 						if (cutoffTimeSelected == 1) {

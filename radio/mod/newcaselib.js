@@ -142,11 +142,12 @@ module.exports = function ( jq ) {
 
   function doCreateCaseItemCommand(caseItem) {
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
+		let radioFullName = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
     let caseCmdBox = $('<div style="text-align: center; padding: 4px; width: 100%;"></div>');
     let acceptCmd = $('<div>Accept</div>');
     $(acceptCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'green', 'color': 'white'});
     $(acceptCmd).on('click', async (evt)=>{
-      let response = await common.doUpdateCaseStatus(caseItem.id, 2, 'Radiologist Accept case by Web App');
+      let response = await common.doUpdateCaseStatus(caseItem.id, 2, 'รังสีแพทย์ ' + radioFullName + ' ตอบรับเคสทางเว็บ');
 			if (response.status.code == 200) {
 				/*
 				let newDicomZipSync = {caseId: caseItem.id, studyID: caseItem.Case_OrthancStudyID};
@@ -171,7 +172,7 @@ module.exports = function ( jq ) {
     let notAacceptCmd = $('<div>Reject</div>');
     $(notAacceptCmd).css({'display': 'inline-block', 'margin': '3px', 'padding': '1px 5px', 'border-radius': '12px', 'cursor': 'pointer', 'background-color' : 'red', 'color': 'white'});
     $(notAacceptCmd).on('click', async (evt)=>{
-      let response = await common.doUpdateCaseStatus(caseItem.id, 3, 'Radiologist Reject case by Web App')
+      let response = await common.doUpdateCaseStatus(caseItem.id, 3, 'รังสีแพทย์ ' + radioFullName + ' ปฏิเสธเคสทางเว็บ');
 			if (response.status.code == 200) {
 				$.notify('ปฏิเสธเคสสำเร็จ', 'success');
 				$('#NewCaseCmd').click();
@@ -184,9 +185,9 @@ module.exports = function ( jq ) {
     return $(caseCmdBox);
   }
 
-  const doCreateCaseItemRow = function(caseItem, caseTask) {
+  const doCreateCaseItemRow = function(incident, caseTask) {
     return new Promise(async function(resolve, reject) {
-      //let caseTask = await common.doCallApi('/api/tasks/select/'+ caseItem.id, {});
+			let caseItem = incident.case;
 			if ((caseTask) && (caseTask.triggerAt)){
 				let caseDate = util.formatDateTimeStr(caseItem.createdAt);
 				let casedatetime = caseDate.split(' ');
@@ -203,7 +204,8 @@ module.exports = function ( jq ) {
 				if ((caseScanparts) && (caseScanparts.length > 0)) {
 					yourSelectScanpartContent = await common.doRenderScanpartSelectedAbs(caseScanparts);
 				}
-				let caseUG = caseItem.urgenttype.UGType_Name;
+				//let caseUG = caseItem.urgenttype.UGType_Name;
+				let caseUG = caseItem.sumase.UGType_Name;
 	      let caseHosName = caseItem.hospital.Hos_Name;
 
 				let caseCMD = doCreateCaseItemCommand(caseItem);
@@ -451,7 +453,7 @@ module.exports = function ( jq ) {
 	const doFindTaksOfCase = function(tasks, caseId){
 		return new Promise(async function(resolve, reject) {
 			let task = await tasks.find((item)=>{
-				if (item.caseId == caseId) return item;
+				if (Number(item.caseId) === Number(caseId)) return item;
 			});
 			resolve(task);
 		});
@@ -492,7 +494,7 @@ module.exports = function ( jq ) {
 		      $(myNewCaseView).append($(caseHeader));
 	        for (let i=0; i < caseLists.length; i++) {
 	          let caseItem = caseLists[i];
-						let task = await doFindTaksOfCase(myTasks.Records, caseItem.id);
+						let task = await doFindTaksOfCase(myTasks.Records, caseItem.case.id);
 	          let caseRow = await doCreateCaseItemRow(caseItem, task);
 						if (caseRow){
 	          	$(myNewCaseView).append($(caseRow));

@@ -62,6 +62,7 @@ module.exports = function ( jq ) {
   }
 
   const doCreateCaseItemCommand = function (caseItem) {
+		//let caseItem = incident.case;
     let userdata = JSON.parse(localStorage.getItem('userdata'));
     let caseCmdBox = $('<div style="text-align: center; padding: 4px;"></div>');
 		let openCmdText = undefined;
@@ -81,10 +82,9 @@ module.exports = function ( jq ) {
 			let eventData = common.doCreateOpenCaseData(caseItem);
 			let currentCaseRes = await common.doGetApi('/api/cases/status/' + caseItem.id, {});
 			if (currentCaseRes.current == 2){
-			//if (caseItem.casestatusId == 2) {
 				let newCaseStatus = 8;
 				let radioName = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
-				let actionRemark = 'รังสีแพทย์ ' + radioName + ' เปิดเคสเพื่ออ่านผลสำเร็จ'
+				let actionRemark = 'รังสีแพทย์ ' + radioName + ' เปิดเคสสำเร็จ'
 	      let response = await common.doUpdateCaseStatus(caseItem.id, newCaseStatus, actionRemark);
 				if (response.status.code == 200) {
 		      eventData.statusId = newCaseStatus;
@@ -93,6 +93,12 @@ module.exports = function ( jq ) {
 				} else {
 					$.notify('เกิดข้อผิดพลาด ไม่สามารถอัพเดทสถานะเคสได้ในขณะนี้', 'error');
 				}
+				/*
+				let newCaseStatus = 8;
+				eventData.statusId = newCaseStatus;
+				eventData.startDownload = 0;
+				$(openCmd).trigger('opencase', [eventData]);
+				*/
 			} else if ((currentCaseRes.current == 8) || (currentCaseRes.current == 9) || (currentCaseRes.current == 14)){
 				eventData.statusId = caseItem.casestatusId;
 				eventData.startDownload = 0;
@@ -107,8 +113,9 @@ module.exports = function ( jq ) {
     return $(caseCmdBox);
   }
 
-  const doCreateCaseItemRow = function(caseItem, caseTask) {
+  const doCreateCaseItemRow = function(incident, caseTask) {
     return new Promise(async function(resolve, reject) {
+			let caseItem = incident.case;
 			let caseDate = util.formatDateTimeStr(caseItem.createdAt);
 			let casedatetime = caseDate.split(' ');
 			let casedateSegment = casedatetime[0].split('-');
@@ -123,7 +130,8 @@ module.exports = function ( jq ) {
 			if ((caseScanparts) && (caseScanparts.length > 0)) {
 				yourSelectScanpartContent = await common.doRenderScanpartSelectedAbs(caseScanparts);
 			}
-			let caseUG = caseItem.urgenttype.UGType_Name;
+			//let caseUG = caseItem.urgenttype.UGType_Name;
+			let caseUG = caseItem.sumase.UGType_Name;
       let caseHosName = caseItem.hospital.Hos_Name;
       let caseSTA = caseItem.casestatus.CS_Name_EN;
 
@@ -259,7 +267,7 @@ module.exports = function ( jq ) {
 		return new Promise(async function(resolve, reject) {
 			if ((tasks) && (tasks.length > 0)){
 				let task = await tasks.find((item)=>{
-					if (item.caseId == caseId) return item;
+					if (Number(item.caseId) === Number(caseId)) return item;
 				});
 				resolve(task);
 			} else {
@@ -281,8 +289,8 @@ module.exports = function ( jq ) {
 	      if (caseLists.length > 0) {
 	        for (let i=0; i < caseLists.length; i++) {
 	          let caseItem = caseLists[i];
-						console.log(myTaksCase);
-						let task = await doFindTaksOfCase(myTaksCase.Records, caseItem.id);
+						//console.log(myTaksCase);
+						let task = await doFindTaksOfCase(myTaksCase.Records, caseItem.case.id);
 		        let caseRow = await doCreateCaseItemRow(caseItem, task);
 						if (caseRow){
 	          	$(myAccCaseView).append($(caseRow));

@@ -31,7 +31,7 @@ module.exports = function ( jq ) {
 				let response = await common.doCallApi('/api/cases/filter/hospital', rqParams);
 				if (response.status.code === 200) {
 					if (response.Records.length > 0) {
-						console.log(response.Records);
+						//console.log(response.Records);
 						let rwTable = await doShowCaseList(response.Records);
 						$(".mainfull").empty().append($(rwTable));
 						casecounter.doSetupCounter();
@@ -392,18 +392,18 @@ module.exports = function ( jq ) {
 			$(itemColumn).appendTo($(itemRow));
 
 			let caseEventLog = $('<span id="CaseStatusName"></span>');
-			$(caseEventLog).css({'cursor': 'pointer'});
 			$(caseEventLog).text(caseSTAT)
 			$(caseEventLog).on('caseeventlog', (evt)=>{
 				let logData = evt.detail.data;
 				console.log(logData);
 			});
-			$(caseEventLog).on('click', (evt)=>{
-				doOpenCaseEventLog(caseItem.case.id);
-			});
 			itemColumn = $('<div style="display: table-cell; text-align: left; vertical-align: middle;"></div>');
 			$(itemColumn).append($(caseEventLog));
+			$(itemColumn).css({'cursor': 'pointer'});
 			$(itemColumn).appendTo($(itemRow));
+			$(itemColumn).on('click', (evt)=>{
+				doOpenCaseEventLog(caseItem.case.id);
+			});
 
 			let caseCMD = doCreateCaseItemCommand(itemRow, caseItem);
 
@@ -445,12 +445,13 @@ module.exports = function ( jq ) {
 			let myTasks = await common.doCallMyUserTasksCase();
 			let userdata = JSON.parse(localStorage.getItem('userdata'));
 			let rowStyleClass = {/*"font-family": "THSarabunNew", "font-size": "22px"*/};
-			let rwTable = $('<table width="100%" cellpadding="5" cellspacing="0"></table>');
+			let rwTable = $('<table id="CaseTable" width="100%" cellpadding="5" cellspacing="0"></table>');
 			let headRow = $('<tr class="table-header-row"></tr>');
 			$(headRow).css(rowStyleClass);
-			let headColumns = $('<td width="15%" align="center">เวลาที่ส่งอ่าน</td><td width="10%" align="center">ชื่อ</td><td width="5%" align="center">เพศ/อายุ</td><td width="8%" align="center">HN</td><td width="5%" align="center">Mod.</td><td width="15%" align="center">Scan Part</td><td width="10%" align="center">ประเภทความด่วน</td><td width="10%" align="center">แพทย์ผู้ส่ง</td><td width="10%" align="center">รังสีแพทย์</td><td width="10%" align="center">สถานะเคส</td><td width="*" align="center">คำสั่ง</td>');
+			let headColumns = $('<td width="10%" align="center">เวลาที่ส่งอ่าน</td><td width="10%" align="center">ชื่อ</td><td width="5%" align="center">เพศ/อายุ</td><td width="8%" align="center">HN</td><td width="5%" align="center">Mod.</td><td width="12%" align="center">Scan Part</td><td width="10%" align="center">ประเภทความด่วน</td><td width="10%" align="center">แพทย์ผู้ส่ง</td><td width="10%" align="center">รังสีแพทย์</td><td width="18%" align="center">สถานะเคส</td><td width="*" align="center">คำสั่ง</td>');
 			$(rwTable).append($(headRow));
 			$(headRow).append($(headColumns));
+			console.log(incidents);
 			for (let i=0; i < incidents.length; i++) {
 				let dataRow = $('<tr class="case-row"></tr>');
 				$(dataRow).css(rowStyleClass);
@@ -466,6 +467,18 @@ module.exports = function ( jq ) {
 				if ((caseScanparts) && (caseScanparts.length > 0)) {
 					yourSelectScanpartContent = await common.doRenderScanpartSelectedAbs(caseScanparts);
 				}
+
+				let caseStatusBox = $('<div class="case-status-cell">'+ incidents[i].case.casestatus.CS_Name_EN + '</div>');
+				//$(caseStatusBox).css({'cursor': 'pointer', 'background-color': '#28B463'});
+				$(caseStatusBox).data('caseData', incidents[i]);
+				$(caseStatusBox).on('click', (evt)=>{
+					doOpenCaseEventLog(incidents[i].case.id);
+				});
+
+				$(caseStatusBox).on('caseeventlog', (evt, data)=>{
+					doActionCaseEventLog(caseStatusBox, data);
+				});
+
 				//$(dataRow).append($('<td align="center"><div class="tooltip">'+ casedate + '<span class="tooltiptext">' + casetime + '</span></div></td>'));
 				$(dataRow).append($('<td align="center">' + casedate + ' : ' + casetime + '</td>'));
 				$(dataRow).append($('<td align="center"><div class="tooltip">'+ incidents[i].case.patient.Patient_NameEN + ' ' + incidents[i].case.patient.Patient_LastNameEN + '<span class="tooltiptext">' + incidents[i].case.patient.Patient_NameTH + ' ' + incidents[i].case.patient.Patient_LastNameTH + '</span></div></td>'));
@@ -476,10 +489,14 @@ module.exports = function ( jq ) {
 				let scanpartCol = $('<td align="center"></td>');
 				$(dataRow).append($(scanpartCol));
 				$(scanpartCol).append($(yourSelectScanpartContent));
-				$(dataRow).append($('<td align="center">'+ incidents[i].case.urgenttype.UGType_Name + '</td>'));
+				//$(dataRow).append($('<td align="center">'+ incidents[i].case.urgenttype.UGType_Name + '</td>'));
+				$(dataRow).append($('<td align="center">'+ incidents[i].case.sumase.UGType_Name + '</td>'));
 				$(dataRow).append($('<td align="center">'+ incidents[i].Refferal.User_NameTH + ' ' + incidents[i].Refferal.User_LastNameTH + '</td>'));
 				$(dataRow).append($('<td align="center">'+ incidents[i].Radiologist.User_NameTH + ' ' + incidents[i].Radiologist.User_LastNameTH + '</td>'));
-				let caseStatusCol = $('<td align="center"><span id="CaseStatusName">'+ incidents[i].case.casestatus.CS_Name_EN + '</span></td>');
+
+
+				let caseStatusCol = $('<td align="center" valign="top"></td>').css({'cursor': 'pointer'});
+				$(caseStatusCol).append($(caseStatusBox));
 				$(dataRow).append($(caseStatusCol));
 				/*
 				if ((incidents[i].case.casestatus.id == 1) || (incidents[i].case.casestatus.id == 2) || (incidents[i].case.casestatus.id == 8)) {
@@ -861,8 +878,11 @@ module.exports = function ( jq ) {
 			let remarkCell = $('<td align="left"></td>');
       $(logItem).append($(remarkCell));
 			if (keeplogs[i].triggerAt) {
+				console.log(keeplogs[i].triggerAt);
+				//let yymmddhhmnss = util.formatDateTimeDDMMYYYYJSON(keeplogs[i].triggerAt);
 				let yymmddhhmnss = keeplogs[i].triggerAt;
 				let yymmddhhmnText = util.fmtStr('%s-%s-%s %s:%s:%s', yymmddhhmnss.YY, yymmddhhmnss.MM, yymmddhhmnss.DD, yymmddhhmnss.HH, yymmddhhmnss.MN, yymmddhhmnss.SS);
+				console.log(yymmddhhmnText);
 				let triggerDT = new Date(yymmddhhmnText);
 				console.log(triggerDT);
 				let d = new Date();
@@ -1157,6 +1177,175 @@ module.exports = function ( jq ) {
 		$(contentDialog).append($(dialogHeader)).append($(dialogContent)).append($(dialogFooter));
 		$(contentDialog).css(common.quickReplyContentStyle);
 		return $(modalDialog).append($(contentDialog))
+	}
+
+	const doActionCaseEventLog = function(box, data) {
+		let caseBoxData = $(box).data('caseData');
+		if (data.caseId == caseBoxData.case.id) {
+			if ([3, 4, 7].includes(Number(data.to))) {
+				$(box).parent().css({'background-color': '#EB984E', 'border': '1px solid black'});
+			} else {
+				$(box).parent().css({'background-color': '#28B463', 'border': '1px solid black'});
+			}
+			if (data.progress) {
+				$(box).empty();
+				$(box).append($('<div></div>').text('Uploading'));
+				$(box).append($('<div></div>').text('Progress ' + data.progress + '%'));
+			} else {
+				if ([5, 10, 11, 12, 13, 14].includes(Number(data.to))) {
+					$(box).empty();
+					$(box).append($('<div></div>').text('ส่งผลแล้ว'));
+				} else {
+					const doCeateClokRemark = function(triggerAt){
+						let yymmddhhmnss = triggerAt;
+						let yymmddhhmnText = util.fmtStr('%s-%s-%s %s:%s:%s', yymmddhhmnss.YY, yymmddhhmnss.MM, yymmddhhmnss.DD, yymmddhhmnss.HH, yymmddhhmnss.MN, yymmddhhmnss.SS);
+						console.log(yymmddhhmnText);
+						let triggerDT = new Date(yymmddhhmnText);
+						console.log(triggerDT);
+						let d = new Date();
+						console.log(d);
+						let diffTime = Math.abs(triggerDT - d);
+						let hh = parseInt(diffTime/(1000*60*60));
+						let mn = parseInt((diffTime - (hh*1000*60*60))/(1000*60));
+						let clockFrag = $('<span></span>').countdownclock({countToHH: hh, countToMN: mn});
+						clockCountdownDiv = $('<span id="ClockCountDownBox"></span>').css({'margin-left': '10px'});
+						$(clockCountdownDiv).append($(clockFrag.hhFrag)).append($(clockFrag.coFrag)).append($(clockFrag.mnFrag))
+						return $(clockCountdownDiv);
+					}
+
+					const doCallTaskDirect = function(caseId) {
+						return new Promise(async function(resolve, reject) {
+							let taskRes = await common.doGetApi('/api/tasks/task/list', {});
+							let tasks = taskRes.Records;
+							let task = await tasks.find((item)=>{
+								if (item.caseId == caseId) {
+									return item;
+								}
+							});
+							if (task) {
+								let taskTriggerAt = util.formatDateTimeDDMMYYYYJSON(task.triggerAt);
+								let clockCountdownBox = doCeateClokRemark(taskTriggerAt);
+								resolve($(clockCountdownBox));
+							} else {
+								resolve();
+							}
+						})
+					}
+
+					let clockCountdownDiv = undefined;
+					if (data.triggerAt) {
+						clockCountdownDiv = doCeateClokRemark(data.triggerAt);
+					}
+
+					if ([1].includes(Number(data.to))) {
+						let caseKey = data.remark.indexOf('สร้างเคส');
+						if (data.triggerAt) {
+							let lineKey = data.remark.indexOf('Line');
+							if (lineKey >= 0) {
+								$(box).data('expireTriggerAt', data.triggerAt);
+							}
+							let voipKey = data.remark.indexOf('VOIP');
+							if (voipKey >= 0) {
+								$(box).empty();
+								$(box).append($('<div></div>').text('แจ้งรังสีแพทย์รับเคสทาง Line แล้ว'));
+								if (clockCountdownDiv) {
+									let remark1 = $('<span></span>').text('จะโทรตามภายใน');
+									let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
+									$(box).append($('<div></div>').append($(remark1)).append($(clockCountdownDiv)).append($(remark2)));
+								}
+								let expireTriggerAt = $(box).data('expireTriggerAt');
+								if (expireTriggerAt) {
+									let yymmddhhmnss2 = expireTriggerAt;
+									let yymmddhhmnText2 = util.fmtStr('%s-%s-%s %s:%s:%s', yymmddhhmnss2.YY, yymmddhhmnss2.MM, yymmddhhmnss2.DD, yymmddhhmnss2.HH, yymmddhhmnss2.MN, yymmddhhmnss2.SS);
+									console.log(yymmddhhmnText2);
+									let triggerDT2 = new Date(yymmddhhmnText2);
+									console.log(triggerDT2);
+									let d2 = new Date();
+									console.log(d2);
+									let diffTime2 = Math.abs(triggerDT2 - d2);
+									let hh2 = parseInt(diffTime2/(1000*60*60));
+									let mn2 = parseInt((diffTime2 - (hh2*1000*60*60))/(1000*60));
+									let clockFrag2 = $('<span></span>').countdownclock({countToHH: hh2, countToMN: mn2});
+									let clockCountdownDiv2 = $('<span id="ClockCountDownBox"></span>').css({'margin-left': '10px'});
+									$(clockCountdownDiv2).append($(clockFrag2.hhFrag)).append($(clockFrag2.coFrag)).append($(clockFrag2.mnFrag))
+									let remark3 = $('<span></span>').text('เวลารับเคสที่เหลือ');
+									let remark4 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
+									$(box).append($('<div></div>').append($(remark3)).append($(clockCountdownDiv2)).append($(remark4)));
+								}
+							} else {
+								$(box).empty();
+								$(box).append($('<div></div>').text('แจ้งรังสีแพทย์รับเคสทาง Line แล้ว'));
+								let remark1 = $('<span></span>').text('รังสีแพทย์ไม่ได้ตั้งค่าให้โทรอัตโนมัติ');
+								$(box).append($('<div></div>').append($(remark1)));
+							}
+						} else if (caseKey >= 0) {
+							$(box).empty();
+							$(box).append($('<div></div>').text('สร้างเคสสำเร็จ'));
+							let remark1 = $('<span></span>').text('รอ Upload Zip ไฟล์');
+							$(box).append($('<div></div>').append($(remark1)));
+						} else {
+							$(box).empty();
+							$(box).append($('<div></div>').text('Upload แล้ว'));
+							let remark1 = $('<span></span>').text('รังสีแพทย์ไม่ได้ตั้งค่าให้แจ้งเตือนใดๆ');
+							$(box).append($('<div></div>').append($(remark1)));
+						}
+					} else if ([2].includes(Number(data.to))) {
+						$(box).empty();
+						$(box).append($('<div></div>').text('รังสีแพทย์รับเคสแล้ว'));
+						if (clockCountdownDiv) {
+							let remark1 = $('<span></span>').text('เวลาส่งผลที่เหลือ');
+							let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
+							$(box).append($('<div></div>').append($(remark1)).append($(clockCountdownDiv)).append($(remark2)));
+						} else {
+							doCallTaskDirect(data.caseId).then((clockBox)=>{
+								if (clockBox) {
+									let remark1 = $('<span></span>').text('เวลาส่งผลที่เหลือ');
+									let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
+									$(box).append($('<div></div>').append($(remark1)).append($(clockBox)).append($(remark2)));
+								}
+							});
+						}
+					} else if ([8].includes(Number(data.to))) {
+						$(box).empty();
+						$(box).append($('<div></div>').text('รังสีแพทย์เปิดดูเคสแล้ว'));
+						if (clockCountdownDiv) {
+							let remark1 = $('<span></span>').text('เวลาส่งผลที่เหลือ');
+							let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
+							$(box).append($('<div></div>').append($(remark1)).append($(clockCountdownDiv)).append($(remark2)));
+						} else {
+							doCallTaskDirect(data.caseId).then((clockBox)=>{
+								if (clockBox) {
+									let remark1 = $('<span></span>').text('เวลาส่งผลที่เหลือ');
+									let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
+									$(box).append($('<div></div>').append($(remark1)).append($(clockBox)).append($(remark2)));
+								}
+							});
+						}
+					} else if ([9].includes(Number(data.to))) {
+						$(box).empty();
+						$(box).append($('<div></div>').text('กำลังอ่านผล'));
+						if (clockCountdownDiv) {
+							let remark1 = $('<span></span>').text('กำหนดส่งผลในอีก');
+							let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
+							$(box).append($('<div></div>').append($(remark1)).append($(clockCountdownDiv)).append($(remark2)));
+						} else {
+							doCallTaskDirect(data.caseId).then((clockBox)=>{
+								if (clockBox) {
+									let remark1 = $('<span></span>').text('เวลาส่งผลที่เหลือ');
+									let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
+									$(box).append($('<div></div>').append($(remark1)).append($(clockBox)).append($(remark2)));
+								}
+							});
+						}
+					} else if ([4].includes(Number(data.to))) {
+						$(box).empty();
+						$(box).append($('<div></div>').text('หมดเวลาอ่านผล'));
+						let remark1 = $('<span></span>').text('รังสีแพทย์อ่านผลค้างไว้ กรุณาติดต่อรังสีแพทย์');
+						$(box).append($('<div></div>').append($(remark1)));
+					}
+				}
+			}
+		}
 	}
 
 	return {

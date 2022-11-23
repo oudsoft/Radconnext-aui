@@ -99,7 +99,7 @@ const doLoadMainPage = function(){
   $('head').append('<script src="' + jquerySimpleUploadUrl + '"></script>');
 
   $('head').append('<script src="' + patientHistoryPluginUrl + '?t=x3x4xm"></script>');
-  $('head').append('<script src="' + countdownclockPluginUrl + '?t=marmix"></script>');
+  $('head').append('<script src="' + countdownclockPluginUrl + '?t=marksix"></script>');
   $('head').append('<script src="' + scanpartPluginUrl + '?t=mix6ox"></script>');
   $('head').append('<script src="' + customUrgentPlugin + '"></script>');
   $('head').append('<script src="' + controlPagePlugin + '"></script>');
@@ -129,6 +129,7 @@ const doLoadMainPage = function(){
   document.addEventListener("triggercasemisstake", submain.onCaseMisstakeNotifyTrigger);
   document.addEventListener("triggernewreport", submain.onNewReportTrigger);
   document.addEventListener("triggerrezip", submain.onRezipTrigger);
+  document.addEventListener("caseeventlog", submain.onCaseEventLogTrigger);
 
   let mainFile= '../form/main-fix.html';
   let menuFile = '../form/menu-fix.html';
@@ -250,9 +251,11 @@ const doLoadMainPage = function(){
 				common.doSaveQueryDicom(data);
 				dicom.doLoadDicomFromOrthanc();
 			});
-
-      submain.doTriggerDicomFilterForm();
-
+      /*
+      $(document).on('opendicomfilter', (evt, data)=>{
+      	submain.doTriggerDicomFilterForm(evt, data);
+      });
+      */
       submain.doAddNotifyCustomStyle();
 
       doInitDefualPage();

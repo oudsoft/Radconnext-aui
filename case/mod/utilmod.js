@@ -475,6 +475,10 @@ module.exports = function ( jq ) {
 			let triggerData = {dicom : data.dicom, result: data.result};
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: triggerData}});
 			document.dispatchEvent(event);
+		} else if (data.type == 'caseeventlog') {
+			let eventName = 'caseeventlog';
+			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.data}});
+			document.dispatchEvent(event);
 		}
 	}
 

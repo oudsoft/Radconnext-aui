@@ -309,7 +309,8 @@ module.exports = function ( jq ) {
       }
       let caseUG = '-';
 			if (caseItem.case.urgenttype){
-				caseUG = caseItem.case.urgenttype.UGType_Name;
+				//caseUG = caseItem.case.urgenttype.UGType_Name;
+				caseUG = caseItem.sumase.UGType_Name;
 			}
       //let caseREFF = caseItem.Refferal.User_NameTH + ' ' + caseItem.Refferal.User_LastNameTH;
       //console.log(caseItem);
@@ -436,6 +437,7 @@ module.exports = function ( jq ) {
       let showCases = [];
 
       let allCaseRecords = response.Records;
+			console.log(allCaseRecords);
       if (userItemPerPage == 0) {
         showCases = allCaseRecords;
       } else {

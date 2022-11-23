@@ -87,30 +87,28 @@ module.exports = function ( jq ) {
   }
 
   const doTriggerDicomFilterForm = function(){
-    $(document).on('opendicomfilter', (evt, data)=>{
-      let queryString = localStorage.getItem('dicomfilter');
-      let queryDicom = JSON.parse(queryString);
-      let filterKey = queryDicom.Query;
-      $(".mainfull").find('#DicomFilterForm').show();
-      if ((filterKey.StudyFromDate !== '') && (filterKey.StudyFromDate !== '*')) {
-        $('#StudyFromDateInput').val(filterKey.StudyFromDate);
-      }
-      if ((filterKey.StudyToDate !== '') && (filterKey.StudyToDate !== '*')) {
-        $('#StudyToDateInput').val(filterKey.StudyToDate);
-      }
-      if ((filterKey.PatientName !== '') && (filterKey.PatientName !== '*')) {
-        $('#PatientNameInput').val(filterKey.PatientName);
-      }
-      if ((filterKey.PatientHN !== '') && (filterKey.PatientHN !== '*')) {
-        $('#PatientHNInput').val(filterKey.PatientHN);
-      }
-      if ((filterKey.Modality !== '') && (filterKey.Modality !== '*')) {
-        $('#ModalityInput').val(filterKey.Modality);
-      }
-      if ((filterKey.ScanPart !== '') && (filterKey.ScanPart !== '*')) {
-        $('#ScanPartInput').val(filterKey.ScanPart);
-      }
-    });
+    let queryString = localStorage.getItem('dicomfilter');
+    let queryDicom = JSON.parse(queryString);
+    let filterKey = queryDicom.Query;
+    $(".mainfull").find('#DicomFilterForm').show();
+    if ((filterKey.StudyFromDate !== '') && (filterKey.StudyFromDate !== '*')) {
+      $('#StudyFromDateInput').val(filterKey.StudyFromDate);
+    }
+    if ((filterKey.StudyToDate !== '') && (filterKey.StudyToDate !== '*')) {
+      $('#StudyToDateInput').val(filterKey.StudyToDate);
+    }
+    if ((filterKey.PatientName !== '') && (filterKey.PatientName !== '*')) {
+      $('#PatientNameInput').val(filterKey.PatientName);
+    }
+    if ((filterKey.PatientHN !== '') && (filterKey.PatientHN !== '*')) {
+      $('#PatientHNInput').val(filterKey.PatientHN);
+    }
+    if ((filterKey.Modality !== '') && (filterKey.Modality !== '*')) {
+      $('#ModalityInput').val(filterKey.Modality);
+    }
+    if ((filterKey.ScanPart !== '') && (filterKey.ScanPart !== '*')) {
+      $('#ScanPartInput').val(filterKey.ScanPart);
+    }
   }
 
 	const doCreateRegisterVoIP = function(userdata){
@@ -249,6 +247,19 @@ module.exports = function ( jq ) {
 		$('body').loading('stop');
 	}
 
+	const onCaseEventLogTrigger = function(evt) {
+		let trigerData = evt.detail.data;
+		let caseTable = $('body').find('#CaseTable');
+		if (caseTable) {
+			let caseStatusCells = $(caseTable).find('.case-status-cell');
+			for (let i=0; i < caseStatusCells.length; i++) {
+				$(caseStatusCells[i]).trigger('caseeventlog', [trigerData]);
+			}
+		} else {
+			console.log('not on case page.')
+		}
+	}
+
 	return {
     showScanpartAux,
     doAddNotifyCustomStyle,
@@ -261,6 +272,7 @@ module.exports = function ( jq ) {
 		onNewDicomTransferTrigger,
 		onUpdateDicomTransferTrigger,
 		onNewReportTrigger,
-		onRezipTrigger
+		onRezipTrigger,
+		onCaseEventLogTrigger
   }
 }

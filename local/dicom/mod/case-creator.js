@@ -205,7 +205,9 @@ module.exports = function ( jq ) {
 			if (urgentType) {
 				urgenttypeId = urgentType;
 			}
+			let sumaseId = urgenttypeId
 			//console.log(urgenttypeId);
+			//console.log(sumaseId);
 			if (!urgenttypeId) {
 				let content = $('<div></div>');
 				$(content).append($('<p>ค่าความเร่งด่วนไม่ถูกต้อง โปรดแก้ไข</p>'));
@@ -277,7 +279,7 @@ module.exports = function ( jq ) {
 					let optionLocalSave = option;
 					optionLocalSave.scanpart.userId = userdata.userId;
 					localStorage.setItem('rememberwantsavescanpart', JSON.stringify(optionLocalSave));
-			    let newCase = {patientNameTH, patientNameEN, patientHistory, scanpartItems, studyID, patientSex, patientAge, patientBirthDate, patientRights, patientCitizenID, price, hn, acc, department, drOwner, bodyPart, scanPart, drReader, urgenttypeId, detail, mdl, studyDesc, protocalName, manufacturer, stationName, studyInstanceUID, radioId, option: option};
+			    let newCase = {patientNameTH, patientNameEN, patientHistory, scanpartItems, studyID, patientSex, patientAge, patientBirthDate, patientRights, patientCitizenID, price, hn, acc, department, drOwner, bodyPart, scanPart, drReader, urgenttypeId, sumaseId, detail, mdl, studyDesc, protocalName, manufacturer, stationName, studyInstanceUID, radioId, option: option};
 			    resolve(newCase);
 				});
 			}
@@ -1090,7 +1092,7 @@ module.exports = function ( jq ) {
 
 				console.log(defualtValue);
 				if (defualtValue.studyTags) {
-		      rqParams = {data: caseData, hospitalId: hospitalId, userId: userId, patientId: patientId, urgenttypeId: urgenttypeId, cliamerightId: cliamerightId, option: newCaseData.option, studyTags: defualtValue.studyTags};
+		      rqParams = {data: caseData, hospitalId: hospitalId, userId: userId, patientId: patientId, urgenttypeId: urgenttypeId, cliamerightId: cliamerightId, option: newCaseData.option, studyTags: defualtValue.studyTags, sumaseId: newCaseData.sumaseId};
 					console.log(rqParams);
 
 		      let caseRes = await common.doCallApi('/api/cases/add', rqParams);

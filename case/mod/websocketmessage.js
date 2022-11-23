@@ -6,6 +6,7 @@ module.exports = function ( jq, wsm ) {
     let data = JSON.parse(msgEvt.data);
     console.log(data);
     if (data.type !== 'test') {
+			/*
       let masterNotify = localStorage.getItem('masternotify');
       let MasterNotify = JSON.parse(masterNotify);
       if (MasterNotify) {
@@ -15,6 +16,7 @@ module.exports = function ( jq, wsm ) {
         MasterNotify.push({notify: data, datetime: new Date(), status: 'new'});
       }
       localStorage.setItem('masternotify', JSON.stringify(MasterNotify));
+			*/
     }
     if (data.type == 'test') {
       $.notify(data.message, "success");
@@ -139,7 +141,6 @@ module.exports = function ( jq, wsm ) {
 			let eventName = 'caseeventlog';
 			let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: data.data}});
 			document.dispatchEvent(event);
-
     } else {
 			console.log('Nothing Else');
 		}

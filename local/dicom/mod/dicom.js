@@ -87,7 +87,7 @@ module.exports = function ( jq ) {
               $(".mainfull").find('#ResultView').empty().append($(dicomView));
               $('body').loading('stop');
   						let eventData = {userId: userdata.id};
-  						$(".mainfull").trigger('opendicomfilter', [eventData]);
+  						//$(".mainfull").trigger('opendicomfilter', [eventData]);
             }
           };
           let navigatoePage = $(navigBarBox).controlpage(navigBarOption);
@@ -123,6 +123,8 @@ module.exports = function ( jq ) {
 			const table = $('<div style="display: table; width: 100%; border-collapse: collapse;"></div>');
 			const tableHeader = doCreateDicomHeaderRow();
 			$(tableHeader).appendTo($(table));
+			
+			/*
 			const dicomFilterForm = common.doCreateDicomFilterForm((filterKey)=>{
 				console.log(filterKey);
 				common.doSaveQueryDicom(filterKey);
@@ -130,6 +132,7 @@ module.exports = function ( jq ) {
 			});
 			$(dicomFilterForm).appendTo($(table));
 			$(dicomFilterForm).hide();
+			*/
 
 			const promiseList = new Promise(function(resolve2, reject2){
 				for (let i=0; i < dj.length; i++) {
