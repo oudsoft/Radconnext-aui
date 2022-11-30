@@ -44,6 +44,7 @@ module.exports = function ( jq ) {
 				//$(downloadCmd).removeClass('action-btn');
 				//$(downloadCmd).addClass('special-action-btn');
 				let stremLink = URL.createObjectURL(new Blob([data], {type: 'application/octetstream'}));
+				pom.setAttribute('target', "_blank");
 				pom.setAttribute('href', stremLink);
 				pom.setAttribute('download', outputFilename);
 				pom.click();
@@ -53,14 +54,32 @@ module.exports = function ( jq ) {
   	});
 	}
 
-	const doDownloadDicom = function(caseDicomZipFilename) {
+	const doDownloadDicom = function(evt, caseDicomZipFilename) {
+		evt.preventDefault();
 		util.doResetPingCounter();
+		//$.notify(('เริ่มดาวน์โหลดไฟล์ ' + caseDicomZipFilename), 'success' );
 		let dicomZipLink = '/img/usr/zip/' + caseDicomZipFilename;
+
 		let pom = document.createElement('a');
+		document.body.appendChild(pom);
 		pom.setAttribute('target', "_blank");
 		pom.setAttribute('href', dicomZipLink);
 		pom.setAttribute('download', caseDicomZipFilename);
 		pom.click();
+		document.body.removeChild(pom);
+
+		/*
+		window.fetch(dicomZipLink, {method: 'GET'}).then(response => response.blob()).then(blob => {
+			let url = window.URL.createObjectURL(blob);
+			let pom = document.createElement('a');
+			pom.href = url;
+			pom.download = caseDicomZipFilename;
+      document.body.appendChild(pom);
+      pom.click();
+      pom.remove();
+		});
+		*/
+		
 		common.downloadDicomList.push(caseDicomZipFilename);
 		return common.downloadDicomList;
 	}
@@ -345,7 +364,8 @@ module.exports = function ( jq ) {
 					//->ตรงนี้คืออะไร
 					//-> ตรงนี้คือการสั่งให้เซิร์ฟเวอร์สร้างผลอ่าน pdf ไว้ก่อนล่วงหน้า
 					params.reporttype = 'normal';
-					let saveResponseApiURL = '/api/uicommon/radio/saveresponse';
+					//let saveResponseApiURL = '/api/uicommon/radio/saveresponse';
+					let saveResponseApiURL = '/api/caseresponse/save';
 					$.post(saveResponseApiURL, params, async function(saveResponseRes){
 						if ((saveResponseRes.result) && (saveResponseRes.result.responseId)) {
 							caseResponseId = saveResponseRes.result.responseId;
@@ -497,10 +517,11 @@ module.exports = function ( jq ) {
 	    const userdata = JSON.parse(localStorage.getItem('userdata'));
 			let caseId = saveResponseData.caseId
 			let userId = userdata.id;
-
+			let radioNameTH = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
 			let params = {
 				caseId: caseId,
 				userId: userId,
+				radioNameTH: radioNameTH,
 				responseId: caseResponseId,
 				hospitalId: caseHospitalId,
 				reporttype: reportType,
@@ -519,7 +540,9 @@ module.exports = function ( jq ) {
 				$("#dialog").empty();
 				if (saveResponseData.previewOption === 0){
 					resolve(saveResponseRes);
-					$('#AcceptedCaseCmd').click();
+					setTimeout(()=>{
+						$('#AcceptedCaseCmd').click();
+					}, 1800);
 				} else if (saveResponseData.previewOption === 1) {
 					let pdfReportLink = saveResponseData.reportPdfLinkPath + '?t=' + common.genUniqueID();
 					console.log(pdfReportLink);
@@ -549,6 +572,7 @@ module.exports = function ( jq ) {
 			*/
 			let userdata = JSON.parse(localStorage.getItem('userdata'));
 			let userId = userdata.id;
+			let radioNameTH = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
 			let responseHTML = $('#SimpleEditor').val();
 			let startPointText = '<!--StartFragment-->';
 			let endPointText = '<!--EndFragment-->';
@@ -568,7 +592,7 @@ module.exports = function ( jq ) {
 			localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
 			responseText = toAsciidoc(tempToken);
 			let saveData = {Response_HTML: tempToken, Response_Text: responseText, Response_Type: type};
-			let params = {caseId: caseId, userId: userId, data: saveData, responseId: caseResponseId, reporttype: type};
+			let params = {caseId: caseId, userId: userId, data: saveData, responseId: caseResponseId, reporttype: type, radioNameTH: radioNameTH};
 			let saveResponseRes = await doCallSaveResponse(params);
 			resolve(saveResponseRes);
 		});
@@ -742,27 +766,22 @@ module.exports = function ( jq ) {
 	}
 
   const doOpenHR = function(link, patientFullName, casedate){
-		$('body').loading('start');
+		//$('body').loading('start');
     //window.open(link, '_blank');
 		let filePaths = link.split('/');
 		let fileNames = filePaths[filePaths.length-1];
 		let fileName = fileNames.split('.');
 		let fileExt = fileName[1];
 		fileName = (patientFullName.split(' ').join('_')) + '-' + casedate + '.' + fileExt;
-		var pom = document.createElement('a');
-		$.ajax({
-	    url: link,
-			xhrFields:{
-	 			responseType: 'blob'
-			},
-	    success: function(data){
-				let stremLink = URL.createObjectURL(new Blob([data], {type: 'image/jpeg'}));
-				pom.setAttribute('href', stremLink);
-				pom.setAttribute('download', fileName);
-				pom.click();
-			}
+		window.fetch(link, {method: 'GET'}).then(response => response.blob()).then(blob => {
+			let url = window.URL.createObjectURL(blob);
+			let pom = document.createElement('a');
+			pom.href = url;
+			pom.download = fileName;
+      document.body.appendChild(pom);
+      pom.click();
+      pom.remove();
 		});
-		$('body').loading('stop');
   }
 
   const doRenderPatientHR = function(hrlinks, patientFullName, casedate) {
@@ -784,8 +803,9 @@ module.exports = function ( jq ) {
 					let patientHRButton = $('<div class="action-btn" style="position: relative; display: inline-block; cursor: pointer; text-align: center;">' + linkText + '</div>');
 
 					$(patientHRButton).on("click", function(evt){
+						evt.preventDefault();
 						if (fileExt === 'zip') {
-							let dwnList = doDownloadDicom(fileNames);
+							let dwnList = doDownloadDicom(evt, fileNames);
 						} else {
 	          	doOpenHR(item.link, patientFullName, casedate);
 						}
@@ -809,7 +829,7 @@ module.exports = function ( jq ) {
 		$(downloadCmd).appendTo($(dicomCmdBox));
 		$(downloadCmd).on('click', async (evt)=>{
 			//$('body').loading('start');
-			let downloadList = doDownloadDicom(caseDicomZipFilename);
+			let downloadList = doDownloadDicom(evt, caseDicomZipFilename);
 			//$('body').loading('stop');
 		});
 		/*
@@ -836,6 +856,7 @@ module.exports = function ( jq ) {
 					$(codeLink).css(commandButtonStyle);
 					$(hrbackwardBox).append($(codeLink));
 					$(codeLink).on('click',(evt)=>{
+						evt.preventDefault();
 						doOpenHR(item.link, patientFullName, casedate);
 					});
 				});
@@ -1135,10 +1156,10 @@ module.exports = function ( jq ) {
 						});
 						$('body').append($(msgBox).css({'position': 'absolute', 'top': '50px', 'right': '2px', 'width' : '260px', 'border': '2px solid black', 'background-color': '#184175', 'color': 'white', 'padding': '5px'}))
 					} else {
-						let dwnList = doDownloadDicom(downloadData.dicomzipfilename);
+						let dwnList = doDownloadDicom(evt, downloadData.dicomzipfilename);
 					}
 					*/
-					let dwnList = doDownloadDicom(downloadData.dicomzipfilename);
+					let dwnList = doDownloadDicom(evt, downloadData.dicomzipfilename);
 				}
 			});
 			$(downloadCmd).appendTo($(downloadCmdCell));
@@ -1467,13 +1488,8 @@ module.exports = function ( jq ) {
 
 	const doCallSaveResponse = function(params){
 		return new Promise(function(resolve, reject) {
-			var apiUri = undefined;
+			var apiUri = '/api/caseresponse/save';
 			console.log(params);
-			if (params.responseId){
-				apiUri = '/api/caseresponse/update';
-			} else {
-				apiUri = '/api/caseresponse/add';
-			}
 			apiconnector.doCallApi(apiUri, params).then((response)=>{
 				resolve(response);
 			}).catch((err) => {
@@ -1612,7 +1628,7 @@ module.exports = function ( jq ) {
 				//dwnRes = await onDownloadCmdClick(downloadDicomZipCmd);
 				let downloadData = $(downloadDicomZipCmd).data('downloadData');
 				let dicomzipfilename = downloadData.dicomzipfilename;
-				let downloadList = doDownloadDicom(dicomzipfilename);
+				let downloadList = doDownloadDicom(evt, dicomzipfilename);
 			}
 		});
 	}

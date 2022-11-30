@@ -1009,10 +1009,22 @@ module.exports = function ( jq ) {
 	const doExtractList = function(originList, from, to) {
 		return new Promise(async function(resolve, reject) {
 			await originList.sort((a,b) => {
-				let av = util.getDatetimeValue(a.MainDicomTags.StudyDate, a.MainDicomTags.StudyTime);
-				let bv = util.getDatetimeValue(b.MainDicomTags.StudyDate, b.MainDicomTags.StudyTime);
-				if (av && bv) {
-					return bv - av;
+				if ((a.MainDicomTags) && (b.MainDicomTags)) {
+					let aStudyDate = a.MainDicomTags.StudyDate;
+					let aStudyTime = a.MainDicomTags.StudyTime
+					let bStudyDate = b.MainDicomTags.StudyDate;
+					let bStudyTime = b.MainDicomTags.StudyTime
+					if ((aStudyDate) && (aStudyTime) && (bStudyDate) && (bStudyTime)) {
+						let av = util.getDatetimeValue(aStudyDate, aStudyTime);
+						let bv = util.getDatetimeValue(bStudyDate, bStudyTime);
+						if (av && bv) {
+							return bv - av;
+						} else {
+							return 0;
+						}
+					} else {
+						return 0;
+					}
 				} else {
 					return 0;
 				}

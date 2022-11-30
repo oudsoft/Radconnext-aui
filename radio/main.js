@@ -93,7 +93,7 @@ $( document ).ready(function() {
             doSetupAutoReadyAfterLogin();
             let radioNameTH = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
             let remark = 'รังสีแพทบ์ ' + radioNameTH + ' เข้าอ่านผลทาง Quick Link';
-            let response = await common.doUpdateCaseStatus(quickCaseId, 8, remark);
+            let response = await common.doUpdateCaseStatus(quickCaseId, 2, remark);
             if (response.status.code == 200) {
               let eventData = data.caseData;
               eventData.startDownload = 1;
@@ -422,19 +422,18 @@ function doLoadMainPage(){
             let responseText = toAsciidoc(responseHTML);
             let userdata = JSON.parse(localStorage.getItem('userdata'));
             let userId = userdata.id;
+            let radioNameTH = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
             let saveData = {Response_HTML: responseHTML, Response_Text: responseText, Response_Type: type};
             $.post('/api/caseresponse/select/' + caseId, {}, function(callRes){
               //console.log(callRes);
-              let apiUri = undefined;
+              let apiUri = '/api/caseresponse/save';
               let params = undefined;
               if (callRes.Record.length > 0) {
                 let responseId = callRes.Record[0].id;
                 opencase.setCaseResponseId(responseId);
-                params = {caseId: caseId, userId: userId, data: saveData, responseId: responseId};
-                apiUri = '/api/caseresponse/update';
+                params = {caseId: caseId, userId: userId, data: saveData, responseId: responseId, radioNameTH: radioNameTH};
               } else {
-                params = {caseId: caseId, userId: userId, data: saveData};
-                apiUri = '/api/caseresponse/add';
+                params = {caseId: caseId, userId: userId, data: saveData, radioNameTH: radioNameTH};
               }
               $.post(apiUri, params, function(saveRes){
                 //console.log(saveRes);
@@ -463,6 +462,12 @@ const onOpenCaseTrigger = function(caseData) {
     $.notify('เปิดเคส สำเร็จ', 'success');
     //$('.jqte_editor').css(common.sizeA4Style);
     //console.log($('.jqte_editor').css('font-family'));
+    let firstLink = '/images/case-incident-icon-3.png'
+		window.fetch(firstLink, {method: 'GET'}).then(response => response.blob()).then(blob => {
+      let url = window.URL.createObjectURL(blob);
+      console.log(url);
+      $(opencaseTitlePage).find('img').attr('src', url);
+    });
   }).catch(async (err)=>{
     if (err.error.code == 210){
       let rememberme = localStorage.getItem('rememberme');
@@ -503,13 +508,26 @@ function doLoadDefualtPage(autoSelectPage) {
     });
     */
     util.doResetPingCounter();
-    if (autoSelectPage == 1) {
-      if (loadRes.newList.Records.length > 0 ) {
-        $('#NewCaseCmd').click();
-      } else if (loadRes.accList.Records.length > 0) {
-        $('#AcceptedCaseCmd').click();
+    let responseHTML = $('#SimpleEditor').val();
+    if ((responseHTML) && (responseHTML !== '')) {
+
+    } else {
+      if (autoSelectPage == 1) {
+        if (loadRes.accList.Records.length > 0) {
+          $('#AcceptedCaseCmd').click();
+        } else if (loadRes.newList.Records.length > 0 ) {
+          $('#NewCaseCmd').click();
+        } else {
+          $(".mainfull").empty();
+        }
       } else {
-        $(".mainfull").empty();
+        if (loadRes.newList.Records.length > 0 ) {
+          $('#NewCaseCmd').click();
+        } else if (loadRes.accList.Records.length > 0) {
+          $('#AcceptedCaseCmd').click();
+        } else {
+          $(".mainfull").empty();
+        }
       }
     }
     $('body').loading('stop');
@@ -612,6 +630,22 @@ function unlockAction(modalBox) {
 }
 
 function onLockScreenTrigger() {
+  let responseHTML = $('#SimpleEditor').val();
+  let caseData = $('#SimpleEditor').data('casedata');
+  if ((responseHTML) && (responseHTML !== '') && (caseData)) {
+    let startPointText = '<!--StartFragment-->';
+    let endPointText = '<!--EndFragment-->';
+    let tempToken = responseHTML.replace('\n', '');
+    let startPosition = tempToken.indexOf(startPointText);
+    if (startPosition >= 0) {
+      let endPosition = tempToken.indexOf(endPointText);
+      tempToken = tempToken.slice((startPosition+20), (endPosition));
+    }
+    tempToken = tempToken.replace(startPointText, '<div>');
+    tempToken = tempToken.replace(endPointText, '</div>');
+    let draftbackup = {caseId: caseData.caseId, content: tempToken, backupAt: new Date()};
+    localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
+  }
   let lockScreenBox = $('<div style="width: 100%; text-align: center;" tabindex="0"></div>');
   $(lockScreenBox).append('<h2>Press any key to unlock</h2>');
   //$(lockScreenBox).append('<h3>You can Unlock by Click mouse or press any key.</h3>');
@@ -722,10 +756,12 @@ function doAutoAcceptCase(autoSelectPage){
             let caseItem = caseLists[i].case;
             await common.doUpdateCaseStatus(caseItem.id, 2, 'รังสีแพทย์ ' + radioNameTH + ' ตั้งรับเคสอัตโนมัติ');
           }
+          doLoadDefualtPage(autoSelectPage);
         } else {
           doLoadDefualtPage(autoSelectPage);
         }
       }
+      $('body').loading('stop');
     });
   } else {
     doLoadDefualtPage(autoSelectPage);

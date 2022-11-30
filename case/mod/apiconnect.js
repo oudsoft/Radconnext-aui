@@ -1,51 +1,14 @@
 /* apiconnect.js */
 
-const apiExt = ".php";
 const proxyRootUri = '/api';
 const proxyApi = '/apiproxy';
 const proxyEndPoint = "/callapi";
-const proxyUrl = proxyRootUri + proxyApi + proxyEndPoint;
-//const hostIP = '202.28.68.28';
-const hostApiPort = '8080';
-const hostIP = 'localhost';
-const hostOrthancApiPort = '8042';
-const hostName = hostIP + ':' + hostApiPort;
-const domainName = 'radconnext.com';
+
 const adminEmailAddress = 'oudsoft@yahoo.com';
 
-
-//const hostURL = 'https://radconnext.com/rad_test/api';
-const hostURL = 'https://radconnext.com/radconnext/api';
-
-const hostOrthancUrl = 'http://' + hostIP + ':' +  hostOrthancApiPort;
 const orthancProxyApi = '/orthancproxy';
 
-const RadConStatus = [
-  {id: 1, status_en: 'draft', status_th: "Draft", use: false},
-  {id: 2, status_en: 'wait_edit', status_th: "รอแก้ไข", use: false},
-  {id: 3, status_en: 'wait_start', status_th: "รอเริ่ม", use: false},
-  {id: 4, status_en: 'wait_zip', status_th: "รอเตรียมไฟล์ภาพ", use: false},
-  {id: 5, status_en: 'processing', status_th: "กำลังเตรียมไฟล์ภาพ", use: false},
-  {id: 6, status_en: 'wait_upload', status_th: "รอส่งไฟล์ภาพ", use: false},
-  {id: 7, status_en: 'uploading', status_th: "กำลังส่งไฟล์ภาพ", use: false},
-  {id: 8, status_en: 'wait_consult', status_th: "รอหมอ Consult", use: false},
-  {id: 9, status_en: 'wait_dr_consult', status_th: "รอหมอตอบ Consult", use: false},
-  {id: 10, status_en: 'consult_expire', status_th: "หมอตอบ Consult ไม่ทันเวลา", use: false},
-  {id: 11, status_en: 'wait_consult_ack', status_th: "ตอบ Consult แล้ว", use: false},
-  {id: 12, status_en: 'wait_response_1', status_th: "รอหมอตอบรับ", use: false},
-  {id: 13, status_en: 'wait_response_2', status_th: "รอหมอตอบรับ", use: false},
-  {id: 14, status_en: 'wait_response_3', status_th: "รอหมอตอบรับ", use: false},
-  {id: 15, status_en: 'wait_response_4', status_th: "รอหมอตอบรับ", use: false},
-  {id: 16, status_en: 'wait_response_5', status_th: "รอหมอตอบรับ", use: false},
-  {id: 17, status_en: 'wait_response_6', status_th: "รอหมอตอบรับ", use: false},
-  {id: 18, status_en: 'wait_dr_key', status_th: "รออ่านผล", use: true},
-  {id: 19, status_en: 'wait_close', status_th: "รอพิมพ์ผล", use: true},
-  {id: 20, status_en: 'wait_close2', status_th: "รอพิมพ์ผลที่แก้ไข", use: true},
-  {id: 21, status_en: 'close', status_th: "ดูผลแล้ว", use: true},
-  {id: 22, status_en: 'cancel', status_th: "ยกเลิก", use: true},
-];
-
-const filterValue = (obj, key, value)=> obj.filter(v => v[key] === value);
+const arrFilterValue = (arr, key, value)=> arr.filter(v => v[key] === value);
 
 
 module.exports = function ( jq ) {
@@ -541,23 +504,15 @@ module.exports = function ( jq ) {
 
 	return {
 		/* const */
-		apiExt,
 		proxyRootUri,
 		proxyApi,
 		proxyEndPoint,
-		proxyUrl,
-		hostIP,
-		hostURL,
-		hostApiPort,
-		hostOrthancApiPort,
-		hostName,
-		hostURL,
-		hostOrthancUrl,
+
 		orthancProxyApi,
-		RadConStatus,
     adminEmailAddress,
+    
 		/*method*/
-		filterValue,
+		arrFilterValue,
 		doTestAjaxCallApi,
     doCallApiByAjax,
 		doCallApiDirect,

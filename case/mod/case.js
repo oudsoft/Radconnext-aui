@@ -1196,7 +1196,7 @@ module.exports = function ( jq ) {
 					$(box).empty();
 					$(box).append($('<div></div>').text('ส่งผลแล้ว'));
 				} else {
-					const doCeateClokRemark = function(triggerAt){
+					const doCreateClokRemark = function(triggerAt){
 						let yymmddhhmnss = triggerAt;
 						let yymmddhhmnText = util.fmtStr('%s-%s-%s %s:%s:%s', yymmddhhmnss.YY, yymmddhhmnss.MM, yymmddhhmnss.DD, yymmddhhmnss.HH, yymmddhhmnss.MN, yymmddhhmnss.SS);
 						console.log(yymmddhhmnText);
@@ -1213,9 +1213,9 @@ module.exports = function ( jq ) {
 						return $(clockCountdownDiv);
 					}
 
-					const doCallTaskDirect = function(caseId) {
+					const doCallTaskDirect = function(url, caseId) {
 						return new Promise(async function(resolve, reject) {
-							let taskRes = await common.doGetApi('/api/tasks/task/list', {});
+							let taskRes = await common.doGetApi(url, {});
 							let tasks = taskRes.Records;
 							let task = await tasks.find((item)=>{
 								if (item.caseId == caseId) {
@@ -1224,7 +1224,7 @@ module.exports = function ( jq ) {
 							});
 							if (task) {
 								let taskTriggerAt = util.formatDateTimeDDMMYYYYJSON(task.triggerAt);
-								let clockCountdownBox = doCeateClokRemark(taskTriggerAt);
+								let clockCountdownBox = doCreateClokRemark(taskTriggerAt);
 								resolve($(clockCountdownBox));
 							} else {
 								resolve();
@@ -1234,7 +1234,7 @@ module.exports = function ( jq ) {
 
 					let clockCountdownDiv = undefined;
 					if (data.triggerAt) {
-						clockCountdownDiv = doCeateClokRemark(data.triggerAt);
+						clockCountdownDiv = doCreateClokRemark(data.triggerAt);
 					}
 
 					if ([1].includes(Number(data.to))) {
@@ -1248,10 +1248,17 @@ module.exports = function ( jq ) {
 							if (voipKey >= 0) {
 								$(box).empty();
 								$(box).append($('<div></div>').text('แจ้งรังสีแพทย์รับเคสทาง Line แล้ว'));
-								if (clockCountdownDiv) {
-									let remark1 = $('<span></span>').text('จะโทรตามภายใน');
-									let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
-									$(box).append($('<div></div>').append($(remark1)).append($(clockCountdownDiv)).append($(remark2)));
+								let callBox = $(box).find('#CallTrigger');
+								console.log(callBox);
+								console.log(callBox.length);
+								if (callBox.length == 0) {
+									if (clockCountdownDiv) {
+										if (!$(box).find('#CallTrigger')) {
+											let remark1 = $('<span></span>').text('จะโทรตามภายใน');
+											let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
+											$(box).append($('<div id="CallTrigger"></div>').append($(remark1)).append($(clockCountdownDiv)).append($(remark2)));
+										}
+									}
 								}
 								let expireTriggerAt = $(box).data('expireTriggerAt');
 								if (expireTriggerAt) {
@@ -1275,8 +1282,21 @@ module.exports = function ( jq ) {
 							} else {
 								$(box).empty();
 								$(box).append($('<div></div>').text('แจ้งรังสีแพทย์รับเคสทาง Line แล้ว'));
-								let remark1 = $('<span></span>').text('รังสีแพทย์ไม่ได้ตั้งค่าให้โทรอัตโนมัติ');
-								$(box).append($('<div></div>').append($(remark1)));
+								let callUrl = '/api/voiptask/list';
+								doCallTaskDirect(callUrl, data.caseId).then((clockBox)=>{
+									if (clockBox) {
+										let callBox = $(box).find('#CallTrigger');
+										console.log(callBox);
+										if (callBox.length == 0) {
+											let remark1 = $('<span></span>').text('จะโทรตามภายใน');
+											let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
+											$(box).append($('<div id="CallTrigger"></div>').append($(remark1)).append($(clockCountdownDiv)).append($(remark2)));
+										}
+									} else {
+										let remark1 = $('<span></span>').text('รังสีแพทย์ไม่ได้ตั้งค่าให้โทรอัตโนมัติ');
+										$(box).append($('<div></div>').append($(remark1)));
+									}
+								});
 							}
 						} else if (caseKey >= 0) {
 							$(box).empty();
@@ -1297,7 +1317,8 @@ module.exports = function ( jq ) {
 							let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
 							$(box).append($('<div></div>').append($(remark1)).append($(clockCountdownDiv)).append($(remark2)));
 						} else {
-							doCallTaskDirect(data.caseId).then((clockBox)=>{
+							let callUrl = '/api/tasks/task/list';
+							doCallTaskDirect(callUrl, data.caseId).then((clockBox)=>{
 								if (clockBox) {
 									let remark1 = $('<span></span>').text('เวลาส่งผลที่เหลือ');
 									let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
@@ -1313,7 +1334,8 @@ module.exports = function ( jq ) {
 							let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});
 							$(box).append($('<div></div>').append($(remark1)).append($(clockCountdownDiv)).append($(remark2)));
 						} else {
-							doCallTaskDirect(data.caseId).then((clockBox)=>{
+							let callUrl = '/api/tasks/task/list';
+							doCallTaskDirect(callUrl, data.caseId).then((clockBox)=>{
 								if (clockBox) {
 									let remark1 = $('<span></span>').text('เวลาส่งผลที่เหลือ');
 									let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});

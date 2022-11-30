@@ -200,10 +200,10 @@ module.exports = function ( jq ) {
 		return new Promise(function(resolve, reject) {
 			let urgentType = $('.mainfull').find('#Urgenttype').val();
 			//console.log(urgentType);
-			let urgenttypeId = defualtValue.urgent;
+			let urgenttypeId = Number(defualtValue.urgent);
 			//console.log(urgenttypeId);
 			if (urgentType) {
-				urgenttypeId = urgentType;
+				urgenttypeId = Number(urgentType);
 			}
 			let sumaseId = urgenttypeId
 			//console.log(urgenttypeId);

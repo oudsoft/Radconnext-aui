@@ -130,6 +130,7 @@ const doLoadMainPage = function(){
   document.addEventListener("triggernewreport", submain.onNewReportTrigger);
   document.addEventListener("triggerrezip", submain.onRezipTrigger);
   document.addEventListener("caseeventlog", submain.onCaseEventLogTrigger);
+  document.addEventListener("clientreconnecttrigger", onClientReconnectTrigger);
 
   let mainFile= '../form/main-fix.html';
   let menuFile = '../form/menu-fix.html';
@@ -298,4 +299,14 @@ const doTriggerLoadDicom = function(){
 const actionAfterSetupCounter = function(){
   $('#HomeMainCmd').click();
   doTriggerLoadDicom();
+}
+
+const onClientReconnectTrigger = function(evt){
+  let trigerData = evt.detail.data;
+  let userdata = JSON.parse(localStorage.getItem('userdata'));
+  wsl = util.doConnectWebsocketLocal(userdata.username);
+  setTimeout(()=>{
+    wsl.send(JSON.stringify({type: 'client-reconnect'}));
+    //localStorage.removeItem('masternotify');
+  },2100);
 }

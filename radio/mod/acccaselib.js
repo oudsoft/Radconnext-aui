@@ -82,23 +82,19 @@ module.exports = function ( jq ) {
 			let eventData = common.doCreateOpenCaseData(caseItem);
 			let currentCaseRes = await common.doGetApi('/api/cases/status/' + caseItem.id, {});
 			if (currentCaseRes.current == 2){
-				let newCaseStatus = 8;
+
+				let nextCaseStatus = 8;
 				let radioName = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
-				let actionRemark = 'รังสีแพทย์ ' + radioName + ' เปิดเคสสำเร็จ'
-	      let response = await common.doUpdateCaseStatus(caseItem.id, newCaseStatus, actionRemark);
+				let actionRemark = 'รังสีแพทย์ ' + radioName + ' เปิดเคสสำเร็จ [web]'
+	      let response = await common.doUpdateCaseStatus(caseItem.id, nextCaseStatus, actionRemark);
 				if (response.status.code == 200) {
-		      eventData.statusId = newCaseStatus;
+		      eventData.statusId = nextCaseStatus;
 					eventData.startDownload = 0;
 		      $(openCmd).trigger('opencase', [eventData]);
 				} else {
 					$.notify('เกิดข้อผิดพลาด ไม่สามารถอัพเดทสถานะเคสได้ในขณะนี้', 'error');
 				}
-				/*
-				let newCaseStatus = 8;
-				eventData.statusId = newCaseStatus;
-				eventData.startDownload = 0;
-				$(openCmd).trigger('opencase', [eventData]);
-				*/
+
 			} else if ((currentCaseRes.current == 8) || (currentCaseRes.current == 9) || (currentCaseRes.current == 14)){
 				eventData.statusId = caseItem.casestatusId;
 				eventData.startDownload = 0;
@@ -139,11 +135,17 @@ module.exports = function ( jq ) {
 
       let caseRow = $('<div style="display: table-row; width: 100%;" class="case-row"></div>');
 			$(caseRow).css({'cursor': 'pointer'});
-			$(caseRow).on('dblclick', (evt)=>{
+			$(caseRow).on('dblclick', async (evt)=>{
+				let nextCaseStatus = 8;
+				if (caseItem.casestatusId == 2){
+					let radioName = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
+					let actionRemark = 'รังสีแพทย์ ' + radioName + ' เปิดเคสสำเร็จ [web]'
+					let response = await common.doUpdateCaseStatus(caseItem.id, nextCaseStatus, actionRemark);
+				}
 				let eventData = common.doCreateOpenCaseData(caseItem);
-				eventData.statusId = caseItem.casestatusId;
+				eventData.statusId = nextCaseStatus;
 				eventData.startDownload = 1;
-				$(caseRow).trigger('opencase', [eventData]);
+				$(caseCMD).trigger('opencase', [eventData]);
 			});
   		let caseColumn = $('<div style="display: table-cell; padding: 4px;"></div>');
   		$(caseColumn).append('<span>' + casedate + ' : ' + casetime + '</span>');
@@ -157,7 +159,8 @@ module.exports = function ( jq ) {
 					console.log(caseTask.triggerAt);
 	        let caseTriggerAt = new Date(caseTask.triggerAt);
 					//caseTriggerAt.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' });
-					caseTriggerAt = new Date(caseTriggerAt.getTime() + (3600000 * 1));
+					//caseTriggerAt = new Date(caseTriggerAt.getTime() + (3600000 * 1));
+					caseTriggerAt = new Date(caseTriggerAt.getTime());
 	        console.log(caseTriggerAt);
 					let diffTime = caseTriggerAt.getTime() - now.getTime();
 	        let hh = parseInt(diffTime/(1000*60*60));
