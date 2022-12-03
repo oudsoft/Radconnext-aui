@@ -691,14 +691,10 @@ module.exports = function ( jq ) {
 					$(attachPlusButton).click(async function() {
 						let patientNameEN = incidents[i].case.patient.Patient_NameEN + ' ' + incidents[i].case.patient.Patient_LastNameEN;
 						let dicomUrl = '/api/orthanc/add/attach/file';
-						let rqParams = {PatientNameEN: patientNameEN};
+						let rqParams = {caseId: incidents[i].case.id, PatientNameEN: patientNameEN};
 						$('body').loading('start');
-						$.post(dicomUrl, rqParams, async function(response){
+						$.post(dicomUrl, rqParams, function(response){
 							console.log(response);
-							// do use response result link to update Case_PatientHRLink
-							dicomUrl = '/api/cases/append/patienthrlink';
-							rqParams = {caseId: incidents[i].case.id, Case_PatientHRLinks: response.result};
-							let orthancRes = await apiconnector.doCallApi(apiurl, rqParams);
 							$('body').loading('stop');
 						});
 					});
