@@ -93,7 +93,7 @@ $( document ).ready(function() {
             doSetupAutoReadyAfterLogin();
             let radioNameTH = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
             let remark = 'รังสีแพทบ์ ' + radioNameTH + ' เข้าอ่านผลทาง Quick Link';
-            let response = await common.doUpdateCaseStatus(quickCaseId, 2, remark);
+            let response = await common.doUpdateCaseStatus(quickCaseId, 8, remark);
             if (response.status.code == 200) {
               let eventData = data.caseData;
               eventData.startDownload = 1;

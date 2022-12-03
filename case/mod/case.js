@@ -686,6 +686,25 @@ module.exports = function ( jq ) {
 					}
 				}
 
+				if ([1, 2, 8, 9].includes(incidents[i].case.casestatus.id)) {
+					let attachPlusButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/attach-plus-icon.png" title="Add New Attach Zip File"/>');
+					$(attachPlusButton).click(async function() {
+						let patientNameEN = incidents[i].case.patient.Patient_NameEN + ' ' + incidents[i].case.patient.Patient_LastNameEN;
+						let dicomUrl = '/api/orthanc/add/attach/file';
+						let rqParams = {PatientNameEN: patientNameEN};
+						$('body').loading('start');
+						$.post(dicomUrl, rqParams, async function(response){
+							console.log(response);
+							// do use response result link to update Case_PatientHRLink
+							dicomUrl = '/api/cases/append/patienthrlink';
+							rqParams = {caseId: incidents[i].case.id, Case_PatientHRLinks: response.result};
+							let orthancRes = await apiconnector.doCallApi(apiurl, rqParams);
+							$('body').loading('stop');
+						});
+					});
+					$(attachPlusButton).appendTo($(operationCmdBox));
+				}
+
 				$(operationCol).append($(toggleMoreCmd)).prepend($(moreCmdBox));
 				let moreChild = $(moreCmdBox).find('.pacs-command');
 				if ($(moreChild).length > 0) {
@@ -1249,7 +1268,6 @@ module.exports = function ( jq ) {
 								$(box).empty();
 								$(box).append($('<div></div>').text('แจ้งรังสีแพทย์รับเคสทาง Line แล้ว'));
 								let callBox = $(box).find('#CallTrigger');
-								console.log(callBox);
 								console.log(callBox.length);
 								if (callBox.length == 0) {
 									if (clockCountdownDiv) {

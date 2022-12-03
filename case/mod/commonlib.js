@@ -686,7 +686,7 @@ module.exports = function ( jq ) {
 			let username = userdata.username;
 			let params = {hospitalId: hospitalId, seriesId: seriesId, username: username, instanceList: instanceList};
 			let apiurl = '/api/orthancproxy/create/preview';
-			let orthancRes = await apiconnector.doCallApi(apiurl, params)
+			let orthancRes = await apiconnector.doCallApi(apiurl, params);
 			resolve(orthancRes);
 		});
 	}
@@ -1184,6 +1184,7 @@ module.exports = function ( jq ) {
 	}
 
 	const onSimpleEditorPaste = function(evt){
+		//console.log(evt);
 		let pathElems = evt.originalEvent.path;
 		let simpleEditorPath = pathElems.find((path)=>{
 			if (path.className === 'jqte_editor') {
@@ -1195,7 +1196,9 @@ module.exports = function ( jq ) {
 			evt.preventDefault();
 			let clipboardData = evt.originalEvent.clipboardData || window.clipboardData;
 			let textPastedData = clipboardData.getData('text');
+			//console.log(textPastedData);
 			let htmlPastedData = clipboardData.getData('text/html');
+			//console.log(htmlPastedData);
 			let htmlFormat = htmlformat(htmlPastedData);
 
 			let caseData = $('#SimpleEditorBox').data('casedata');
