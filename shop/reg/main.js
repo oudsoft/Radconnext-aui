@@ -55,7 +55,7 @@ const doShowRegisterForm = function(){
         if (newShopRes.status.code == 200) {
           $.notify("เพิ่มรายการร้านค้าสำเร็จ", "success");
           let shopId = newShopRes.Records[0].id;
-          let newUserData = {User_NameEN: '', User_LastNameEN: '', User_NameTH: newuserInfo.Name, User_LastNameTH: newuserInfo.LastNane, User_Phone: newuserInfo.Phone, User_Email: newuserInfo.Email, User_LineID: ''};
+          let newUserData = {User_NameEN: '', User_LastNameEN: '', User_NameTH: newuserInfo.Name, User_LastNameTH: newuserInfo.LastName, User_Phone: newuserInfo.Phone, User_Email: newuserInfo.Email, User_LineID: ''};
           newUserData.username = newUserAccount.Username;
           newUserData.password = newUserAccount.Password;
           newUserData.shopId = shopId;
@@ -68,7 +68,12 @@ const doShowRegisterForm = function(){
             if (loginRes.success == true) {
               localStorage.setItem('token', loginRes.token);
     					localStorage.setItem('userdata', JSON.stringify(loginRes.data));
-              window.location.replace('/shop/setting/admin.html');
+              let isMobileDevice = common.isMobileDeviceCheck();
+              let gotoPage = '/shop/setting/admin.html';
+              if (isMobileDevice) {
+                gotoPage = '/shop/mobile/index.html';
+              };
+              window.location.replace(gotoPage);
             } else {
               $.notify("เกิดข้อผิดพลาด ล็อกอินเข้าใช้งานระบบไม่ได้ในขณะนี้", "error");
               window.location.replace('/shop/index.html');

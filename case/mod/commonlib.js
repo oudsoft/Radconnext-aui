@@ -73,9 +73,15 @@ module.exports = function ( jq ) {
 
   const pageLineStyle = {'width': '100%', 'border': '2px solid gray', /*'border-radius': '10px',*/ 'background-color': '#ddd', 'margin-top': '4px', 'padding': '2px'};
 	const headBackgroundColor = '#184175';
+	
+	const onSimpleEditorChange = function() {
+		util.doResetPingCounter();
+	}
+
 	const jqteConfig = {format: false, fsize: false, ol: false, ul: false, indent: false, outdent: false,
 		link: false, unlink: false, remove: false, /*br: false,*/ strike: false, rule: false,
-		sub: false, sup: false, left: false, center: false, right: false/*, source: false */
+		sub: false, sup: false, left: false, center: false, right: false /*, source: false
+		change: onSimpleEditorChange */
 	};
 	const modalitySelectItem = ['CR', 'CT', 'MG', 'US', 'MR', 'AX'];
 	const sizeA4Style = {width: '210mm', height: '297mm'};

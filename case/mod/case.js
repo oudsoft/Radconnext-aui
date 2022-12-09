@@ -347,6 +347,7 @@ module.exports = function ( jq ) {
 			if ((caseScanparts) && (caseScanparts.length > 0)) {
 				yourSelectScanpartContent = await common.doRenderScanpartSelectedAbs(caseScanparts);
 			}
+			//console.log(caseItem);
 			let caseUG = caseItem.case.urgenttype.UGType_Name;
 			//let caseREFF = caseItem.Refferal.User_NameTH + ' ' + caseItem.Refferal.User_LastNameTH;
 			let caseRADI = caseItem.Radiologist.User_NameTH + ' ' + caseItem.Radiologist.User_LastNameTH;
@@ -744,7 +745,8 @@ module.exports = function ( jq ) {
 			defualtValue.scanpart = response.case.Case_ScanPart;
 			defualtValue.studyTags = response.StudyTags.StudyTags;
 			//let orthancRes = await common.doGetOrthancStudyDicom(defualtValue.studyID);
-			let studyTags = await common.doGetSeriesList(defualtValue.studyID)
+			//let studyTags = await common.doGetSeriesList(defualtValue.studyID)
+			let studyTags = response.StudyTags.StudyTags;
 			let seriesList = studyTags.Series;
 			let patientName = studyTags.PatientMainDicomTags.PatientName;
 			let allSeries = seriesList.length;
@@ -1300,7 +1302,7 @@ module.exports = function ( jq ) {
 								doCallTaskDirect(callUrl, data.caseId).then((clockBox)=>{
 									if (clockBox) {
 										let callBox = $(box).find('#CallTrigger');
-										console.log(callBox);
+										//console.log(callBox);
 										if (callBox.length == 0) {
 											let remark1 = $('<span></span>').text('จะโทรตามภายใน');
 											let remark2 = $('<span></span>').text('นาที').css({'margin-left': '10px'});

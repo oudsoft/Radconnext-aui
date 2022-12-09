@@ -21,7 +21,7 @@ const consult = require('../../case/mod/consult.js')($);
 const portal = require('../../case/mod/portal-lib.js')($);
 const cases = require('../../case/mod/case.js')($);
 
-var wsm, wsl, sipUA;
+var wsl, sipUA;
 
 $( document ).ready(function() {
   const initPage = function() {
@@ -35,8 +35,8 @@ $( document ).ready(function() {
           console.log(userdata);
           if (userdata.usertypeId == 2) {
 			       doLoadMainPage();
-             wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
              wsl = util.doConnectWebsocketLocal(userdata.username);
+             util.wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none', wsl);
              //submain.doCreateRegisterVoIP(userdata);
            } else {
              submain.doNotAllowAccessPage();
@@ -78,7 +78,7 @@ $( document ).ready(function() {
 });
 
 const doLoadLogin = function(){
-  common.doUserLogout(wsm);
+  common.doUserLogout(util.wsm);
 }
 
 const doLoadMainPage = function(){
@@ -142,7 +142,7 @@ const doLoadMainPage = function(){
 				userinfo.doShowUserProfile();
 			});
 			$(document).on('userlogout', (evt, data)=>{
-				common.doUserLogout(wsm);
+				common.doUserLogout(util.wsm);
 			});
 
       $(document).on('gotoportal', (evt, data)=>{

@@ -1007,32 +1007,11 @@ module.exports = function ( jq ) {
       if (patientHistory.length > 0){
         goToSaveCaseStep();
       } else {
-        /*========================================================*/
-        //let pthrna = $('.mainfull').find('#pthrna').prop('checked');
-				/*
-        let caseDetail = $(table).find('#Detail').val();
-        if (caseDetail !== '') {
-          goToSaveCaseStep();
-        } else {
-          let radAlertMsg = $('<div></div>');
-          $(radAlertMsg).append($('<p>ต้องการส่งโดยไม่มีประวัติ</p>'));
-          const radconfirmoption = {
-            title: 'โปรดยืนยัน',
-            msg: $(radAlertMsg),
-            width: '420px',
-            onOk: function(evt) {
-              radConfirmBox.closeAlert();
-              goToSaveCaseStep();
-            },
-            onCancel: function(evt){
-              $.notify('โปรดแนบประวัติผู้ป่วยอย่างน้อย 1 รูป/ไฟล์ หรือ พิมพ์รายละเอียดเพิ่มเติม', 'error');
-              radConfirmBox.closeAlert();
-            }
-          }
-          let radConfirmBox = $('body').radalert(radconfirmoption);
-        }
-				*/
-        $.notify('โปรดแนบประวัติผู้ป่วยอย่างน้อย 1 รูป/ไฟล์', 'error');
+				if (defualtValue.caseId) {
+					goToSaveCaseStep();
+				} else {
+        	$.notify('โปรดแนบประวัติผู้ป่วยอย่างน้อย 1 รูป/ไฟล์', 'error');
+				}
       }
     });
 

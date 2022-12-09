@@ -49,14 +49,14 @@ module.exports = function ( jq ) {
 				pom.setAttribute('download', outputFilename);
 				pom.click();
 				successCallback();
-				util.doResetPingCounter();
+				doResetPingCounterOnOpenCase();
 			}
   	});
 	}
 
 	const doDownloadDicom = function(evt, caseDicomZipFilename) {
 		evt.preventDefault();
-		util.doResetPingCounter();
+		doResetPingCounterOnOpenCase();
 		let dicomZipLink = '/img/usr/zip/' + caseDicomZipFilename;
 		/*
 		let pom = document.createElement('a');
@@ -206,6 +206,7 @@ module.exports = function ( jq ) {
 		*/
 		let thirdPartyLink = 'radiant://?n=f&v=';
 		if (common.downloadDicomList.length > 0) {
+			/*
 			if (common.downloadDicomList.length <= 3) {
 				common.downloadDicomList.forEach((item, i) => {
 					if (i < (common.downloadDicomList.length-1)) {
@@ -217,12 +218,32 @@ module.exports = function ( jq ) {
 				console.log(thirdPartyLink);
 				var pom = document.createElement('a');
 				pom.setAttribute('href', thirdPartyLink);
-				//pom.setAttribute('download', dicomFilename);
 				pom.click();
 				common.downloadDicomList = [];
 			} else {
 				$.notify("sorry, not support exceed three file download", "warn");
 			}
+			*/
+
+			let l = common.downloadDicomList.length;
+			let r = l - 3;
+			for (let i=(l-1); i>r; i--) {
+				if (i >= 0) {
+					let item = common.downloadDicomList[i];
+					if (item !== '') {
+						thirdPartyLink += defaultDownloadPath + '/' + item + '&v=';
+					}
+				}
+			}
+			let lastThree = thirdPartyLink.substr(thirdPartyLink.length - 3);
+			if (lastThree === '&v=') {
+				thirdPartyLink = thirdPartyLink.substring(0, thirdPartyLink.length-3);
+			}
+			console.log(thirdPartyLink);
+			let pom = document.createElement('a');
+			pom.setAttribute('href', thirdPartyLink);
+			pom.click();
+			common.downloadDicomList = [];
 		} else {
 			$.notify("ขออภัย ยังไม่พบรายการดาวน์โหลดไฟล์", "warn");
 		}
@@ -328,7 +349,7 @@ module.exports = function ( jq ) {
 			const saveNewResponseData = $(createNewResponseCmd).data('createNewResponseData');
 			console.log(saveNewResponseData);
 	    const userdata = JSON.parse(localStorage.getItem('userdata'));
-
+			const radioNameTH = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
 			/*
 			ต้องทดสอบการ Paste จาก MS Word แบบละเียดอีกที
 			*/
@@ -372,6 +393,7 @@ module.exports = function ( jq ) {
 				let params = {
 					caseId: caseId,
 					userId: userId,
+					radioNameTH: radioNameTH,
 					data: saveData,
 					hospitalId: caseHospitalId,
 					pdfFileName: fileName
@@ -880,10 +902,19 @@ module.exports = function ( jq ) {
 					let fileCode = fileName[0];
 					let codeLink = $('<div class="action-btn" style="position: relative; display: inline-block; width: 140px; cursor: pointer;">' + fileCode + '</div>');
 					$(codeLink).css(commandButtonStyle);
+					let fileTypeLow = fileName[1].toLowerCase();
+					if ((fileTypeLow  === 'zip') || (fileTypeLow  === 'rar')) {
+						codeLink = $('<input type="button" value="Attach" class="action-btn" style="cursor: pointer; width: 100%;"/>');
+					}
 					$(hrbackwardBox).append($(codeLink));
 					$(codeLink).on('click',(evt)=>{
 						evt.preventDefault();
-						doOpenHR(item.link, patientFullName, casedate);
+						if ((fileTypeLow  === 'zip') || (fileTypeLow  === 'rar')) {
+							let caseDicomZipFilename = fileCode + '.' + fileName[1];
+							let downloadList = doDownloadDicom(evt, caseDicomZipFilename);
+						} else {
+							doOpenHR(item.link, patientFullName, casedate);
+						}
 					});
 				});
 			}
@@ -1319,7 +1350,7 @@ module.exports = function ( jq ) {
 					let draftbackup = {caseId: caseId, content: responseHTML, backupAt: new Date()};
 					localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
 					keypressCount = 0;
-					util.doResetPingCounter();
+					doResetPingCounterOnOpenCase();
 				} else {
 					keypressCount += 1;
 				}
@@ -1851,6 +1882,12 @@ module.exports = function ( jq ) {
 	  return $(msgBox).append($(titleBox)).append($(bodyBox)).append($(footerBox))
 	}
 
+	const doResetPingCounterOnOpenCase = function() {
+		let main = require('../main.js');
+		let myWsm = main.doGetWsm();
+		myWsm.send(JSON.stringify({type: 'reset', what: 'pingcounter'}));
+	}
+
   return {
 		/* Variable Zone */
 		caseHospitalId,
@@ -1884,6 +1921,7 @@ module.exports = function ( jq ) {
 		setBackupDraftCounter,
 		setCaseResponseId,
 		getCaseResponseId,
-		doReportBugOpenCase
+		doReportBugOpenCase,
+		doResetPingCounterOnOpenCase
 	}
 }

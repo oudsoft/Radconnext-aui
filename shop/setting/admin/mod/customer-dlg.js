@@ -33,10 +33,11 @@ module.exports = function ( jq ) {
         $(searchInputBox).hide();
         $(customerListBox).hide();
         let newCustomerForm = doShowAddCustomerForm(shopData, async(newCustomers)=>{
-          customers = newCustomers;
+          //customers = newCustomers;
           $(newCustomerForm).remove();
           $(searchInputBox).show();
           $(customerListBox).show();
+					customers = JSON.parse(localStorage.getItem('customers'));
           customerResult = await doShowList(customers, successCallback);
           $(customerListBox).empty().append($(customerResult));
         }, ()=>{
