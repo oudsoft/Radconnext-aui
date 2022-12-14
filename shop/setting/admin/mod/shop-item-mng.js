@@ -79,7 +79,7 @@ module.exports = function ( jq ) {
 							$(updateShopLogoCmd).on('click', (evt)=>{
 								doStartUploadPicture(evt, field, item.id);
 							});
-							$(field).append($(updateShopLogoCmd).css({'float': 'left'}));
+							$(field).append($('<div style="width: 100%; text-align: center;"></div>').append($(updateShopLogoCmd)));
 							$(itemRow).append($(field));
 						}
 					}

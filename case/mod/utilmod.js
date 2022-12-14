@@ -450,6 +450,8 @@ module.exports = function ( jq ) {
 		console.log('Local Websocket is connected to the signaling server')
 	}
 
+	let clientSocketLastCounterPing = 0;
+
 	const wslOnMessage = function (msgEvt) {
 		let data = JSON.parse(msgEvt.data);
 		console.log(data);
@@ -462,6 +464,7 @@ module.exports = function ( jq ) {
 			if (modPingCounter == 0) {
 				wsl.send(JSON.stringify({type: 'pong', myconnection: (userdata.id + '/' + userdata.username + '/' + userdata.hospitalId)}));
 			}
+			/*
 			if (!(data.clientSocketState.connected)) {
 				let ms = 60;
 				setTimeout(()=>{
@@ -469,10 +472,26 @@ module.exports = function ( jq ) {
 					let params = {};
 					$.get(callUrl, params).then((response) => {
 						console.log(response);
+						clientSocketLastCounterPing = 0;
 					});
 				}, (ms*1000));
 				doCreateWebSocketRetry(ms)
 			}
+			if (data.clientSocketState.counterping > clientSocketLastCounterPing) {
+				clientSocketLastCounterPing = data.clientSocketState.counterping;
+			} else {
+				let ms = 60;
+				setTimeout(()=>{
+					let callUrl = '/api/client/api/connect/cloud/reconnect';
+					let params = {};
+					$.get(callUrl, params).then((response) => {
+						console.log(response);
+						clientSocketLastCounterPing = 0;
+					});
+				}, (ms*1000));
+				doCreateWebSocketRetry(ms)
+			}
+			*/
 		} else if (data.type == 'result') {
 			$.notify(data.message, "success");
 		} else if (data.type == 'notify') {

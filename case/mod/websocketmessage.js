@@ -144,8 +144,18 @@ module.exports = function ( jq, wsm, wsl) {
 		} else if (data.type == 'getsocketstate'){
 			if ((wsm) && (wsl)) {
 				let stateData = {state: wsl.clientSocketState.state};
-				let stateMsg = {type: 'web', from: userdata.username, to: data.from, data: {type: 'socketstate', state: wsl.clientSocketState.state, connected: wsl.clientSocketState.connected}}
+				let stateMsg = {type: 'web', from: userdata.username, to: data.from, data: {type: 'socketstate', state: wsl.clientSocketState.state, connected: wsl.clientSocketState.connected, orthancCount: data.data.orthancCount}}
 				wsm.send(JSON.stringify(stateMsg));
+				if ((wsl.clientSocketState.connected) && (data.data.orthancCount == 0)) {
+					setTimeout(()=>{
+						let ms = 5;
+						let callUrl = '/api/client/api/connect/cloud/reconnect';
+						let params = {};
+						$.get(callUrl, params).then((response) => {
+							console.log(response);
+						});
+					}, (ms*1000));
+				}
 			}
     } else {
 			console.log('Nothing Else');

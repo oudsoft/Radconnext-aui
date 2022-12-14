@@ -8,6 +8,7 @@ module.exports = function ( jq ) {
 	//const newcase = require('./createnewcase.js')($);
 	const casecreator = require('../../local/dicom/mod//case-creator.js')($);
 	const casecounter = require('./casecounter.js')($);
+	const eventLogMsg = require('./case-event-log-msg.js')($, util, common);
 
 	const defualtPacsLimit = '30';
 	const defualtPacsStudyDate = 'ALL';
@@ -1197,6 +1198,8 @@ module.exports = function ( jq ) {
 	}
 
 	const doActionCaseEventLog = function(box, data) {
+		eventLogMsg.doCreateEventLogMsgBox(box, data);
+		/*
 		let caseBoxData = $(box).data('caseData');
 		if (data.caseId == caseBoxData.case.id) {
 			if ([3, 4, 7].includes(Number(data.to))) {
@@ -1384,6 +1387,7 @@ module.exports = function ( jq ) {
 				}
 			}
 		}
+		*/
 	}
 
 	return {

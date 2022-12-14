@@ -98,7 +98,7 @@ const doShowRegisterForm = function(){
 
 const doCreateUserInfoForm = function(successCallback){
   let userInfoFormBox = $('<div></div>');
-  let titleForm = $('<div><h2 style="margin-left: 5px;">ข้อมูลผู้ขอเปิดร้านค้า</h2></div>').css({'width': '100%', 'background-color': 'grey', 'color': 'white'});
+  let titleForm = $('<div><h2 style="margin-left: 5px;">ข้อมูลผู้ขอเปิดร้าน</h2></div>').css({'width': '100%', 'background-color': 'grey', 'color': 'white'});
   let userInfoNameLabel = $('<label>ชื่อ <span style="color: red;">*</span></label>');
   let userInfoNameInput = $('<input type="text"/>').css(inputTextStyle);
   let userInfoNameFrag = $('<p></p>').append($(userInfoNameLabel)).append($(userInfoNameInput));
