@@ -73,7 +73,7 @@ module.exports = function ( jq ) {
 
   const pageLineStyle = {'width': '100%', 'border': '2px solid gray', /*'border-radius': '10px',*/ 'background-color': '#ddd', 'margin-top': '4px', 'padding': '2px'};
 	const headBackgroundColor = '#184175';
-	
+
 	const onSimpleEditorChange = function() {
 		util.doResetPingCounter();
 	}
@@ -107,6 +107,7 @@ module.exports = function ( jq ) {
 			apiconnector.doGetApi(url, rqParams).then((response) => {
 				resolve(response);
 			}).catch((err) => {
+				console.log(url);
 				console.log(JSON.stringify(err));
 			})
 		});
@@ -125,11 +126,13 @@ module.exports = function ( jq ) {
           xhr.onprogress = function(evt) {
             if (evt.lengthComputable) {
               // For Download
+							/*
               let loaded = evt.loaded;
               let total = evt.total;
               let prog = (loaded / total) * 100;
               let perc = prog.toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
               $('body').find('#ProgressValueBox').text(perc + '%');
+							*/
             }
           };
           xhr.upload.onprogress = function (evt) {
@@ -143,10 +146,12 @@ module.exports = function ( jq ) {
   				progBar.doCloseProgress();
           let apiItem = {api: apiurl};
           console.log(apiItem);
+					/*
           let logWin = $('body').find('#LogBox');
 					if (logWin) {
           	$(logWin).simplelog(apiItem);
 					}
+					*/
           resolve(res)
         }, 1000);
       }).fail(function (err) {
@@ -477,7 +482,7 @@ module.exports = function ( jq ) {
 	}
 
   const doDownloadDicom = function(studyID, dicomFilename){
-		$('body').loading('start');
+		//$('body').loading('start');
 		/*
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		const hospitalId = userdata.hospitalId;
@@ -499,12 +504,12 @@ module.exports = function ( jq ) {
 		pom.setAttribute('target', '_blank');
 		pom.setAttribute('download', dicomFilename);
 		pom.click();
-		$('body').loading('stop');
+		//$('body').loading('stop');
   }
 
 	const doDownloadLocalDicom = function(studyID, dicomFilename){
 		return new Promise(async function(resolve, reject) {
-			$('body').loading('start');
+			//$('body').loading('start');
 			const dicomUrl = '/api/orthanc/download/dicom/archive';
 			let dicomStudiesRes = await doCallLocalApi(dicomUrl, {StudyID: studyID, UsrArchiveFileName: dicomFilename});
 			//console.log(dicomStudiesRes);
@@ -513,17 +518,17 @@ module.exports = function ( jq ) {
 			pom.setAttribute('download', dicomFilename);
 			pom.click();
 			resolve(dicomStudiesRes.result);
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		});
 	}
 
 	const doDeleteLocalDicom = function(studyID){
 		return new Promise(async function(resolve, reject) {
-			$('body').loading('start');
+			//$('body').loading('start');
 			const dicomUrl = '/api/orthanc/delete/study';
 			let dicomStudiesRes = await doCallLocalApi(dicomUrl, {StudyID: studyID});
 			resolve(dicomStudiesRes.result);
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		});
 	}
 
@@ -1189,6 +1194,24 @@ module.exports = function ( jq ) {
 		return s4() + s4() + '-' + s4();
 	}
 
+	const onSimpleEditorCopy = function(evt){
+		let pathElems = evt.originalEvent.path;
+		let simpleEditorPath = pathElems.find((path)=>{
+			if (path.className === 'jqte_editor') {
+				return path;
+			}
+		});
+		if (simpleEditorPath) {
+			let clipboardData = evt.originalEvent.clipboardData || window.clipboardData;
+			let selection = document.getSelection();
+			let container = document.createElement("div");
+			let selContent = selection.getRangeAt(0).cloneContents();
+			container.appendChild(selContent);
+			clipboardData.setData('text/html', container.innerHTML);
+			evt.preventDefault();
+		}
+	}
+
 	const onSimpleEditorPaste = function(evt){
 		//console.log(evt);
 		let pathElems = evt.originalEvent.path;
@@ -1198,20 +1221,18 @@ module.exports = function ( jq ) {
 			}
 		});
 		if (simpleEditorPath) {
-			evt.stopPropagation();
-			evt.preventDefault();
 			let clipboardData = evt.originalEvent.clipboardData || window.clipboardData;
-			let textPastedData = clipboardData.getData('text');
+			let textPastedData = clipboardData.getData('text/plain');
 			//console.log(textPastedData);
 			let htmlPastedData = clipboardData.getData('text/html');
 			//console.log(htmlPastedData);
-			let htmlFormat = htmlformat(htmlPastedData);
-
+			//let htmlFormat = htmlformat(htmlPastedData);
+			//console.log(htmlFormat);
 			let caseData = $('#SimpleEditorBox').data('casedata');
 			let simpleEditor = $('#SimpleEditorBox').find('#SimpleEditor');
 			let oldContent = $(simpleEditor).val();
-			if ((htmlFormat) && (htmlFormat !== '')) {
-				htmlFormat = doExtractHTMLFromAnotherSource(htmlFormat);
+			if ((htmlPastedData) && (htmlPastedData !== '')) {
+				let htmlFormat = doExtractHTMLFromAnotherSource(htmlPastedData);
 				document.execCommand('insertHTML', false, htmlFormat);
 				let newContent = oldContent + htmlFormat;
 				let draftbackup = {caseId: caseData.caseId, content: newContent, backupAt: new Date()};
@@ -1219,6 +1240,7 @@ module.exports = function ( jq ) {
 				$('#SimpleEditorBox').trigger('draftbackupsuccess', [draftbackup]);
 			} else {
 				if ((textPastedData) && (textPastedData !== '')) {
+					console.log(textPastedData);
 					textPastedData = doExtractHTMLFromAnotherSource(textPastedData);
 					document.execCommand('insertText', false, textPastedData);
 					let newContent = oldContent + textPastedData;
@@ -1229,12 +1251,15 @@ module.exports = function ( jq ) {
 			}
 			//console.log(localStorage.getItem('draftbackup'));
 		}
+		evt.stopPropagation();
+		evt.preventDefault();
 	}
 
 	const doExtractHTMLFromAnotherSource = function(anotherText){
 		let startPointText = '<!--StartFragment-->';
 		let endPointText = '<!--EndFragment-->';
-		let tempToken = anotherText.replace('\n', '');
+		//let tempToken = anotherText.replace('\n', '');
+		let tempToken = anotherText;
 		let startPosition = tempToken.indexOf(startPointText);
 		if (startPosition >= 0) {
 			let endPosition = tempToken.indexOf(endPointText);
@@ -1505,6 +1530,7 @@ module.exports = function ( jq ) {
 		doShowStudyDescriptionLegentCmdClick,
 		doScrollTopPage,
 		genUniqueID,
+		onSimpleEditorCopy,
 		onSimpleEditorPaste,
 		doCallLoadStudyTags,
 		doReStructureDicom,

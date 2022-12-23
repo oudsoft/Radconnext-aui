@@ -71,7 +71,7 @@ $( document ).ready(function() {
 
   $('head').append('<script src="' + sipPhonePlugin + '"></script>');
 
-  $('head').append('<script src="' + radUtilityPlugin + '"></script>');
+  $('head').append('<script src="' + radUtilityPlugin + '?t=ml"></script>');
   setTimeout(()=>{
 	   initPage();
   }, 1200);
@@ -113,9 +113,9 @@ const doLoadMainPage = function(){
 	$('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/scanpart.css" type="text/css" />');
   $('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/custom-select.css" type="text/css" />');
 
-  $('body').append($('<div id="overlay"><div class="loader"></div></div>'));
+  //$('body').append($('<div id="overlay"><div class="loader"></div></div>'));
 
-  $('body').loading({overlay: $("#overlay"), stoppable: true});
+  //$('body').loading({overlay: $("#overlay"), stoppable: true});
 
   $('head').append('<link rel="stylesheet" href="https://radconnext.info/stylesheets/style.css" type="text/css" />');
   $('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/style.css" type="text/css" />');
@@ -166,11 +166,11 @@ const doLoadMainPage = function(){
 			});
 
       $(document).on('openreportdesign', (evt, data)=>{
-				$('body').loading('start');
+				//$('body').loading('start');
 				$(".mainfull").empty();
 				let reportDesignUrl = '../report-design/index.html?hosid=' + data.hospitalId;
 				window.location.replace(reportDesignUrl);
-				$('body').loading('stop');
+				//$('body').loading('stop');
 			});
 
       $(document).on('opennewstatuscase', async (evt, data)=>{
@@ -227,7 +227,7 @@ const doLoadMainPage = function(){
 			});
 
       $(document).on('opensearchcase', async (evt, data)=>{
-				$('body').loading('start');
+				//$('body').loading('start');
         let yesterDayFormat = util.getYesterdayDevFormat();
         let toDayFormat = util.getTodayDevFormat();
 				let defaultSearchKey = {fromDateKeyValue: yesterDayFormat, toDateKeyValue: toDayFormat, patientNameENKeyValue: '*', patientHNKeyValue: '*', bodypartKeyValue: '*', caseStatusKeyValue: 0};
@@ -237,7 +237,7 @@ const doLoadMainPage = function(){
 
 				$("#TitleContent").empty().append($(searchTitlePage));
 				let response = await common.doCallApi('/api/cases/search/key', defaultSearchParam);
-				$('body').loading('stop');
+				//$('body').loading('stop');
 				if (response.status.code === 200) {
 					let searchResultViewDiv = $('<div id="SearchResultView"></div>');
 					$(".mainfull").empty().append($(searchResultViewDiv));
@@ -249,7 +249,16 @@ const doLoadMainPage = function(){
 			});
 
       $(document).on('openhome', (evt, data)=>{
-				common.doSaveQueryDicom(data);
+        //ALLFilterAllCmd
+        console.log(data);
+        if (data.cmdId === 'ALLFilterAllCmd') {
+          let filterDicom = JSON.parse(JSON.stringify(data));
+          let now = util.formatDateTimeDDMMYYYYJSON(new Date());
+          filterDicom.studyFromDate = '-' + now.YY + now.MM + now.DD;
+          common.doSaveQueryDicom(filterDicom);
+        } else {
+				  common.doSaveQueryDicom(data);
+        }
 				dicom.doLoadDicomFromOrthanc();
 			});
       /*
@@ -266,12 +275,12 @@ const doLoadMainPage = function(){
 }
 
 const doInitDefualPage = function(){
-  $('body').loading('start');
+  //$('body').loading('start');
   let userdata = JSON.parse(localStorage.getItem('userdata'));
   casecounter.doSetupCounter().then(async(loadRes)=>{
     actionAfterSetupCounter();
     submain.doInitShowMasterNotify();
-    $('body').loading('stop');
+    //$('body').loading('stop');
   });
   let hospitalId = userdata.hospitalId;
   let apiUrl = '/api/cases/options/' + hospitalId;

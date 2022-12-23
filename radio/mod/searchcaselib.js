@@ -261,7 +261,7 @@ module.exports = function ( jq ) {
         }
       }
       if (searchKey) {
-        $('body').loading('start');
+        //$('body').loading('start');
 				const userdata = JSON.parse(localStorage.getItem('userdata'));
         let hospitalId = userdata.hospitalId;
         let userId = userdata.id;
@@ -276,7 +276,7 @@ module.exports = function ( jq ) {
 
         await searchResultCallback(response);
 
-        $('body').loading('stop');
+        //$('body').loading('stop');
 
       }
     });
@@ -430,7 +430,7 @@ module.exports = function ( jq ) {
         - มากกว่า 0 ให้แสดง Navigator
         - เท่ากับ 0 ให้แสดงข้อความ ไม่พบรายการที่ค้นหา
       */
-      $('body').loading('start');
+      //$('body').loading('start');
 
 			let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
 
@@ -463,7 +463,7 @@ module.exports = function ( jq ) {
           totalItem: allCaseRecords.length,
           styleClass : {'padding': '4px'/*, "font-family": "THSarabunNew", "font-size": "20px"*/},
           changeToPageCallback: async function(page){
-            $('body').loading('start');
+            //$('body').loading('start');
             let toItemShow = 0;
             if (page.toItem == 0) {
               toItemShow = allCaseRecords.length;
@@ -473,13 +473,13 @@ module.exports = function ( jq ) {
             showCases = await common.doExtractList(allCaseRecords, page.fromItem, toItemShow);
             caseView = await doShowCaseView(showCases, response.key, doShowSearchResultCallback);
             $(".mainfull").find('#SearchResultView').empty().append($(caseView));
-            $('body').loading('stop');
+            //$('body').loading('stop');
           }
         };
         let navigatoePage = $(navigBarBox).controlpage(navigBarOption);
         navigatoePage.toPage(1);
       }
-      $('body').loading('stop');
+      //$('body').loading('stop');
       resolve();
     });
   }

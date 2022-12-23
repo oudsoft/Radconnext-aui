@@ -106,11 +106,14 @@ module.exports = function ( jq ) {
               var event = new CustomEvent('response-progress', {detail: {event: evt, resfrom: apiurl}});
               document.dispatchEvent(event);
               */
+							
+							/*
               let loaded = evt.loaded;
               let total = evt.total;
               let prog = (loaded / total) * 100;
               let perc = prog.toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
               $('body').find('#ProgressValueBox').text(perc + '%');
+							*/
             }
           };
           xhr.upload.onprogress = function (evt) {
@@ -125,46 +128,13 @@ module.exports = function ( jq ) {
 
           let apiItem = {api: apiurl};
           console.log(apiItem);
+					/*
           let logWin = $('body').find('#LogBox');
           $(logWin).simplelog(apiItem);
-
+					*/
           resolve(res)
         }, 1000);
       }).fail(function (err) {
-        /*
-        $(progBar.handle).find('#ApiNameBar').css({'color': 'red'});
-        $(progBar.progressValueBox).css({'color': 'red'});
-        $.notify('มีข้อผิดพลาดเกิดที่ระบบฯ', 'error');
-        const userdata = JSON.parse(localStorage.getItem('userdata'));
-        const { getFomateDateTime } = require('./utilmod.js')($);
-        let dt = new Date();
-        let bugDataReport = $('<div></div>');
-        $(bugDataReport).append($('<h2 style="text-align: center;"><b>ERROR REPORT</b></h2>'));
-        if ((err.responseJSON) && (err.responseJSON.error)){
-          $(bugDataReport).append('<h3>ERROR MESSAGE : ' + err.responseJSON.error + '</h3>');
-        } else {
-          $(bugDataReport).append('<h3>ERROR MESSAGE : ' + JSON.stringify(err) + '</h3>');
-        }
-        $(bugDataReport).append($('<h3>API : ' + apiurl + '</h3>'));
-        $(bugDataReport).append($('<h3>METHOD : POST</h3>'));
-        $(bugDataReport).append($('<h3>Date-Time : ' + getFomateDateTime(dt) + '</h3>'));
-        $(bugDataReport).append($('<h5>User Data : ' + JSON.stringify(userdata) + '</h5>'));
-        let bugParams = {email: adminEmailAddress, bugreport: bugDataReport.html()};
-        doCallReportBug(bugParams).then((reportRes)=>{
-          if (reportRes.status.code == 200) {
-            $.notify('ระบบฯ ได้รวบรวมข้อผิดพลาดที่เกิดขึ้นส่งไปให้ผู้ดูแลระบบทางอีเมล์แล้ว', 'warning');
-            //มีข้อผิดพลาด กรุณาแจ้งผู้ดูแลระบบ
-          } else if (reportRes.status.code == 500) {
-            $.notify('การรายงานข้อผิดพลาดทางอีเมล์เกิดข้อผิดพลาด @API', 'error');
-          } else {
-            $.notify('การรายงานข้อผิดพลาดทางอีเมล์เกิดข้อผิดพลาด @ไม่ทราบสาเหตุ', 'error');
-          }
-          setTimeout(()=>{
-            progBar.doCloseProgress();
-            reject(err);
-          }, 2500);
-        });
-        */
         reject(err);
       });
 		});
@@ -510,7 +480,7 @@ module.exports = function ( jq ) {
 
 		orthancProxyApi,
     adminEmailAddress,
-    
+
 		/*method*/
 		arrFilterValue,
 		doTestAjaxCallApi,

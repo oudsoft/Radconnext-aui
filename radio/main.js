@@ -98,8 +98,7 @@ $( document ).ready(function() {
               let eventData = data.caseData;
               eventData.startDownload = 1;
               onOpenCaseTrigger(eventData);
-
-              $('body').loading('stop');
+              //$('body').loading('stop');
             } else {
     					$.notify('เกิดข้อผิดพลาด ไม่สามารถอัพเดทสถานะเคสได้ในขณะนี้', 'error');
     				}
@@ -112,7 +111,33 @@ $( document ).ready(function() {
           doLoadLogin();
         });
       } else {
-        doLoadLogin();
+        let queryString = decodeURIComponent(window.location.search);
+        let params = new URLSearchParams(queryString);
+        let caseId = params.get('caseId');
+        let token = params.get('token');
+        if ((caseId) && (token)) {
+          let callURLTokenURL = '/api/tasks/case/open/data/' + caseId;
+          $.get(callURLTokenURL, {}, async function(data){
+            console.log(data);
+            if ((data) && (data.token)) {
+              sessionStorage.setItem('logged', true);
+              localStorage.setItem('token', data.token);
+              localStorage.setItem('userdata', JSON.stringify(data.radioUserData));
+              /*
+              if (userdata.userprofiles.length == 0){
+                userdata.userprofiles.push({Profile: profile.defaultRadioProfileV2});
+              }
+              */
+              doLoadMainPage();
+              let eventData = data.caseData;
+              eventData.startDownload = 0;
+              onOpenCaseTrigger(eventData);
+              //$('body').loading('stop');
+            }
+          });
+        } else {
+          doLoadLogin();
+        }
       }
     }
 	};
@@ -192,6 +217,8 @@ function doLoadMainPage(){
   $('head').append('<script src="' + sipPhonePlugin + '"></script>');
 
   $('head').append('<link rel="stylesheet" href="../case/css/scanpart.css" type="text/css" />');
+  
+  /*
   $('body').append($('<div id="overlay"><div class="loader"></div></div>'));
 
   $('body').loading({overlay: $("#overlay"), stoppable: true});
@@ -203,6 +230,7 @@ function doLoadMainPage(){
 	$('body').on('loading.stop', function(event, loadingObj) {
 	  //console.log('=== loading hide ===');
 	});
+  */
 
   document.addEventListener("triggercounter", welcome.onCaseChangeStatusTrigger);
   //document.addEventListener("callzoominterrupt", welcome.doInterruptZoomCallEvt);
@@ -230,7 +258,9 @@ function doLoadMainPage(){
 
 	$('#app').load(mainFile, function(){
 		$('#Menu').load(menuFile, function(){
-      //let logWin = util.doShowLogWindow();
+      $('.case-counter').hide();
+      $('.consult-counter').hide();
+
       $(document).on('openedituserinfo', (evt, data)=>{
 				userinfo.doShowUserProfile();
         util.doResetPingCounter();
@@ -296,7 +326,7 @@ function doLoadMainPage(){
         });
       });
       $(document).on('opensearchcase', async (evt, data)=>{
-        $('body').loading('start');
+        //$('body').loading('start');
         let yesterDayFormat = util.getYesterdayDevFormat();
         let toDayFormat = util.getTodayDevFormat();
         let defaultSearchKey = {fromDateKeyValue: yesterDayFormat, toDateKeyValue: toDayFormat, patientNameENKeyValue: '*', patientHNKeyValue: '*', bodypartKeyValue: '*', caseStatusKeyValue: 0};
@@ -328,7 +358,7 @@ function doLoadMainPage(){
                   $(".mainfull").empty().append('<h3>ระบบค้นหาเคสขัดข้อง โปรดแจ้งผู้ดูแลระบบ</h3>');
                 }
                 util.doResetPingCounter();
-                $('body').loading('stop');
+                //$('body').loading('stop');
               });
             } else {
               common.doUserLogout(util.wsm);
@@ -337,7 +367,7 @@ function doLoadMainPage(){
             $(".mainfull").empty().append('<h3>ระบบค้นหาเคสขัดข้อง โปรดแจ้งผู้ดูแลระบบ</h3>');
           }
           util.doResetPingCounter();
-          $('body').loading('stop');
+          //$('body').loading('stop');
         });
         util.doResetPingCounter();
       });
@@ -400,7 +430,12 @@ function doLoadMainPage(){
 			});
 
 			doUseFullPage();
-
+      /*
+      $('.mainfull').bind('copy', (evt)=>{
+        common.onSimpleEditorCopy(evt);
+        util.doResetPingCounter();
+      });
+      */
       $('.mainfull').bind('paste', (evt)=>{
         common.onSimpleEditorPaste(evt);
         util.doResetPingCounter();
@@ -453,21 +488,22 @@ function doLoadMainPage(){
 }
 
 const onOpenCaseTrigger = function(caseData) {
+  $("#TitleContent").empty();
   let opencaseTitlePage = acccase.doCreateAccCaseTitlePage();
-  $("#TitleContent").empty().append($(opencaseTitlePage));
+  //$("#TitleContent").append($(opencaseTitlePage));
   opencase.doCreateOpenCasePage(caseData).then((opencasePage)=>{
-    $(".mainfull").empty().append($(opencasePage));
-    common.doScrollTopPage();
-    util.doResetPingCounter();
     $.notify('เปิดเคส สำเร็จ', 'success');
-    //$('.jqte_editor').css(common.sizeA4Style);
-    //console.log($('.jqte_editor').css('font-family'));
+
     let firstLink = '/images/case-incident-icon-3.png'
 		window.fetch(firstLink, {method: 'GET'}).then(response => response.blob()).then(blob => {
+      $(".mainfull").empty().append($(opencasePage));
+      common.doScrollTopPage();
+      util.doResetPingCounter();
       let url = window.URL.createObjectURL(blob);
-      //console.log(url);
       $(opencaseTitlePage).find('img').attr('src', url);
+      $("#TitleContent").append($(opencaseTitlePage));
     });
+
   }).catch(async (err)=>{
     if (err.error.code == 210){
       let rememberme = localStorage.getItem('rememberme');
@@ -480,6 +516,13 @@ const onOpenCaseTrigger = function(caseData) {
           common.doScrollTopPage();
           util.doResetPingCounter();
           $.notify('เปิดเคส สำเร็จ', 'success');
+
+          let firstLink = '/images/case-incident-icon-3.png'
+          window.fetch(firstLink, {method: 'GET'}).then(response => response.blob()).then(blob => {
+            let url = window.URL.createObjectURL(blob);
+            $(opencaseTitlePage).find('img').attr('src', url);
+          });
+
         });
       } else {
         common.doUserLogout(util.wsm);
@@ -530,7 +573,7 @@ function doLoadDefualtPage(autoSelectPage) {
         }
       }
     }
-    $('body').loading('stop');
+    //$('body').loading('stop');
   }).catch(async (err)=>{
     if (err.error.code == 210){
       let rememberme = localStorage.getItem('rememberme');
@@ -540,7 +583,7 @@ function doLoadDefualtPage(autoSelectPage) {
         localStorage.setItem('userdata', JSON.stringify(newUserData.data));
         welcome.doSetupCounter().then((loadRes)=>{
           $(".mainfull").empty();
-          $('body').loading('stop');
+          //$('body').loading('stop');
         });
       } else {
         common.doUserLogout(util.wsm);
@@ -744,8 +787,6 @@ function doAutoAcceptCase(autoSelectPage){
   const userdata = JSON.parse(localStorage.getItem('userdata'));
   const radioNameTH = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
   const autoAcc = userdata.userprofiles[0].Profile.activeState.autoAcc;
-  $('.case-counter').hide();
-  //console.log(autoAcc);
   if (autoAcc == 1){
     newcase.doCallMyNewCase().then(async (myNewCase)=>{
       console.log(myNewCase);
@@ -761,7 +802,7 @@ function doAutoAcceptCase(autoSelectPage){
           doLoadDefualtPage(autoSelectPage);
         }
       }
-      $('body').loading('stop');
+      //$('body').loading('stop');
     });
   } else {
     doLoadDefualtPage(autoSelectPage);

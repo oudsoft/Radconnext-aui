@@ -791,6 +791,11 @@ module.exports = function ( jq ) {
     $(tableCell).appendTo($(tableRow));
     $(tableRow).appendTo($(table));
 
+		if (defualtValue.caseId) {
+			let uploadStudyReplaceOptionDiv = $('<div id="UploadStudyReplaceOptionDiv" style="margin-top: 8px;"><input type="checkbox" id="UploadStudyReplaceOption" checked style="transform: scale(1.5)"><label for="UploadStudyReplaceOption"> upload file ภาพทั้งหมดใหม่อีกครั้ง</label></div>');
+			$(tableCell).append($(uploadStudyReplaceOptionDiv));
+		}
+
     /*Urgent type */
     tableRow = $('<div style="display: table-row;"></div>');
     tableCell = $('<div style="display: table-cell;">ประเภทความเร่งด่วน</div>');
@@ -803,6 +808,7 @@ module.exports = function ( jq ) {
 
 		console.log(caseUrgentType);
 
+		console.log(defualtValue);
     if (defualtValue.urgenttype === 'standard') {
 			let ugTypeSelector = $('<select id="Urgenttype"></select>');
       tableCell = $('<div style="display: table-cell; padding: 5px;"></div>').append($(ugTypeSelector));
@@ -939,7 +945,8 @@ module.exports = function ( jq ) {
           let currentCaseStatusApiUrl = '/api/cases/status/' + defualtValue.caseId;
           let getRes = await common.doGetApi(currentCaseStatusApiUrl, {});
           if ((getRes.status.code == 200) && (getRes.canupdate == true)) {
-            doSaveUpdateCaseStep(defualtValue, options, patientHistory, scanparts, radioSelected, defualtValue.caseId);
+						let uploadStudyReplaceOption = $(table).find('#UploadStudyReplaceOption').prop('checked');
+            doSaveUpdateCaseStep(defualtValue, options, patientHistory, scanparts, radioSelected, defualtValue.caseId, uploadStudyReplaceOption);
           } else if ((getRes.status.code == 200) && (parseInt(getRes.current) == 9)) {
             let radAlertMsg = $('<div></div>');
             $(radAlertMsg).append($('<p>เนื่องจากเคสที่คุณกำลังพยายามแก้ไข ไม่อยู่ในสถานะที่จะแก้ไขได้อีกต่อไป</p>'));
@@ -989,7 +996,7 @@ module.exports = function ( jq ) {
               onOk: function(evt) {
                 let verified = doVerifyNewCaseDataSecondStep(table, radioSelected);
                 if (verified) {
-                  $('body').loading('start');
+                  //$('body').loading('start');
                   radConfirmBox.closeAlert();
                   saveNow();
                 }
@@ -1038,7 +1045,7 @@ module.exports = function ( jq ) {
 		const userId = userdata.id
 		let newCaseData = await doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId);
 		if (newCaseData) {
-	    $('body').loading('start');
+	    //$('body').loading('start');
 	    try {
 	      let rqParams = {key: {Patient_HN: newCaseData.hn}};
 	      let patientdb = await common.doCallApi('/api/patient/search', rqParams);
@@ -1080,7 +1087,7 @@ module.exports = function ( jq ) {
 		        $.notify("บันทึกเคสใหม่เข้าสู่ระบบเรียบร้อยแล้ว", "success");
 						let hrPatientFiles = caseData.Case_PatientHRLink;
 						let caseId = caseRes.Record.id;
-						doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, 'new', false);
+						doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, 'new', radioSelected);
 						if (userdata.usertypeId == 2) {
 							/*
 							let isActive = $('#CaseMainCmd').hasClass('NavActive');
@@ -1098,20 +1105,20 @@ module.exports = function ( jq ) {
 				} else {
 					$.notify("เกิดความผิดพลาด ไม่สามารถสร้างจ้อมูล Dicom เพื่อใช้งานได้", "error");
 				}
-		    $('body').loading('stop');
+		    //$('body').loading('stop');
 	    } catch(e) {
 	      console.log('Unexpected error occurred =>', e);
-	      $('body').loading('stop');
+	      //$('body').loading('stop');
 	    }
 		} else {
 			$.notify("ข้อมูลเคสที่คุณสร้างใหม่มีความผิดพลาด", "error");
 		}
 	}
 
-  const doTransferDicomZip = function(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, event, isChangeRadio) {
+  const doTransferDicomZip = function(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, event, radioId) {
     return new Promise(async function(resolve, reject) {
       let transerDicomUrl = '/api/orthanc/transfer/dicom';
-      let transferParams = {DicomZipFileName: dicomZipFileName, StudyTags: defualtValue.studyTags, HrPatientFiles: hrPatientFiles, OldHrPatientFiles: defualtValue.pn_history, ChangeRadioOption: isChangeRadio, userId: userId, caseId: caseId, event: event};
+      let transferParams = {DicomZipFileName: dicomZipFileName, StudyTags: defualtValue.studyTags, HrPatientFiles: hrPatientFiles, OldHrPatientFiles: defualtValue.pn_history, radioId: radioId, userId: userId, caseId: caseId, event: event};
 			if (defualtValue.caseId) {
 				transferParams.caseId = defualtValue.caseId;
 			}
@@ -1122,7 +1129,7 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doSaveUpdateCaseStep = async function (defualtValue, options, phrImages, scanparts, radioSelected, caseId){
+	const doSaveUpdateCaseStep = async function (defualtValue, options, phrImages, scanparts, radioSelected, caseId, uploadStudyReplaceOption){
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
 		const hospitalId = userdata.hospitalId;
 		const userId = userdata.id
@@ -1136,13 +1143,15 @@ module.exports = function ( jq ) {
 			} else if ((statusId == 3)||(statusId == 4)||(statusId == 7)) {
 				$('#NegativeStatusSubCmd').click();
 			}
-			doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, 'update', isChangeRadio);
+			if (uploadStudyReplaceOption) {
+				doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, 'update', radioSelected);
+			}
 		}
 
 		let updateCaseData = await doCreateNewCaseData(defualtValue, phrImages, scanparts, radioSelected, hospitalId);
 
 		if (updateCaseData) {
-			$('body').loading('start');
+			//$('body').loading('start');
 			let patientData =  common.doPreparePatientParams(updateCaseData);
 			let rqParams = {data: patientData, patientId: defualtValue.patientId};
 			let patientRes = await common.doCallApi('/api/patient/update', rqParams);
@@ -1181,7 +1190,7 @@ module.exports = function ( jq ) {
 			} else {
 				$.notify("เกิดความผิดพลาด ไม่สามารถบันทึกการแก้ไขเคสได้ในขณะนี้", "error");
 			}
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		} else {
 			$.notify("ข้อมูลเคสที่คุณสร้างใหม่มีความผิดพลาด", "error");
 		}

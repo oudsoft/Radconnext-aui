@@ -10,7 +10,7 @@ module.exports = function ( jq ) {
   const showScanpartAux = async function() {
     const userdata = JSON.parse(localStorage.getItem('userdata'));
   	const deleteCallback = async function(scanpartAuxId) {
-  		$('body').loading('start');
+  		//$('body').loading('start');
   		let rqParams = {id: scanpartAuxId};
   		let scanpartauxRes = await common.doCallApi('/api/scanpartaux/delete', rqParams);
   		if (scanpartauxRes.status.code == 200) {
@@ -19,10 +19,10 @@ module.exports = function ( jq ) {
   		} else {
   			$.notify("ไม่สามารถลบรายการ Scan Part ได้ในขณะนี้", "error");
   		}
-  		$('body').loading('stop');
+  		//$('body').loading('stop');
   	}
 
-  	$('body').loading('start');
+  	//$('body').loading('start');
 
     let pageLogo = $('<img src="/images/urgent-icon.png" width="40px" height="auto" style="position: relative; display: inline-block; top: 10px;"/>');
     let titleText = $('<div style="position: relative; display: inline-block; margin-left: 10px;"><h3>รายการ Scan Part ของฉัน</h3></div>');
@@ -39,7 +39,7 @@ module.exports = function ( jq ) {
   	} else {
   		$(".mainfull").append($('<h4>ไม่พบรายการ Scan Part ของคุณ</h4>'));
   	}
-  	$('body').loading('stop');
+  	//$('body').loading('stop');
   }
 
   const doAddNotifyCustomStyle = function(){
@@ -213,7 +213,7 @@ module.exports = function ( jq ) {
 		let trigerData = evt.detail.data;
 		console.log(trigerData);
 
-		$('body').loading('stop');
+		//$('body').loading('stop');
 		let msgBox = doCreateCustomNotify(trigerData.result, ()=>{});
 		//$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
 		$('body').append($(msgBox).css({'position': 'absolute', 'top': '60px', 'right': '2px', 'width' : '260px', 'border': '2px solid black', 'background-color': '#2579B8', 'color': 'white', 'padding': '5px'}));
@@ -224,7 +224,7 @@ module.exports = function ( jq ) {
 		let trigerData = evt.detail.data;
 		console.log(trigerData);
 
-		$('body').loading('stop');
+		//$('body').loading('stop');
 		let msgBox = doCreateCustomNotify(trigerData.result, ()=>{});
 		//$.notify($(msgBox).html(), {position: 'top right', autoHideDelay: 20000, clickToHide: true, style: 'myshopman', className: 'base'});
 		$('body').append($(msgBox).css({'position': 'absolute', 'top': '60px', 'right': '2px', 'width' : '260px', 'border': '2px solid black', 'background-color': '#2579B8', 'color': 'white', 'padding': '5px'}));
@@ -235,7 +235,7 @@ module.exports = function ( jq ) {
 		let localOrthancRes = await common.doCallLocalApi('/api/orthanc/store/dicom', trigerData);
 		console.log('==onNewReportTrigger==');
 		console.log(localOrthancRes);
-		$('body').loading('stop');
+		//$('body').loading('stop');
 	}
 
 	const onRezipTrigger = async function(evt) {
@@ -244,7 +244,7 @@ module.exports = function ( jq ) {
 		let localOrthancRes = await common.doCallLocalApi('/api/orthanc/rezip/dicom', trigerData);
 		console.log('==onRezipTrigger==');
 		console.log(localOrthancRes);
-		$('body').loading('stop');
+		//$('body').loading('stop');
 	}
 
 	const onCaseEventLogTrigger = function(evt) {

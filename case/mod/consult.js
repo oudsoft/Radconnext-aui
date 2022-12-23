@@ -227,7 +227,7 @@ module.exports = function ( jq ) {
   }
 
   const doCreateNewConsultForm = function(){
-		$('body').loading('start');
+		//$('body').loading('start');
     let titleForm = doCreateNewConsultTitleForm();
 		$("#TitleContent").empty().append($(titleForm));
 
@@ -244,7 +244,7 @@ module.exports = function ( jq ) {
 		let newConsultFormBox = $('<div style="position: relative; width: 98%; border: 2px solid gray; background-color: #fefefe; margin-top: 10px;"></div>');
 		$(newConsultFormBox).append($(patientBox)).append($(consultForm)).append($(footerBar));
 		$(".mainfull").empty().append($(newConsultFormBox));
-		$('body').loading('stop');
+		//$('body').loading('stop');
   }
 
 	const doCreateSimpleChatTitlePage = function(){
@@ -544,7 +544,7 @@ module.exports = function ( jq ) {
 
 	const doCreateMyConsultListView = function(){
 		return new Promise(async function(resolve, reject) {
-			$('body').loading('start');
+			//$('body').loading('start');
 			let myConsult = await doCallMyConsult();
 			let pageTitle = doCreateMyConsultTitleListView();
 			$("#TitleContent").empty().append($(pageTitle));
@@ -575,7 +575,7 @@ module.exports = function ( jq ) {
 
 			//$(".mainfull").empty().append($(myConsultViewBox)).append($(searchConsultCmd));
 			$(".mainfull").empty().append($(myConsultViewBox)).append($(searchResultViewDiv));
-			$('body').loading('stop');
+			//$('body').loading('stop');
 			resolve();
 		});
 	}
@@ -592,14 +592,14 @@ module.exports = function ( jq ) {
 	}
 
 	const doLoadSearchConsult = function(){
-		$('body').loading('start');
+		//$('body').loading('start');
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		let toDayFormat = util.getTodayDevFormat();
 
 		let defaultSearchKey = {fromDateKeyValue: toDayFormat, patientNameENKeyValue: '*', patientHNKeyValue: '*', caseStatusKeyValue: 6};
 		let defaultSearchParam = {key: defaultSearchKey, hospitalId: userdata.hospitalId, userId: userdata.id, usertypeId: userdata.usertypeId};
 		common.doCallApi('/api/consult/search/key', defaultSearchParam).then(async(response)=>{
-			$('body').loading('stop');
+			//$('body').loading('stop');
 			if (response.status.code === 200) {
 				let searchResultViewDiv = $('<div id="SearchResultView"></div>');
 				$(".mainfull").append($(searchResultViewDiv));
@@ -612,7 +612,7 @@ module.exports = function ( jq ) {
 
 	const doShowSearchConsultCallback = function(response){
 		return new Promise(async function(resolve, reject) {
-			$('body').loading('start');
+			//$('body').loading('start');
 			let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
 		  let userItemPerPage = userDefualtSetting.itemperpage;
 
@@ -638,7 +638,7 @@ module.exports = function ( jq ) {
 					totalItem: allCaseRecords.length,
 					styleClass : {'padding': '4px', "font-family": "THSarabunNew", "font-size": "20px"},
 					changeToPageCallback: async function(page){
-						$('body').loading('start');
+						//$('body').loading('start');
 						let toItemShow = 0;
 						if (page.toItem == 0) {
 							toItemShow = allCaseRecords.length;
@@ -648,13 +648,13 @@ module.exports = function ( jq ) {
 						showCases = await common.doExtractList(allCaseRecords, page.fromItem, toItemShow);
 						consultView = await doShowConsultView(showCases, response.key, doShowSearchConsultCallback);
 						$(".mainfull").find('#SearchResultView').empty().append($(consultView));
-						$('body').loading('stop');
+						//$('body').loading('stop');
 					}
 				};
 				let navigatoePage = $(navigBarBox).controlpage(navigBarOption);
 				navigatoePage.toPage(1);
 			}
-			$('body').loading('stop');
+			//$('body').loading('stop');
 			resolve();
 		});
 	}
@@ -924,7 +924,7 @@ module.exports = function ( jq ) {
 			}
 		}
 		if (searchKey) {
-			$('body').loading('start');
+			//$('body').loading('start');
 			let userdata = JSON.parse(localStorage.getItem('userdata'));
 			let hospitalId = userdata.hospitalId;
 			let userId = userdata.id;
@@ -939,7 +939,7 @@ module.exports = function ( jq ) {
 
 				await doShowSearchConsultCallback(response);
 
-				$('body').loading('stop');
+				//$('body').loading('stop');
 			});
 		}
 	}

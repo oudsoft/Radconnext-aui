@@ -43,7 +43,7 @@ module.exports = function ( jq ) {
   }
 
 	const doUpdateReadyState = async function(state) {
-		$('body').loading('start');
+		//$('body').loading('start');
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
 		userdata.userprofiles[0].Profile.readyState = state;
 		userdata.userprofiles[0].Profile.readyBy = 'user';
@@ -59,10 +59,10 @@ module.exports = function ( jq ) {
 		}
 		if (profileRes.status.code == 200){
 			$.notify(onoffText + "รับงาน - Sucess", "success");
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		} else {
 			$.notify('ไม่สามารถ' + onoffText + 'รับงาน - Error โปรดติดต่อผู้ดูแลระบบ', 'error');
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		}
 	}
 
@@ -476,7 +476,7 @@ module.exports = function ( jq ) {
 
   const doCreateNewCasePage = function() {
     return new Promise(async function(resolve, reject) {
-      $('body').loading('start');
+      //$('body').loading('start');
       let myNewCase = await doCallMyNewCase();
 			let myTasks = await doCallMyTasksCase();
 			//console.log(myTasks);
@@ -534,7 +534,7 @@ module.exports = function ( jq ) {
 					$('#NewCaseCmd').find('.NavRowTextCell').find('.case-counter').hide();
 				}
 
-	      $('body').loading('stop');
+	      //$('body').loading('stop');
 	      resolve($(myCaseViewBox));
 			} else if (myNewCase.status.code == 210){
 				reject({error: {code: 210, cause: 'Token Expired!'}});
@@ -618,14 +618,14 @@ module.exports = function ( jq ) {
 	}
 
 	const doLoadSearchConsult = function(){
-		$('body').loading('start');
+		//$('body').loading('start');
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		let toDayFormat = util.getTodayDevFormat();
 
 		let defaultSearchKey = {fromDateKeyValue: toDayFormat, patientNameENKeyValue: '*', patientHNKeyValue: '*', caseStatusKeyValue: 6};
 		let defaultSearchParam = {key: defaultSearchKey, hospitalId: userdata.hospitalId, userId: userdata.id, usertypeId: userdata.usertypeId};
 		common.doCallApi('/api/consult/search/key', defaultSearchParam).then(async(response)=>{
-			$('body').loading('stop');
+			//$('body').loading('stop');
 			if (response.status.code === 200) {
 				let searchResultViewDiv = $('<div id="SearchResultView"></div>');
 				$(".mainfull").append($(searchResultViewDiv));
@@ -638,7 +638,7 @@ module.exports = function ( jq ) {
 
 	const doShowSearchConsultCallback = function(response){
 		return new Promise(async function(resolve, reject) {
-			$('body').loading('start');
+			//$('body').loading('start');
 			let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
 		  let userItemPerPage = userDefualtSetting.itemperpage;
 
@@ -664,7 +664,7 @@ module.exports = function ( jq ) {
 					totalItem: allCaseRecords.length,
 					styleClass : {'padding': '4px', "font-family": "THSarabunNew", "font-size": "20px"},
 					changeToPageCallback: async function(page){
-						$('body').loading('start');
+						//$('body').loading('start');
 						let toItemShow = 0;
 						if (page.toItem == 0) {
 							toItemShow = allCaseRecords.length;
@@ -674,13 +674,13 @@ module.exports = function ( jq ) {
 						showCases = await common.doExtractList(allCaseRecords, page.fromItem, toItemShow);
 						consultView = await doShowConsultView(showCases, response.key, doShowSearchConsultCallback);
 						$(".mainfull").find('#SearchResultView').empty().append($(consultView));
-						$('body').loading('stop');
+						//$('body').loading('stop');
 					}
 				};
 				let navigatoePage = $(navigBarBox).controlpage(navigBarOption);
 				navigatoePage.toPage(1);
 			}
-			$('body').loading('stop');
+			//$('body').loading('stop');
 			resolve();
 		});
 	}
@@ -810,7 +810,7 @@ module.exports = function ( jq ) {
 				}
 			}
 			if (searchKey) {
-				$('body').loading('start');
+				//$('body').loading('start');
 				let userdata = JSON.parse(localStorage.getItem('userdata'));
 				let hospitalId = userdata.hospitalId;
 				let userId = userdata.id;
@@ -825,7 +825,7 @@ module.exports = function ( jq ) {
 
 				await doShowSearchConsultCallback(response);
 
-				$('body').loading('stop');
+				//$('body').loading('stop');
 
 			}
 		});

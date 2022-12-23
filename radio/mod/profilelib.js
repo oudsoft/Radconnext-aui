@@ -272,7 +272,7 @@ module.exports = function ( jq ) {
 
   const doCallSaveMyProfile = function(profileData){
     return new Promise(async function(resolve, reject) {
-      $('body').loading('start');
+      //$('body').loading('start');
 			let userdata = JSON.parse(localStorage.getItem('userdata'));
 			let radioId = userdata.id;
 			let rqParams = undefined;
@@ -310,11 +310,11 @@ module.exports = function ( jq ) {
         } else {
           $.notify("บันทึกการคั้งค่าไม่สำเร็จ", "error");
         }
-        $('body').loading('stop');
+        //$('body').loading('stop');
         resolve(response);
 			} catch(e) {
         $.notify("มีความผิดพลาดขณะบันทึกการคั้งค่า", "error");
-        $('body').loading('stop');
+        //$('body').loading('stop');
 	      reject(e);
     	}
     });
@@ -335,7 +335,7 @@ module.exports = function ( jq ) {
 
   const doCreateProfilePage = function(){
     return new Promise(async function(resolve, reject) {
-      $('body').loading('start');
+      //$('body').loading('start');
 			const userdata = JSON.parse(localStorage.getItem('userdata'));
       let myProfilePage = $('<div style="width: 100%;"></div>');
       let myProfileView = $('<div style="display: table; width: 100%; border-collapse: collapse;"></div>');
@@ -371,7 +371,7 @@ module.exports = function ( jq ) {
 	      $(lockOptionRow).appendTo($(myLockOptionBox));
 	      $(cmdBar).appendTo($(myProfilePage));
 	      resolve($(myProfilePage));
-	      $('body').loading('stop');
+	      //$('body').loading('stop');
 			} else if (myProfileRes.status.code == 210){
 				reject({error: {code: 210, cause: 'Token Expired!'}});
 			} else {

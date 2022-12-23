@@ -61,7 +61,7 @@ module.exports = function ( jq ) {
       onOk: function(evt) {
         let newPassword = doVerifyNewPassword();
         if ((newPassword) && (newPassword !== '')) {
-          $('body').loading('start');
+          //$('body').loading('start');
           changePwdDlgBox.closeAlert();
           let userdata = JSON.parse(localStorage.getItem('userdata'));
           let userId = userdata.id;
@@ -69,7 +69,7 @@ module.exports = function ( jq ) {
           console.log(reqParams);
           $.post('/api/users/resetpassword', reqParams).then((response) => {
             console.log(response);
-            $('body').loading('stop');
+            //$('body').loading('stop');
             if (response) {
               $.notify('เปลี่ยน Password สำเร็จ', 'success');
             } else {

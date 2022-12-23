@@ -131,7 +131,7 @@ module.exports = function ( jq ) {
 
   const doSetupCounter = function() {
 		return new Promise(function(resolve, reject) {
-			$('body').loading('start');
+			//$('body').loading('start');
 			const userdata = JSON.parse(localStorage.getItem('userdata'));
 			let userId = userdata.id;
 			let hospitalId = userdata.hospitalId;
@@ -162,7 +162,7 @@ module.exports = function ( jq ) {
 				});
 
 				doShowCaseCounter();
-				$('body').loading('stop');
+				//$('body').loading('stop');
 				resolve();
 			}).catch((err)=>{
 				reject(err);

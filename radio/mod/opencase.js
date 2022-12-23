@@ -56,7 +56,6 @@ module.exports = function ( jq ) {
 
 	const doDownloadDicom = function(evt, caseDicomZipFilename) {
 		evt.preventDefault();
-		doResetPingCounterOnOpenCase();
 		let dicomZipLink = '/img/usr/zip/' + caseDicomZipFilename;
 		/*
 		let pom = document.createElement('a');
@@ -99,6 +98,7 @@ module.exports = function ( jq ) {
       pom.remove();
 			$(downloadCmd).val(oldLabel);
 			$(downloadCmd).prop('disabled', false);
+			doResetPingCounterOnOpenCase();
 		});
 
 
@@ -296,8 +296,11 @@ module.exports = function ( jq ) {
 					let causeValue = $(causeOption).val();
 					let otherValue = $(inputValue).val();
 					const userdata = JSON.parse(localStorage.getItem('userdata'));
+					/*
 					let main = require('../main.js');
 					let myWsm = main.doGetWsm();
+					*/
+					let myWsm = util.wsm;
 					let sendto = ownerCaseUser.username;
 					let userfullname = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
 					let from = {userId: userdata.id, username: userdata.username, userfullname: userfullname};
@@ -316,7 +319,7 @@ module.exports = function ( jq ) {
 	}
 
   const onTemplateSelectorChange = async function(evt) {
-		$('body').loading('start');
+		//$('body').loading('start');
 		let yourResponse = $('#SimpleEditor').val();
 		let templateId = $(evt.currentTarget).val();
 		if ((templateId) && (templateId > 0)){
@@ -339,7 +342,7 @@ module.exports = function ( jq ) {
 				$.notify('ระบบฯ ไม่พบรายการ Template ของคุณ', 'warn');
 			}
 		}
-		$('body').loading('stop');
+		//$('body').loading('stop');
   }
 
 	const onCreateNewResponseCmdClick = async function(evt) {
@@ -557,7 +560,7 @@ module.exports = function ( jq ) {
 
 	const doSubmitResult = function(responseType, reportType, saveResponseData){
 		return new Promise(async function(resolve, reject) {
-			$('body').loading('start');
+			//$('body').loading('start');
 	    const userdata = JSON.parse(localStorage.getItem('userdata'));
 			let caseId = saveResponseData.caseId
 			let userId = userdata.id;
@@ -578,7 +581,7 @@ module.exports = function ( jq ) {
 
 			if ((saveResponseRes.status.code == 200) || (saveResponseRes.status.code == 203)){
 				$.notify("ส่งผลอ่านเข้า cloud สำเร็จ", "success");
-				$('body').loading('stop');
+				//$('body').loading('stop');
 				$('#quickreply').empty();
 				$('#quickreply').removeAttr('style');
 				$("#dialog").empty();
@@ -602,7 +605,7 @@ module.exports = function ( jq ) {
 			} else {
 				$.notify("ไม่สามารถส่งผลอ่าน - Error โปรดติดต่อผู้ดูแลระบบ", "error");
 				doReportBugOpenCase({params: params, url: '/api/uicommon/radio/submitresult'}, 'ไม่พบหมายเลขเคสของคุณ');
-				$('body').loading('stop');
+				//$('body').loading('stop');
 				reject({errer: 'Submit Case Result Error'});
 			}
 		});
@@ -646,7 +649,7 @@ module.exports = function ( jq ) {
 		return new Promise(async function(resolve, reject) {
 			let responseHTML = $('#SimpleEditor').val();
 			if (responseHTML !== '') {
-				$('body').loading('start');
+				//$('body').loading('start');
 				const saveDraftResponseCmd = $(evt.currentTarget);
 		    const saveDraftResponseData = $(saveDraftResponseCmd).data('saveDraftResponseData');
 				let draftResponseRes = await doSaveDraft(saveDraftResponseData);
@@ -658,11 +661,12 @@ module.exports = function ( jq ) {
 						$.notify("เกิดความผิดพลาด Case Response API", "error");
 					}
 					$.notify("บันทึก Draft สำเร็จ", "success");
-					$('body').loading('stop');
+					//$('body').loading('stop');
 				} else {
 					$.notify("ไม่สามารถบันทึก Draft - Error โปรดติดต่อผู้ดูแลระบบ", "error");
-					$('body').loading('stop');
+					//$('body').loading('stop');
 				}
+				doResetPingCounterOnOpenCase();
 				resolve(draftResponseRes);
 			} else {
 				$.notify("โปรดพิมพ์ผลอ่านก่อนครับ", "warn");
@@ -864,7 +868,29 @@ module.exports = function ( jq ) {
 					$(hrTable).append($(hrRow));
 	      });
 			}
-      resolve($(hrBox));
+			if (hrlinks.length == 0) {
+      	resolve($(hrBox));
+			} else {
+				window.fetch(hrlinks[0].link, {method: 'GET'}).then(response => response.blob()).then(blob => {
+					let filePaths = hrlinks[0].link.split('/');
+					let fileNames = filePaths[filePaths.length-1];
+					let fileName = fileNames.split('.');
+					let fileExt = fileName[1];
+					let patientName = patientFullName.split(' ').join('_');
+					fileName = patientName + '-' + casedate + '.' + fileExt;
+					let url = window.URL.createObjectURL(blob);
+					console.log(url);
+					/*
+					let pom = document.createElement('a');
+					pom.href = url;
+					pom.download = fileName;
+					document.body.appendChild(pom);
+					pom.click();
+					pom.remove();
+					*/
+					resolve($(hrBox));
+				});
+			}
     });
   }
 
@@ -1463,9 +1489,9 @@ module.exports = function ( jq ) {
 			msg: $(radAlertMsg),
 			width: '420px',
 			onOk: function(evt) {
-				$('body').loading('start');
+				//$('body').loading('start');
 				$(summary).find('#SimpleEditor').jqteVal(cacheContent);
-				$('body').loading('stop');
+				//$('body').loading('stop');
 				radConfirmBox.closeAlert();
 			},
 			onCancel: function(evt){
@@ -1639,6 +1665,13 @@ module.exports = function ( jq ) {
 						reject({error: apiError});
 					}
 				}
+				/*
+				let firstLink = '/images/case-incident-icon-3.png'
+				window.fetch(firstLink, {method: 'GET'}).then(response => response.blob()).then(blob => {
+		      let url = window.URL.createObjectURL(blob);
+		      $("#TitleContent").find('img').attr('src', url);
+		    });
+				*/
 			} else if (myOpenCase.status.code == 210){
 				reject({error: {code: 210, cause: 'Token Expired!'}});
 			} else {
@@ -1731,6 +1764,7 @@ module.exports = function ( jq ) {
 			if (isShowNewTemplateCmd === 'none') {
 				$('#AddNewTemplateCmd').show();
 			}
+			doResetPingCounterOnOpenCase();
 			resolve(draftbackup);
 		});
 	}
@@ -1854,7 +1888,7 @@ module.exports = function ( jq ) {
 			} else {
 				$.notify('การรายงานข้อผิดพลาดทางอีเมล์เกิดข้อผิดพลาด @ไม่ทราบสาเหตุ', 'error');
 			}
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		});
 	}
 
@@ -1883,9 +1917,14 @@ module.exports = function ( jq ) {
 	}
 
 	const doResetPingCounterOnOpenCase = function() {
+		/*
 		let main = require('../main.js');
 		let myWsm = main.doGetWsm();
-		myWsm.send(JSON.stringify({type: 'reset', what: 'pingcounter'}));
+		*/
+		let myWsm = util.wsm;
+		if (myWsm) {
+			myWsm.send(JSON.stringify({type: 'reset', what: 'pingcounter'}));
+		}
 	}
 
   return {

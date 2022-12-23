@@ -281,7 +281,7 @@ module.exports = function ( jq ) {
 
   const doCreateAccCasePage = function() {
     return new Promise(async function(resolve, reject) {
-      $('body').loading('start');
+      //$('body').loading('start');
       let myAccCase = await doCallMyAccCase();
 			let myTaksCase = await doCallMyTasksCase();
 			if (myAccCase.status.code == 200){
@@ -307,7 +307,7 @@ module.exports = function ( jq ) {
 					$('#AcceptedCaseCmd').find('.NavRowTextCell').find('.case-counter').hide();
 	      }
 	      resolve($(myAccCaseView));
-	      $('body').loading('stop');
+	      //$('body').loading('stop');
 			} else if (myAccCase.status.code == 210){
 				reject({error: {code: 210, cause: 'Token Expired!'}});
 			} else {

@@ -52,7 +52,7 @@ module.exports = function ( jq ) {
     let layoutPage = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
     let layoutRow = $('<tr></tr>');
     let letfSideCell = $('<td width="15%" align="center" valign="middle"></td>');
-    let middleCell = $('<td width="70%" align="left" valign="middle"></td>');
+    let middleCell = $('<td width="70%" align="left" valign="middle" style="padding: 5px"></td>');
     let rightSideCell = $('<td width="*" align="center" valign="middle"></td>');
     $(letfSideCell).append($(shopLogoIconBox));
     $(middleCell).append($(shopName)).append($(shopAddress)).append($(shopTel));

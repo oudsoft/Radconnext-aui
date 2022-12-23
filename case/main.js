@@ -114,7 +114,7 @@ function doLoadMainPage(){
 	$('head').append('<script src="' + customUrgentPlugin + '"></script>');
 	$('head').append('<script src="' + controlPagePlugin + '"></script>');
   $('head').append('<script src="' + customSelectPlugin + '"></script>');
-  $('head').append('<script src="' + utilityPlugin + '"></script>');
+  $('head').append('<script src="' + utilityPlugin + '?t=ml"></script>');
   $('head').append('<script src="' + chatBoxPlugin + '"></script>');
   $('head').append('<script src="' + sipPhonePlugin + '"></script>');
 

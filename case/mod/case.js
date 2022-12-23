@@ -27,7 +27,7 @@ module.exports = function ( jq ) {
 
 	const doLoadCases = function(rqParams) {
 		return new Promise(async function(resolve, reject) {
-			$('body').loading('start');
+			//$('body').loading('start');
 			try {
 				let response = await common.doCallApi('/api/cases/filter/hospital', rqParams);
 				if (response.status.code === 200) {
@@ -39,19 +39,19 @@ module.exports = function ( jq ) {
 					} else {
 						$(".mainfull").empty().append($('<div><h3>ไม่พบรายการเคส</h3></div>'));
 					}
-					$('body').loading('stop');
+					//$('body').loading('stop');
 					resolve({loadstatus: 'success'});
 				} else if (response.status.code === 210) {
-					$('body').loading('stop');
+					//$('body').loading('stop');
 					reject({error: {code: 210, cause: 'Token Expired!'}});
 				} else {
-					$('body').loading('stop');
+					//$('body').loading('stop');
 					let apiError = 'api error at doLoadCases';
 					console.log(apiError);
 					reject({error: apiError});
 				}
 			} catch(err) {
-				$('body').loading('stop');
+				//$('body').loading('stop');
 				reject({error: err})
 			}
 		});
@@ -182,7 +182,7 @@ module.exports = function ( jq ) {
 				}
 			}
 			if (searchKey) {
-				$('body').loading('start');
+				//$('body').loading('start');
 				let userdata = JSON.parse(localStorage.getItem('userdata'));
 				let hospitalId = userdata.hospitalId;
 				let userId = userdata.id;
@@ -197,7 +197,7 @@ module.exports = function ( jq ) {
 
 				await searchResultCallback(response);
 
-				$('body').loading('stop');
+				//$('body').loading('stop');
 
 			}
 		});
@@ -694,10 +694,10 @@ module.exports = function ( jq ) {
 						let patientNameEN = incidents[i].case.patient.Patient_NameEN + ' ' + incidents[i].case.patient.Patient_LastNameEN;
 						let dicomUrl = '/api/orthanc/add/attach/file';
 						let rqParams = {caseId: incidents[i].case.id, PatientNameEN: patientNameEN};
-						$('body').loading('start');
+						//$('body').loading('start');
 						$.post(dicomUrl, rqParams, function(response){
 							console.log(response);
-							$('body').loading('stop');
+							//$('body').loading('stop');
 						});
 					});
 					$(attachPlusButton).appendTo($(operationCmdBox));
@@ -714,7 +714,7 @@ module.exports = function ( jq ) {
   }
 
   async function doCallEditCase(caseid) {
-  	$('body').loading('start');
+  	//$('body').loading('start');
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		const username = userdata.username;
 
@@ -758,16 +758,16 @@ module.exports = function ( jq ) {
 			/*
   		//doOpenEditCase(defualtValue);
 			*/
-  		$('body').loading('stop');
+  		//$('body').loading('stop');
 		} catch(e) {
 	    console.log('Unexpected error occurred =>', e);
-	    $('body').loading('stop');
+	    //$('body').loading('stop');
     }
   }
 
 	function doShowPopupReadResult(caseId, hospitalId, userId, patient) {
 		//window.open(re_url, '_blank');
-		$('body').loading('start');
+		//$('body').loading('start');
 		apiconnector.doDownloadResult(caseId,  hospitalId, userId, patient).then((pdf) => {
 			console.log(pdf);
 			var pom = document.createElement('a');
@@ -775,12 +775,12 @@ module.exports = function ( jq ) {
 			pom.setAttribute('target', '_blank');
 			//pom.setAttribute('download', patient + '.pdf');
 			pom.click();
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		});
 	}
 
 	function doConvertResultToDicom(caseId, hospitalId, userId, studyID, modality, studyInstanceUID) {
-		$('body').loading('start');
+		//$('body').loading('start');
 		apiconnector.doConvertPdfToDicom(caseId, hospitalId, userId, studyID, modality, studyInstanceUID).then(async (dicomRes) => {
 			console.log(dicomRes);
 			if (dicomRes.status.code == 200) {
@@ -789,7 +789,7 @@ module.exports = function ( jq ) {
 				let userdata = JSON.parse(localStorage.getItem('userdata'));
 				let convertLog = {action: 'convert', by: userdata.id, at: new Date()};
 				await common.doCallApi('/api/casereport/appendlog/' + caseId, {Log: convertLog});
-				$('body').loading('stop');
+				//$('body').loading('stop');
 			} else if (dicomRes.status.code == 205) {
 				let radAlertMsg = $('<div></div>');
 				$(radAlertMsg).append($('<p>โปรดรีสตาร์ต RadConnext Service</p>'));
@@ -807,7 +807,7 @@ module.exports = function ( jq ) {
 			}
 		}).catch((err) => {
 			console.log('doConvertResultToDicom ERROR:', err);
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		});
 	}
 
@@ -822,7 +822,7 @@ module.exports = function ( jq ) {
 			width: '420px',
 			onOk: function(evt) {
 				radConfirmBox.closeAlert();
-				$('body').loading('start');
+				//$('body').loading('start');
 				doDeleteCase(caseID).then((response) => {
 					if (response.status.code == 200) {
 						casecounter.doSetupCounter();
@@ -833,11 +833,11 @@ module.exports = function ( jq ) {
 					} else {
 						$.notify("เกิดข้อผิดพลาด ไม่สามารถลบรายการเคสได้", "error");
 					}
-					$('body').loading('stop');
+					//$('body').loading('stop');
 				}).catch((err) => {
 					console.log(err);
 					$.notify("ต้องขออภัยอย่างแรง มีข้อผิดพลาดเกิดขึ้น", "error");
-					$('body').loading('stop');
+					//$('body').loading('stop');
 				});
 			},
 			onCancel: function(evt){
@@ -948,7 +948,7 @@ module.exports = function ( jq ) {
 	}
 
 	async function doZoomCallRadio(incidents) {
-		$('body').loading('start');
+		//$('body').loading('start');
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		let startMeetingTime = util.formatStartTimeStr();
 		let hospName = userdata.hospital.Hos_Name;
@@ -991,7 +991,7 @@ module.exports = function ( jq ) {
 		  	$('#HistoryDialogBox').dialog('option', 'title', 'ข้อมูล conference');
 		  	$('#HistoryDialogBox').dialog('open');
 			}
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		}
 	}
 
@@ -1002,7 +1002,7 @@ module.exports = function ( jq ) {
 		} else {
 			alert('ปลายทางปฏิเสธการเข้าร่วม Conference');
 		}
-		$('body').loading('stop');
+		//$('body').loading('stop');
 	}
 
 	const doCreateSearchTitlePage = function(){
@@ -1024,7 +1024,7 @@ module.exports = function ( jq ) {
 				- มากกว่า 0 ให้แสดง Navigator
 				- เท่ากับ 0 ให้แสดงข้อความ ไม่พบรายการที่ค้นหา
 			*/
-			$('body').loading('start');
+			//$('body').loading('start');
 			let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
 		  let userItemPerPage = userDefualtSetting.itemperpage;
 
@@ -1055,7 +1055,7 @@ module.exports = function ( jq ) {
 					totalItem: allCaseRecords.length,
 					styleClass : {'padding': '4px'/*, "font-family": "THSarabunNew", "font-size": "20px"*/},
 					changeToPageCallback: async function(page){
-						$('body').loading('start');
+						//$('body').loading('start');
 						let toItemShow = 0;
 						if (page.toItem == 0) {
 							toItemShow = allCaseRecords.length;
@@ -1065,19 +1065,19 @@ module.exports = function ( jq ) {
 						showCases = await common.doExtractList(allCaseRecords, page.fromItem, toItemShow);
 						caseView = await doShowCaseView(showCases, response.key, doShowSearchResultCallback);
 						$(".mainfull").find('#SearchResultView').empty().append($(caseView));
-						$('body').loading('stop');
+						//$('body').loading('stop');
 					}
 				};
 				let navigatoePage = $(navigBarBox).controlpage(navigBarOption);
 				navigatoePage.toPage(1);
 			}
-			$('body').loading('stop');
+			//$('body').loading('stop');
 			resolve();
 		});
 	}
 
 	const doViewCaseReport = async function(caseId){
-		$('body').loading('start');
+		//$('body').loading('start');
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		let reportRes = await common.doCallApi('/api/casereport/select/' + caseId, {});
 		//console.log(reportRes);
@@ -1110,25 +1110,25 @@ module.exports = function ( jq ) {
 				$('#CaseStatusName').text('View');
 			}
 			*/
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		} else {
 			$.notify('มีข้อผิดพลาด', 'error');
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		}
 	}
 
 	const doCancelCase = function(caseId){
-		$('body').loading('start');
+		//$('body').loading('start');
 		let newStatus = 7;
 		let newDescription = 'User cancel case.';
 		common.doUpdateCaseStatus(caseId, newStatus, newDescription).then((response) => {
-			$('body').loading('stop');
+			//$('body').loading('stop');
 			$('#NegativeStatusSubCmd').click();
 		});
 	}
 
 	const doPrintCaseReport = async function(caseId) {
-		$('body').loading('start');
+		//$('body').loading('start');
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		let reportRes = await common.doCallApi('/api/casereport/select/' + caseId, {});
 		if (reportRes.Records.length > 0){
@@ -1136,10 +1136,10 @@ module.exports = function ( jq ) {
 			printJS(pdfFileName);
 			let printLog = {action: 'print', by: userdata.id, at: new Date()};
 			await common.doCallApi('/api/casereport/appendlog/' + caseId, {Log: printLog});
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		} else {
 			$.notify('มีข้อผิดพลาด', 'error');
-			$('body').loading('stop');
+			//$('body').loading('stop');
 		}
 	}
 
@@ -1151,12 +1151,12 @@ module.exports = function ( jq ) {
 	}
 
 	const doCloseCase = function(caseId){
-		$('body').loading('start');
+		//$('body').loading('start');
 		let newStatus = 6;
 		let newDescription = 'User close case to archive job.';
 		common.doUpdateCaseStatus(caseId, newStatus, newDescription).then((response) => {
 			casecounter.doSetupCounter();
-			$('body').loading('stop');
+			//$('body').loading('stop');
 			$('#SuccessStatusSubCmd').click();
 		});
 	}

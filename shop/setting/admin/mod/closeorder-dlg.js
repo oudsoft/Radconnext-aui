@@ -233,19 +233,81 @@ module.exports = function ( jq ) {
     });
   }
 
-	const doOpenReportPdfDlg = function(pdfUrl, title, closeCallback){
+	const doOpenReportPdfDlg = function(pdf, title, closeCallback){
     return new Promise(async function(resolve, reject) {
-			const pdfURL = pdfUrl + '?t=' + common.genUniqueID();
+			const pdfURL = pdf.link + '?t=' + common.genUniqueID();
       const reportPdfDlgContent = $('<object data="' + pdfURL + '" type="application/pdf" width="99%" height="380"></object>');
       $(reportPdfDlgContent).css({'margin-top': '10px'});
+			let radAlertMsg = $('<div></div>');
+			$(radAlertMsg).append($(reportPdfDlgContent));
+			let ectAccessBox = undefined;
+			let newAcc = {};
+			if (!pdf.pngLink) {
+				let tpms = pdf.link.split('/');
+				let names = tpms[tpms.length-1].split('.');
+				newAcc.pngLink = '/shop/img/usr/pdf/' + names[0] + '.png';
+				//newAcc.ppLink =
+				//newAcc.qrLink = '/shop/img/usr/qrcode/' + names[0] + '.png';
+			}
+			if (pdf.pngLink) {
+				ectAccessBox = $('<div></div>');
+				let pngThumb = $('<img/>').attr('src', pdf.pngLink).css({'width': '60px', 'height': 'auto', 'display': 'inline-block', 'cursor': 'pointer'});
+				$(ectAccessBox).append($(pngThumb))
+				$(pngThumb).on('click', (evt)=>{
+					window.open(pdf.pngLink, '_blank');
+				});
+			} else {
+				let tpms = pdf.link.split('/');
+				let names = tpms[tpms.length-1].split('.');
+				let newAccPngLink = '/shop/img/usr/pdf/' + names[0] + '.png';
+				ectAccessBox = $('<div></div>');
+				let pngThumb = $('<img/>').attr('src', newAccPngLink).css({'width': '60px', 'height': 'auto', 'display': 'inline-block', 'cursor': 'pointer'});
+				$(ectAccessBox).append($(pngThumb))
+				$(pngThumb).on('click', (evt)=>{
+					window.open(newAccPngLink, '_blank');
+				});
+			}
+			if (pdf.ppLink) {
+				if (!ectAccessBox) {
+					ectAccessBox = $('<div></div>');
+				}
+				let ppThumb = $('<img/>').attr('src', pdf.ppLink).css({'width': '60px', 'height': 'auto', 'display': 'inline-block', 'cursor': 'pointer', 'margin-left': '20px'});
+				$(ectAccessBox).append($(ppThumb))
+				$(ppThumb).on('click', (evt)=>{
+					window.open(pdf.ppLink, '_blank');
+				});
+			}
+			if (pdf.qrLink) {
+				if (!ectAccessBox) {
+					ectAccessBox = $('<div></div>');
+				}
+				let qrThumb = $('<img/>').attr('src', pdf.qrLink).css({'width': '60px', 'height': 'auto', 'display': 'inline-block', 'cursor': 'pointer', 'margin-left': '20px'});
+				$(ectAccessBox).append($(qrThumb))
+				$(qrThumb).on('click', (evt)=>{
+					window.open(pdf.qrLink, '_blank');
+				});
+			}
+			if (ectAccessBox) {
+				$(ectAccessBox).css({'display': 'none', 'cursor': 'pointer', 'border': '2px solid grey', 'background-color': '#ddd', 'width': '100%'});
+				let tggAccessCmd = $('<div>รูปภาพ</div>').css({'display': 'block', 'cursor': 'pointer', 'border': '2px solid black', 'background-color': 'grey', 'width': '100%', 'text-align': 'center', 'line-height': '36px'});
+				$(tggAccessCmd).on('click', (evt)=>{
+					$(ectAccessBox).slideDown('slow');
+					$(tggAccessCmd).hide();
+				})
+				$(ectAccessBox).on('click', (evt)=>{
+					$(ectAccessBox).slideUp('slow');
+					$(tggAccessCmd).show();
+				})
+				$(radAlertMsg).append($(tggAccessCmd)).append($(ectAccessBox));
+			}
       const reportformoption = {
   			title: title,
-  			msg: $(reportPdfDlgContent),
+  			msg: $(radAlertMsg),
   			width: '720px',
 				okLabel: ' เปิดหน้าต่างใหม่ ',
 				cancelLabel: ' ปิด ',
   			onOk: async function(evt) {
-					window.open(pdfUrl, '_blank');
+					window.open(pdf.link, '_blank');
           reportPdfDlgHandle.closeAlert();
 					if (closeCallback) {
 						closeCallback();

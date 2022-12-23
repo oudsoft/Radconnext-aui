@@ -732,7 +732,7 @@ module.exports = function ( jq ) {
 
   const doCreateTemplatePage = function(){
     return new Promise(async function(resolve, reject) {
-      $('body').loading('start');
+      //$('body').loading('start');
       let myTemplatePage = $('<div style="width: 100%;"></div>');
       let myTemplate = await doCallMyTemplate();
 			//console.log(myTemplate);
@@ -742,7 +742,7 @@ module.exports = function ( jq ) {
 				$(myTemplatePage).append($(addNewTemplateBox));
 				$(myTemplatePage).append($(myTemplateView));
 				resolve($(myTemplatePage));
-	      $('body').loading('stop');
+	      //$('body').loading('stop');
 			} else if (myTemplate.status.code == 210){
 				reject({error: {code: 210, cause: 'Token Expired!'}});
 			} else {

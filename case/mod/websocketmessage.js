@@ -78,9 +78,7 @@ module.exports = function ( jq, wsm, wsl) {
       }, 5000);
     } else if (data.type == 'run') {
 			/*************************/
-			/*
       wsl.send(JSON.stringify(data));
-			*/
     } else if (data.type == 'runresult') {
       //$('#RemoteDicom').dispatchEvent(new CustomEvent("runresult", {detail: { data: data.result, owner: data.owner, hospitalId: data.hospitalId }}));
       let evtData = { data: data.result, owner: data.owner, hospitalId: data.hospitalId };
@@ -149,7 +147,7 @@ module.exports = function ( jq, wsm, wsl) {
 				if ((wsl.clientSocketState.connected) && (data.data.orthancCount == 0)) {
 					setTimeout(()=>{
 						let ms = 5;
-						let callUrl = '/api/client/api/connect/cloud/reconnect';
+						let callUrl = '/api/client/api/connect/cloud/close';
 						let params = {};
 						$.get(callUrl, params).then((response) => {
 							console.log(response);

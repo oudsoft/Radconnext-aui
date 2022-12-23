@@ -419,7 +419,8 @@ module.exports = function ( jq ) {
 	  wsm.onclose = function(event) {
 			setTimeout(()=>{
 				if ((usertype == 1) || (usertype == 2) || (usertype == 3)) {
-					window.location.reload();
+					//window.location.reload();
+					doConnectWebsocketMaster(username, usertype, hospitalId, connecttype, wsl);
 				} else if (usertype == 4) {
 					doConnectWebsocketMaster(username, usertype, hospitalId, connecttype, wsl);
 				}
@@ -437,7 +438,9 @@ module.exports = function ( jq ) {
 	const wslOnClose = function(event) {
 		console.log("Local WebSocket is closed now. with  event:=> ", event);
 		setTimeout(()=>{
-			window.location.reload();
+			//window.location.reload();
+			let userdata = JSON.parse(localStorage.getItem('userdata'));
+			doConnectWebsocketLocal(userdata.username);
 			return false;
 		}, 60800);
 	}
@@ -464,7 +467,7 @@ module.exports = function ( jq ) {
 			if (modPingCounter == 0) {
 				wsl.send(JSON.stringify({type: 'pong', myconnection: (userdata.id + '/' + userdata.username + '/' + userdata.hospitalId)}));
 			}
-			/*
+
 			if (!(data.clientSocketState.connected)) {
 				let ms = 60;
 				setTimeout(()=>{
@@ -477,7 +480,9 @@ module.exports = function ( jq ) {
 				}, (ms*1000));
 				doCreateWebSocketRetry(ms)
 			}
-			if (data.clientSocketState.counterping > clientSocketLastCounterPing) {
+			console.log(clientSocketLastCounterPing);
+			console.log(data.clientSocketState.counterping);
+			if (data.clientSocketState.counterping >= clientSocketLastCounterPing) {
 				clientSocketLastCounterPing = data.clientSocketState.counterping;
 			} else {
 				let ms = 60;
@@ -491,7 +496,7 @@ module.exports = function ( jq ) {
 				}, (ms*1000));
 				doCreateWebSocketRetry(ms)
 			}
-			*/
+
 		} else if (data.type == 'result') {
 			$.notify(data.message, "success");
 		} else if (data.type == 'notify') {

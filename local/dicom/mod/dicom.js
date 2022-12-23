@@ -35,12 +35,19 @@ module.exports = function ( jq ) {
 
   const doLoadDicomFromOrthanc = function(viewPage){
     return new Promise(async function(resolve, reject) {
-      $('body').loading('start');
-  		const userdata = JSON.parse(localStorage.getItem('userdata'));
+      //$('body').loading('start');
+  		let userdata = JSON.parse(localStorage.getItem('userdata'));
   		let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
+			let queryString = localStorage.getItem('dicomfilter');
+			//console.log(queryString);
+			let dicomFilter = JSON.parse(queryString);
+			//console.log(dicomFilter);
       let userItemPerPage = userDefualtSetting.itemperpage;
-  		let queryString = localStorage.getItem('dicomfilter');
-      let localOrthancRes = await common.doCallLocalApi('/api/orthanc/study/list/lastmonth', {});
+			let params = {};
+			if (dicomFilter.Query.StudyFromDate !== '*') {
+				params.studyFromDate = dicomFilter.Query.StudyFromDate;
+			}
+      let localOrthancRes = await common.doCallLocalApi('/api/orthanc/study/list/lastmonth', params);
 			//let localOrthancRes = await common.doCallLocalApi('/api/orthanc/study/list/today', {});
 
       if (localOrthancRes.status.code == 200) {
@@ -75,7 +82,7 @@ module.exports = function ( jq ) {
             totalItem: studies.length,
             styleClass : {'padding': '4px', /*'font-family': 'THSarabunNew', 'font-size': '20px', */ 'margin-top': '60px'},
             changeToPageCallback: async function(page){
-              $('body').loading('start');
+              //$('body').loading('start');
               let toItemShow = 0;
               if (page.toItem == 0) {
                 toItemShow = studies.length;
@@ -85,19 +92,19 @@ module.exports = function ( jq ) {
               showDicoms = await common.doExtractList(studies, page.fromItem, toItemShow);
               let dicomView = await doShowDicomResult(showDicoms, (Number(page.fromItem)-1));
               $(".mainfull").find('#ResultView').empty().append($(dicomView));
-              $('body').loading('stop');
+              //$('body').loading('stop');
   						let eventData = {userId: userdata.id};
   						//$(".mainfull").trigger('opendicomfilter', [eventData]);
             }
           };
           let navigatoePage = $(navigBarBox).controlpage(navigBarOption);
           navigatoePage.toPage(1);
-  				$('body').loading('stop');
+  				//$('body').loading('stop');
   			} else {
   				let dicomView = await doShowDicomResult([], 0);
           $(".mainfull").find('#ResultView').empty().append($(dicomView));
   				$(".mainfull").append($('<div><h3>ไม่พบรายการภาพ</h3></div>'));
-  				$('body').loading('stop');
+  				//$('body').loading('stop');
   			}
         resolve(localOrthancRes);
       } else {
@@ -123,7 +130,7 @@ module.exports = function ( jq ) {
 			const table = $('<div style="display: table; width: 100%; border-collapse: collapse;"></div>');
 			const tableHeader = doCreateDicomHeaderRow();
 			$(tableHeader).appendTo($(table));
-			
+
 			/*
 			const dicomFilterForm = common.doCreateDicomFilterForm((filterKey)=>{
 				console.log(filterKey);
@@ -297,7 +304,7 @@ module.exports = function ( jq ) {
 			let aiInterfaceButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/ai-icon.png" title="ขอผลอ่านจาก AI"/>');
 			$(aiInterfaceButton).click(async function() {
 				$(closePopupCmd).click();
-				$('body').loading('start');
+				//$('body').loading('start');
 				let seriesList = await ai.doCallCheckSeries(dicomID);
 				if (seriesList) {
 					let seriesSelect = await ai.doCreateSeriesSelect(seriesList);
@@ -305,7 +312,7 @@ module.exports = function ( jq ) {
 					$(seriesSelect).css({'height': 'auto'});
 					$('#quickreply').css(ai.quickReplyDialogStyle);
 					$('#quickreply').append($(seriesSelect));
-					$('body').loading('stop');
+					//$('body').loading('stop');
 
 					let howmanySeries = $(seriesSelect).find('.series-item');
 					if (howmanySeries.length == 1) {
@@ -353,13 +360,13 @@ module.exports = function ( jq ) {
 					msg: $(radAlertMsg),
 					width: '420px',
 					onOk: function(evt) {
-						$('body').loading('start');
+						//$('body').loading('start');
 						radConfirmBox.closeAlert();
 						//let userdata = JSON.parse(localStorage.getItem('userdata'));
 						//const hospitalId = userdata.hospitalId;
 						//apiconnector.doCallDeleteDicom(dicomID, hospitalId).then((response) => {
 						common.doDeleteLocalDicom(dicomID).then((response) => {
-							$('body').loading('stop');
+							//$('body').loading('stop');
 							if (response) {
 								$.notify('ดำเนินการลบข้อมูลเรียบร้อยแล้ว', 'success');
 								let atPage = $('#NavigBar').find('#CurrentPageInput').val();
@@ -368,7 +375,7 @@ module.exports = function ( jq ) {
 								$.notify('เกิดความผิดพลาด ไม่สามารถลบรายการนี้ได้ในขณะนี้', 'error');
 							}
 						}).catch((err) => {
-							$('body').loading('stop');
+							//$('body').loading('stop');
 							$.notify('เกิดความผิดพลาด ไม่สามารถลบรายการนี้ได้ในขณะนี้', 'error');
 						});
 					},
@@ -397,7 +404,7 @@ module.exports = function ( jq ) {
 			$(popupDicomSummary).append($('<span><b>Acc. No.:</b>  </span>'));
 			let accNoElem = $('<span>' + defualtValue.acc + '</span>');
 			$(accNoElem).on('click', (evt)=>{
-				$('body').loading('start');
+				//$('body').loading('start');
 				const main = require('../main.js');
 				let myWsm = main.doGetWsm();
 				let userdata = JSON.parse(localStorage.getItem('userdata'));

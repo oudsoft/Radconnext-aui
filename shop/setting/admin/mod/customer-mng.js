@@ -45,7 +45,7 @@ module.exports = function ( jq ) {
 		return $(orderDateBox);
 	}
 
-	const doCreateCustomerListTable = function(shopData, workAreaBox, customerItems, newCustomerCmdBox){
+	const doCreateCustomerListTable = function(shopData, workAreaBox, customerItems, newCustomerCmdBox, pOptions){
 		let customerTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="1"></table>');
 		let headerRow = $('<tr></tr>');
 		$(headerRow).append($('<td width="2%" align="center"><b>#</b></td>'));
@@ -57,7 +57,13 @@ module.exports = function ( jq ) {
 		$(headerRow).append($('<td width="*" align="center"><b>คำสั่ง</b></td>'));
 		$(customerTable).append($(headerRow));
 
-		for (let x=0; x < customerItems.length; x++) {
+		let from = 0;
+		let to = customerItems.length;
+		if (pOptions) {
+			from = pOptions.from;
+			to = pOptions.to + 1;
+		}
+		for (let x=from; x < to; x++) {
 			let itemRow = $('<tr class="customer-row"></tr>');
 			$(itemRow).append($('<td align="center">' + (x+1) + '</td>'));
 			let item = customerItems[x];
@@ -138,9 +144,11 @@ module.exports = function ( jq ) {
 
   const doShowCustomerItem = function(shopData, workAreaBox){
     return new Promise(async function(resolve, reject) {
-      $(workAreaBox).empty();
+			let itemPerPage = 50;
 
+      $(workAreaBox).empty();
 			let customerItems = await doLoadCustomerItem(shopData.id);
+
 			let customerTable = undefined;
 
       let titlePageBox = $('<div style="padding: 4px;">รายการลูกค้าของร้าน</viv>').css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
@@ -154,8 +162,10 @@ module.exports = function ( jq ) {
 				}
 				let key = $(searchKeyInput).val();
 				if (key !== ''){
+					$('#NavigBar').remove();
 					if (key === '*') {
-						customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems, newCustomerCmdBox);
+						//customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems, newCustomerCmdBox);
+						doControlItemDisplayPage();
 					} else {
 						let customers = JSON.parse(localStorage.getItem('customers'));
 						let customerFilter = await doFilterCustomer(customers, key);
@@ -173,10 +183,45 @@ module.exports = function ( jq ) {
 
 			$(workAreaBox).append($(newCustomerCmdBox));
 
-			customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems, newCustomerCmdBox);
+			const doControlItemDisplayPage = function() {
+				console.log(customerItems.length <= itemPerPage);
+				if (customerItems.length <= itemPerPage) {
+					customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems, newCustomerCmdBox, pOp);
+		      $(workAreaBox).append($(customerTable));
+				} else {
+					let pOp = {from: 0, to: (itemPerPage-1)};
+					customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems, newCustomerCmdBox, pOp);
+		      $(workAreaBox).append($(customerTable));
+					let defaultNavPage = {
+						currentPage: 1,
+						itemperPage: itemPerPage,
+						totalItem: customerItems.length,
+						styleClass : {'padding': '4px', 'margin-top': '60px'},
+					}
+					defaultNavPage.changeToPageCallback = function(page) {
+						$(customerTable).remove();
+						itemPerPage = page.perPage;
+						let newFrom = (itemPerPage * (page.toPage - 1));
+						let newTo = (newFrom + itemPerPage) - 1;
+						if (newTo > customerItems.length) {
+							newTo = customerItems.length - 1;
+						}
+						pOp = {from: newFrom, to: newTo};
+						customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems, newCustomerCmdBox, pOp);
+						$(customerTable).insertBefore($(navigBarBox));
+					}
 
-      $(workAreaBox).append($(customerTable));
-      resolve();
+					let navigBarBox = $('<div id="NavigBar"></div>');
+					let navigatoePage = $(navigBarBox).controlpage(defaultNavPage);
+					setTimeout(()=>{
+						$(workAreaBox).append($(navigBarBox));
+						navigatoePage.toPage(1);
+					}, 200);
+				}
+			}
+
+			doControlItemDisplayPage();
+			resolve();
     });
   }
 

@@ -431,7 +431,7 @@ module.exports = function ( jq ) {
 
   const doCreateProfilePage = function(){
     return new Promise(async function(resolve, reject) {
-      $('body').loading('start');
+      //$('body').loading('start');
 			const userdata = JSON.parse(localStorage.getItem('userdata'));
 			let myProfileRes = await doCallMyProfile(userdata.id);
 			if (myProfileRes.status.code == 200){
@@ -522,7 +522,7 @@ module.exports = function ( jq ) {
 
 	      $(myProfilePage).append($(profileTable));
 	      resolve($(myProfilePage));
-	      $('body').loading('stop');
+	      //$('body').loading('stop');
 			} else if (myProfileRes.status.code == 210){
 				reject({error: {code: 210, cause: 'Token Expired!'}});
 			} else {
@@ -680,7 +680,7 @@ module.exports = function ( jq ) {
 
 	const doCallSaveMyProfile = function(profileData){
     return new Promise(async function(resolve, reject) {
-			$('body').loading('start');
+			//$('body').loading('start');
 			let userdata = JSON.parse(localStorage.getItem('userdata'));
 			let radioId = userdata.id;
 			let rqParams = undefined;
@@ -712,11 +712,11 @@ module.exports = function ( jq ) {
         } else {
           $.notify("บันทึกการคั้งค่าไม่สำเร็จ", "error");
         }
-        $('body').loading('stop');
+        //$('body').loading('stop');
         resolve(response);
 			} catch(e) {
         $.notify("มีความผิดพลาดขณะบันทึกการคั้งค่า", "error");
-        $('body').loading('stop');
+        //$('body').loading('stop');
 	      reject(e);
     	}
 		});

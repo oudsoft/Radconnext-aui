@@ -142,7 +142,7 @@ module.exports = function ( jq ) {
 
 	const doSetupCounter = function() {
 		return new Promise(async function(resolve, reject) {
-			$('body').loading('start');
+			//$('body').loading('start');
 			const userdata = JSON.parse(localStorage.getItem('userdata'));
 			let userId = userdata.id;
 			doLoadCaseForSetupCounter(userId).then(async (myList)=>{
@@ -167,7 +167,7 @@ module.exports = function ( jq ) {
 				});
 				//localStorage.setItem('dicomzipsync', JSON.stringify(dicomzipsync));
 				caseCounter.doShowCaseCounter(newstatusCases, accstatusCases, newConsult);
-				$('body').loading('stop');
+				//$('body').loading('stop');
 				resolve(myList);
 			}).catch((err)=>{
 				reject(err);
@@ -178,7 +178,7 @@ module.exports = function ( jq ) {
 
 	/** Zoom Calle Event **/
 	const doInterruptZoomCallEvt = function(evt) {
-		$('body').loading('start');
+		//$('body').loading('start');
 		const main = require('../main.js');
 		let myWsm = main.doGetWsm();
 
@@ -197,13 +197,13 @@ module.exports = function ( jq ) {
 				//Say yes back to caller
 				let callZoomMsg = {type: 'callzoomback', sendTo: callData.sender, result: 1};
 				myWsm.send(JSON.stringify(callZoomMsg));
-				$('body').loading('stop');
+				//$('body').loading('stop');
 				radConfirmBox.closeAlert();
 			},
 			onCancel: function(evt){
 				let callZoomMsg = {type: 'callzoomback', sendTo: callData.sender, result: 0};
 				myWsm.send(JSON.stringify(callZoomMsg));
-				$('body').loading('stop');
+				//$('body').loading('stop');
 				radConfirmBox.closeAlert();
 			}
 		}
@@ -213,7 +213,7 @@ module.exports = function ( jq ) {
 	let dlgContent = undefined;
 
 	const doInterruptWebRTCCallEvt = function(evt){
-		$('body').loading('start');
+		//$('body').loading('start');
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
 		const main = require('../main.js');
 		const wsm = main.doGetWsm();
@@ -357,11 +357,11 @@ module.exports = function ( jq ) {
 
 				setTimeout(() => {
 					wrtcCommon.doCreateOffer(wsm);
-					$('body').loading('stop');
+					//$('body').loading('stop');
 				}, 7500);
 			} else {
 				$.notify('เว็บบราวเซอร์ของคุณไม่รองรับการใช้งานฟังก์ชั่นนี้', 'error');
-				$('body').loading('stop');
+				//$('body').loading('stop');
 			}
 		});
 	}
