@@ -39,7 +39,7 @@ module.exports = function ( jq, wsm) {
       let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
       document.dispatchEvent(event);
 		} else if (data.type == 'ping') {
-			//let minuteLockScreen = userdata.userprofiles[0].Profile.screen.lock;
+			/*
 			if ((userdata.userprofiles) && (userdata.userprofiles.length > 0)) {
 				let minuteLockScreen = Number(userdata.userprofiles[0].Profile.lockState.autoLockScreen);
 				let minuteLogout = Number(userdata.userprofiles[0].Profile.offlineState.autoLogout);
@@ -63,10 +63,11 @@ module.exports = function ( jq, wsm) {
 			      document.dispatchEvent(event);
 					}
 				}
-				let modPingCounter = Number(data.counterping) % 10;
-				if (modPingCounter == 0) {
-					wsm.send(JSON.stringify({type: 'pong', myconnection: (userdata.id + '/' + userdata.username + '/' + userdata.hospitalId)}));
-				}
+			}
+			*/
+			let modPingCounter = Number(data.counterping) % 10;
+			if (modPingCounter == 0) {
+				wsm.send(JSON.stringify({type: 'pong', myconnection: (userdata.id + '/' + userdata.username + '/' + userdata.hospitalId)}));
 			}
 		} else if (data.type == 'unlockscreen') {
 			let eventName = 'unlockscreen';

@@ -5,6 +5,7 @@ module.exports = function ( jq ) {
   const util = require('./utilmod.js')($);
   const apiconnector = require('./apiconnect.js')($);
   const common = require('./commonlib.js')($);
+	const changepwddlg = require('../../radio/mod/changepwddlg.js')($);
 
   function doCallUpdateUserInfo(data) {
     return new Promise(function(resolve, reject) {
@@ -71,6 +72,20 @@ module.exports = function ( jq ) {
 		return $(fragRow);
 	}
 
+	const createChangePwdFragment = function(changePwdCallback) {
+		let fragRow = $('<div style="display: table-row; padding: 2px; background-color: grey; width: 100%;"></div>');
+		let labelCell = $('<div style="display: table-cell; width: 250px; padding: 2px; text-align: center;"></div>');
+		let inputCell = $('<div style="display: table-cell; padding: 2px;"></div>');
+		let changePwdCmd = $('<a href="#">เปลี่ยน Password</a>');
+		$(changePwdCmd).on('click', (evt)=>{
+			changePwdCallback();
+		});
+		$(labelCell).append($(changePwdCmd));
+		$(labelCell).appendTo($(fragRow));
+		$(inputCell).appendTo($(fragRow));
+		return $(fragRow);
+	}
+
   const doShowUserProfile = function() {
 		let yourUserdata = JSON.parse(localStorage.getItem('userdata'));
 
@@ -99,6 +114,13 @@ module.exports = function ( jq ) {
 
 		let yourDefaultDownloadPathFrag = createFormFragment('UserPathRadiant', 'โฟลเดอร์ดาวน์โหลด Dicom', yourUserdata.userinfo.User_PathRadiant);
 		$(yourDefaultDownloadPathFrag).appendTo($(table));
+
+		const changePasswordCmdClick = function(evt){
+			changepwddlg.doCreateChangePwdDlg();
+		}
+
+		let createChangePwdFrag = createChangePwdFragment(changePasswordCmdClick);
+		$(createChangePwdFrag).appendTo($(table));
 
 		const radDialogOptions = {
 	    title: 'ข้อมูลผู้ใช้งานของฉัน',

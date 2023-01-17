@@ -145,8 +145,8 @@ module.exports = function ( jq, wsm, wsl) {
 				let stateMsg = {type: 'web', from: userdata.username, to: data.from, data: {type: 'socketstate', state: wsl.clientSocketState.state, connected: wsl.clientSocketState.connected, orthancCount: data.data.orthancCount}}
 				wsm.send(JSON.stringify(stateMsg));
 				if ((wsl.clientSocketState.connected) && (data.data.orthancCount == 0)) {
+					let ms = 5;	
 					setTimeout(()=>{
-						let ms = 5;
 						let callUrl = '/api/client/api/connect/cloud/close';
 						let params = {};
 						$.get(callUrl, params).then((response) => {

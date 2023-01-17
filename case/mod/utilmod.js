@@ -471,14 +471,14 @@ module.exports = function ( jq ) {
 			if (!(data.clientSocketState.connected)) {
 				let ms = 60;
 				setTimeout(()=>{
-					let callUrl = '/api/client/api/connect/cloud/reconnect';
+					let callUrl = '/api/client/api/connect/cloud/close';
 					let params = {};
 					$.get(callUrl, params).then((response) => {
 						console.log(response);
 						clientSocketLastCounterPing = 0;
 					});
 				}, (ms*1000));
-				doCreateWebSocketRetry(ms)
+				//doCreateWebSocketRetry(ms)
 			}
 			console.log(clientSocketLastCounterPing);
 			console.log(data.clientSocketState.counterping);
@@ -487,14 +487,14 @@ module.exports = function ( jq ) {
 			} else {
 				let ms = 60;
 				setTimeout(()=>{
-					let callUrl = '/api/client/api/connect/cloud/reconnect';
+					let callUrl = '/api/client/api/connect/cloud/close';
 					let params = {};
 					$.get(callUrl, params).then((response) => {
 						console.log(response);
 						clientSocketLastCounterPing = 0;
 					});
 				}, (ms*1000));
-				doCreateWebSocketRetry(ms)
+				//doCreateWebSocketRetry(ms)
 			}
 
 		} else if (data.type == 'result') {

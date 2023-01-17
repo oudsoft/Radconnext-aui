@@ -28,6 +28,8 @@ const softphone = require('../case/mod/softphonelib.js')($);
 
 const modalLockScreenStyle = { 'position': 'fixed', 'z-index': '41', 'left': '0', 'top': '0', 'width': '100%', 'height': '100%', 'overflow': 'auto', 'background-color': '#ccc'};
 
+
+
 $( document ).ready(function() {
   const initPage = function() {
     let logined = sessionStorage.getItem('logged');
@@ -123,12 +125,14 @@ $( document ).ready(function() {
               sessionStorage.setItem('logged', true);
               localStorage.setItem('token', data.token);
               localStorage.setItem('userdata', JSON.stringify(data.radioUserData));
+              userdata = data.radioUserData;
               /*
               if (userdata.userprofiles.length == 0){
                 userdata.userprofiles.push({Profile: profile.defaultRadioProfileV2});
               }
               */
               doLoadMainPage();
+              util.wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
               let eventData = data.caseData;
               eventData.startDownload = 0;
               onOpenCaseTrigger(eventData);
@@ -217,7 +221,7 @@ function doLoadMainPage(){
   $('head').append('<script src="' + sipPhonePlugin + '"></script>');
 
   $('head').append('<link rel="stylesheet" href="../case/css/scanpart.css" type="text/css" />');
-  
+
   /*
   $('body').append($('<div id="overlay"><div class="loader"></div></div>'));
 
@@ -483,6 +487,42 @@ function doLoadMainPage(){
           }
         }
       });
+
+      let idleTime = 0;
+
+      let idleTimerIncrement = function() {
+        idleTime = idleTime + 1;
+        let userdata = doGetUserData();
+        userdata = JSON.parse(userdata);
+        if ((userdata.userprofiles) && (userdata.userprofiles.length> 0) && (userdata.userprofiles[0].Profile)) {
+          let minuteLockScreen = Number(userdata.userprofiles[0].Profile.lockState.autoLockScreen);
+          let minuteLogout = Number(userdata.userprofiles[0].Profile.offlineState.autoLogout);
+          if (idleTime > minuteLockScreen) {
+            let eventName = 'lockscreen';
+            let evtData = {};
+            let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
+            document.dispatchEvent(event);
+          }
+          if (minuteLogout > 0){
+            if (idleTime == minuteLogout) {
+              let eventName = 'autologout';
+              let evtData = {};
+              let event = new CustomEvent(eventName, {"detail": {eventname: eventName, data: evtData}});
+              document.dispatchEvent(event);
+            }
+          }
+        }
+      }
+
+      let idleInterval = setInterval(idleTimerIncrement, 60000); // 1 minute
+
+      $('#app').on('mousemove', (evt)=> {
+        idleTime = 0;
+      });
+      $('#app').on('keypress', (evt)=> {
+        idleTime = 0;
+      });
+
     });
   });
 }
@@ -502,6 +542,7 @@ const onOpenCaseTrigger = function(caseData) {
       let url = window.URL.createObjectURL(blob);
       $(opencaseTitlePage).find('img').attr('src', url);
       $("#TitleContent").append($(opencaseTitlePage));
+      common.downloadDicomList = [];
     });
 
   }).catch(async (err)=>{

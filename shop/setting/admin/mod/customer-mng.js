@@ -186,7 +186,7 @@ module.exports = function ( jq ) {
 			const doControlItemDisplayPage = function() {
 				console.log(customerItems.length <= itemPerPage);
 				if (customerItems.length <= itemPerPage) {
-					customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems, newCustomerCmdBox, pOp);
+					customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems, newCustomerCmdBox);
 		      $(workAreaBox).append($(customerTable));
 				} else {
 					let pOp = {from: 0, to: (itemPerPage-1)};

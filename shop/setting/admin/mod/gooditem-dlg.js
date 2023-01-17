@@ -209,14 +209,15 @@ module.exports = function ( jq ) {
   const doShowAddGooditemForm = function(shopData, successCallback, cancelCallback){
     let form = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
     let formRow = $('<tr></tr>');
-    let nameCell = $('<td width="20%" align="left"></td>');
-    let priceCell = $('<td width="15%" align="left"></td>');
-    let unitCell = $('<td width="15%" align="left"></td>');
-    let groupCell = $('<td width="20%" align="left"></td>');
-    let commandCell = $('<td width="*" align="left"></td>');
-    let nameInput = $('<input type="text" placeholder="ชื่อรายการสินค้า"/>').css({'width': '50px'});
-    let priceInput = $('<input type="text" placeholder="ราคา"/>').css({'width': '30px'});
-    let unitInput = $('<input type="text" placeholder="หน่วยขาย"/>').css({'width': '40px'});
+		let commandRow = $('<tr></tr>');
+    let nameCell = $('<td width="35%" align="left"></td>');
+    let priceCell = $('<td width="20%" align="left"></td>');
+    let unitCell = $('<td width="25%" align="left"></td>');
+    let groupCell = $('<td width="*" align="left"></td>');
+    let commandCell = $('<td colspan="4" align="center"></td>');
+    let nameInput = $('<input type="text" placeholder="ชื่อรายการสินค้า"/>').css({'width': '120px'});
+    let priceInput = $('<input type="text" placeholder="ราคา"/>').css({'width': '50px'});
+    let unitInput = $('<input type="text" placeholder="หน่วยขาย"/>').css({'width': '70px'});
     let groupSelect = $('<select></select>').css({'width': '80px'});
     let menugroups = JSON.parse(localStorage.getItem('menugroups'));
     menugroups.forEach((item, i) => {
@@ -260,7 +261,7 @@ module.exports = function ( jq ) {
       }
     });
 
-		let cancelCmd = $('<input type="button" value="ยกเลิก" style="margin-left: 2px;"/>');
+		let cancelCmd = $('<input type="button" value="ยกเลิก" style="margin-left: 5px;"/>');
     $(cancelCmd).on('click', (evt)=>{
 			cancelCallback();
 		});
@@ -270,8 +271,13 @@ module.exports = function ( jq ) {
     $(unitCell).append($(unitInput)).append($('<span>*</span>').css({'margin-left': '5px', 'color': 'red'}));
     $(groupCell).append($(groupSelect));
     $(commandCell).append($(saveCmd)).append($(cancelCmd));
-    $(formRow).append($(nameCell)).append($(priceCell)).append($(unitCell)).append($(groupCell)).append($(commandCell));
-    return $(form).append($(formRow));
+    $(formRow).append($(nameCell)).append($(priceCell)).append($(unitCell)).append($(groupCell))/*.append($(commandCell))*/;
+		$(commandRow).append($(commandCell))
+    $(form).append($(formRow));
+
+		$(form).append($('<tr><td colspan="4"></td></tr>').css({'height': '30px'}));
+		$(form).append($(commandRow))
+		return $(form).css({'border': '2px grey solid', 'padding': '2px'});
   }
 
 	const doShowGooditemPopup = function(gooditem) {

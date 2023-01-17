@@ -57,7 +57,6 @@ module.exports = function ( jq ) {
 	const doDownloadDicom = function(evt, caseDicomZipFilename) {
 		evt.preventDefault();
 		let dicomZipLink = '/img/usr/zip/' + caseDicomZipFilename;
-		/*
 		let pom = document.createElement('a');
 		document.body.appendChild(pom);
 		pom.setAttribute('target', "_blank");
@@ -65,29 +64,38 @@ module.exports = function ( jq ) {
 		pom.setAttribute('download', caseDicomZipFilename);
 		pom.click();
 		document.body.removeChild(pom);
-		*/
+		common.downloadDicomList = [];
+		common.downloadDicomList.push(caseDicomZipFilename);
+		return common.downloadDicomList;
+	}
 
+	const doDownloadDicomShowProg = function(evt, caseDicomZipFilename) {
+		evt.preventDefault();
+		let dicomZipLink = '/img/usr/zip/' + caseDicomZipFilename;
 		let downloadCmd = $(evt.currentTarget);
 		let oldLabel = $(downloadCmd).val();
 		$(downloadCmd).prop('disabled', true);
-		window.fetch(dicomZipLink, {method: 'GET'}).then(async (response) => {
-			let reader = response.body.getReader();
-			let contentLength = response.headers.get('Content-Length');
-			let receivedLength = 0;
-			let chunks = [];
-			while(true) {
-  			let {done, value} = await reader.read();
-			  if (done) {
-			    break;
-			  }
-				chunks.push(value);
-			  receivedLength += value.length;
-				let prog = (receivedLength / contentLength) * 100;
-				let perc = prog.toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-				$(downloadCmd).val(oldLabel + '(' + perc + '%)');
-			}
-			let blob = new Blob(chunks);
-			return blob;
+		window.fetch(dicomZipLink, {method: 'GET'}).then((response) => {
+			return new Promise(async function(resolve, reject) {
+				let reader = response.body.getReader();
+				let contentLength = response.headers.get('Content-Length');
+				let receivedLength = 0;
+				let chunks = [];
+				while(true) {
+	  			let {done, value} = await reader.read();
+				  if (done) {
+				    break;
+				  }
+					chunks.push(value);
+				  receivedLength += value.length;
+					let prog = (receivedLength / contentLength) * 100;
+					let perc = prog.toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+					$(downloadCmd).val(oldLabel + '(' + perc + '%)');
+				}
+				let blob = new Blob(chunks);
+				//return blob;
+				resolve(blob)
+			});
 		}).then((blob) => {
 			let url = window.URL.createObjectURL(blob);
 			let pom = document.createElement('a');
@@ -100,8 +108,7 @@ module.exports = function ( jq ) {
 			$(downloadCmd).prop('disabled', false);
 			doResetPingCounterOnOpenCase();
 		});
-
-
+		common.downloadDicomList = [];
 		common.downloadDicomList.push(caseDicomZipFilename);
 		return common.downloadDicomList;
 	}
@@ -119,6 +126,7 @@ module.exports = function ( jq ) {
 			let existDicomFileRes = await apiconnector.doCallDicomArchiveExist(dicomzipfilename);
 			if (existDicomFileRes.link){
 				doDownloadZipBlob(downloadCmd, dicomzipfilepath, dicomzipfilename, ()=>{
+					common.downloadDicomList = [];
 					common.downloadDicomList.push(dicomzipfilename);
 					resolve(existDicomFileRes);
 				});
@@ -126,6 +134,7 @@ module.exports = function ( jq ) {
 				let existOrthancFileRes = await apiconnector.doCallDicomArchiveExist(orthanczipfilename);
 				if (existOrthancFileRes.link){
 					doDownloadZipBlob(downloadCmd, orthanczipfilepath, dicomzipfilename, ()=>{
+						common.downloadDicomList = [];
 						common.downloadDicomList.push(dicomzipfilename);
 						resolve(existOrthancFileRes);
 					});
@@ -135,6 +144,7 @@ module.exports = function ( jq ) {
 					apiconnector.doCallDownloadDicom(studyID, hospitalId).then((response) => {
 						setTimeout(()=>{
 							doDownloadZipBlob(downloadCmd, response.link, dicomzipfilename, ()=>{
+								common.downloadDicomList = [];
 								common.downloadDicomList.push(dicomzipfilename);
 								resolve(response);
 							});
@@ -252,17 +262,20 @@ module.exports = function ( jq ) {
 	const onMisstakeCaseNotifyCmdClick = function(evt){
 		let misstakeCaseData = $(evt.currentTarget).data('misstakeCaseData');
 		console.log(misstakeCaseData);
-		let getUserInfoUrl = '/api/user/' + misstakeCaseData.userId;
-    common.doGetApi(getUserInfoUrl, {}).then(async(response)=>{
-			console.log(response.Record);
-      let ownerCaseInfo = response.Record.info;
-			let ownerCaseUser = response.Record.user;
+		//let getUserInfoUrl = '/api/user/' + misstakeCaseData.userId;
+    //common.doGetApi(getUserInfoUrl, {}).then(async(response)=>{
+			//console.log(response.Record);
+      //let ownerCaseInfo = response.Record.info;
+			//let ownerCaseUser = response.Record.user;
+
+			let owner = misstakeCaseData.Owner;
+
 			let ownerCaseInfoBox = $('<div></div>');
 			$(ownerCaseInfoBox).append($('<h4>ข้อมูลผู้ส่งเคส</h4>').css({'text-align': 'center', 'line-height': '14px'}));
-			$(ownerCaseInfoBox).append($('<p>ชื่อ ' + ownerCaseInfo.User_NameTH + ' ' + ownerCaseInfo.User_LastNameTH + '</p>').css({'line-height': '14px'}));
-			$(ownerCaseInfoBox).append($('<p>โทร. ' + ownerCaseInfo.User_Phone + '</p>').css({'line-height': '14px'}));
-			if (ownerCaseInfo.User_Mail) {
-				$(ownerCaseInfoBox).append($('<p>อีเมล์. ' + ownerCaseInfo.User_Mail + '</p>').css({'line-height': '14px'}));
+			$(ownerCaseInfoBox).append($('<p>ชื่อ ' + owner.User_NameTH + ' ' + owner.User_LastNameTH + '</p>').css({'line-height': '14px'}));
+			$(ownerCaseInfoBox).append($('<p>โทร. ' + owner.User_Phone + '</p>').css({'line-height': '14px'}));
+			if (owner.User_Mail) {
+				$(ownerCaseInfoBox).append($('<p>อีเมล์. ' + owner.User_Mail + '</p>').css({'line-height': '14px'}));
 			}
 			let notifyMessageBox = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
 			let optionRow = $('<tr></tr>');
@@ -296,12 +309,15 @@ module.exports = function ( jq ) {
 					let causeValue = $(causeOption).val();
 					let otherValue = $(inputValue).val();
 					const userdata = JSON.parse(localStorage.getItem('userdata'));
-					/*
+
 					let main = require('../main.js');
 					let myWsm = main.doGetWsm();
-					*/
-					let myWsm = util.wsm;
-					let sendto = ownerCaseUser.username;
+					if (!myWsm) {
+						util.wsm = util.doConnectWebsocketMaster(userdata.username, userdata.usertypeId, userdata.hospitalId, 'none');
+						myWsm = util.wsm;
+					}
+					//let myWsm = util.wsm;
+					let sendto = owner.username;
 					let userfullname = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
 					let from = {userId: userdata.id, username: userdata.username, userfullname: userfullname};
 					let msg = {cause: causeValue, other: otherValue, caseData: misstakeCaseData};
@@ -315,7 +331,7 @@ module.exports = function ( jq ) {
 	      }
 	    }
 	    let radConfirmBox = $('body').radalert(radconfirmoption);
-    });
+    //});
 	}
 
   const onTemplateSelectorChange = async function(evt) {
@@ -1124,6 +1140,7 @@ module.exports = function ( jq ) {
 		downloadData.caseScanParts = selectedCase.case.Case_ScanPart;
 		downloadData.patientFullName = patientFullName;
 		downloadData.patientHN = patientHN;
+		downloadData.Owner = selectedCase.Owner;
 
 		let ownerCaseFullName = selectedCase.Owner.User_NameTH + ' ' + selectedCase.Owner.User_LastNameTH;
 		let ownerCaseFullNameLink = $('<a></a>').text(ownerCaseFullName).css({'color': 'blue', 'text-decoration': 'underline', 'cursor': 'pointer'});
@@ -1220,6 +1237,8 @@ module.exports = function ( jq ) {
 			downloadData.caseScanParts = caseScanParts;
 			downloadData.patientFullName = patientFullName;
 			downloadData.patientHN = patientHN;
+			downloadData.Owner = selectedCase.Owner;
+
 			$(downloadCmd).attr('title', 'Download zip file of ' + patientFullName);
 			$(downloadCmd).data('downloadData', downloadData);
 			$(downloadCmd).on('click', async (evt)=>{
@@ -1709,15 +1728,33 @@ module.exports = function ( jq ) {
 		$(downloadDicomZipCmd).val(' DL/Open ');
 		$(downloadDicomZipCmd).removeClass('action-btn');
 		$(downloadDicomZipCmd).addClass('special-action-btn');
+		let downloadData = $(downloadDicomZipCmd).data('downloadData');
+		let dicomzipfilename = downloadData.dicomzipfilename;
+
 		$(downloadDicomZipCmd).on('click', async (evt)=>{
 			if (evt.ctrlKey) {
 				// Ctrl Click start open third party dicom view
-				onOpenThirdPartyCmdClick();
+				//onOpenThirdPartyCmdClick();
+
+				let foundItem = await common.downloadDicomList.find((item, i) =>{
+					if (item === dicomzipfilename) {
+						return item;
+					}
+				});
+				if ((foundItem) && (foundItem === dicomzipfilename)) {
+					let msgDiv = $('<p></p>').text(dicomzipfilename + ' completed.')
+					let msgBox = doCreateCustomNotify('ประวัติการดาวน์โหลด', msgDiv, ()=>{
+						onOpenThirdPartyCmdClick();
+					});
+					$('body').append($(msgBox).css({'position': 'absolute', 'top': '50px', 'right': '2px', 'width' : '260px', 'border': '2px solid black', 'background-color': '#184175', 'color': 'white', 'padding': '5px'}))
+				} else {
+					//let dwnList = doDownloadDicom(evt, downloadData.dicomzipfilename);
+					let dwnRes = await doStartAutoDownloadDicom(downloadDicomZipCmd);
+				}
+
 			} else {
 				//normal click normal download
 				//dwnRes = await onDownloadCmdClick(downloadDicomZipCmd);
-				let downloadData = $(downloadDicomZipCmd).data('downloadData');
-				let dicomzipfilename = downloadData.dicomzipfilename;
 				let downloadList = doDownloadDicom(evt, dicomzipfilename);
 			}
 		});

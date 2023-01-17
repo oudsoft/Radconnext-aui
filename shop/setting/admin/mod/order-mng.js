@@ -216,7 +216,9 @@ module.exports = function ( jq ) {
 						}
 					} else {
 						params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopData.id, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
-	          orderRes = await common.doCallApi('/api/shop/order/add', params);
+						console.log(params);
+						params.data.Items = orderObj.gooditems;
+						orderRes = await common.doCallApi('/api/shop/order/add', params);
 	          if (orderRes.status.code == 200) {
 	            $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
 							orderObj.id = orderRes.Records[0].id;
@@ -279,8 +281,10 @@ module.exports = function ( jq ) {
             $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
           }
         } else {
-          params = {data: {Items: orderObj.gooditems, Status: 1}, shopId: shopData.id, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
-          orderRes = await common.doCallApi('/api/shop/order/add', params);
+          params = {data: {Status: 1}, shopId: shopData.id, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId};
+					console.log(params);
+					params.data.Items = orderObj.gooditems;
+					orderRes = await common.doCallApi('/api/shop/order/add', params);
           if (orderRes.status.code == 200) {
             $.notify("เพิ่มรายการออร์เดอร์สำเร็จ", "success");
             await doShowOrderList(shopData, workAreaBox, selectDate);
