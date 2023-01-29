@@ -49,7 +49,7 @@ module.exports = function ( jq ) {
 				pom.setAttribute('download', outputFilename);
 				pom.click();
 				successCallback();
-				doResetPingCounterOnOpenCase();
+				//doResetPingCounterOnOpenCase();
 			}
   	});
 	}
@@ -106,7 +106,7 @@ module.exports = function ( jq ) {
       pom.remove();
 			$(downloadCmd).val(oldLabel);
 			$(downloadCmd).prop('disabled', false);
-			doResetPingCounterOnOpenCase();
+			//doResetPingCounterOnOpenCase();
 		});
 		common.downloadDicomList = [];
 		common.downloadDicomList.push(caseDicomZipFilename);
@@ -682,7 +682,7 @@ module.exports = function ( jq ) {
 					$.notify("ไม่สามารถบันทึก Draft - Error โปรดติดต่อผู้ดูแลระบบ", "error");
 					//$('body').loading('stop');
 				}
-				doResetPingCounterOnOpenCase();
+				//doResetPingCounterOnOpenCase();
 				resolve(draftResponseRes);
 			} else {
 				$.notify("โปรดพิมพ์ผลอ่านก่อนครับ", "warn");
@@ -1363,11 +1363,6 @@ module.exports = function ( jq ) {
           $(templateSelector).append('<option value="' + item.Value + '">' + item.DisplayText + '</option>');
         });
       }
-			/*
-			1. เอา Content ที่รับ ไปวางใน simpleEditor
-			2. เพิ่ม option "Template ทั้งหมด" value = "0" ลงใน $(templateSelector) กรณี มี templateOptions
-			3. ปรับ api ให้ 2. เมื่อ $(templateSelector) onChange val == 0
-			*/
 
       $(templateSelector).on('change', onTemplateSelectorChange);
       $(templateSelector).appendTo($(summaryFourthLine));
@@ -1395,13 +1390,13 @@ module.exports = function ( jq ) {
 					let draftbackup = {caseId: caseId, content: responseHTML, backupAt: new Date()};
 					localStorage.setItem('draftbackup', JSON.stringify(draftbackup));
 					keypressCount = 0;
-					doResetPingCounterOnOpenCase();
+					//doResetPingCounterOnOpenCase();
 				} else {
 					keypressCount += 1;
 				}
 			}
 			$(simpleEditorBox).bind('keypress', function(evt) {
-				simpleEditorChangeEvt(evt);
+				//simpleEditorChangeEvt(evt);
 			});
 			/**********************************************/
 
@@ -1801,7 +1796,7 @@ module.exports = function ( jq ) {
 			if (isShowNewTemplateCmd === 'none') {
 				$('#AddNewTemplateCmd').show();
 			}
-			doResetPingCounterOnOpenCase();
+			//doResetPingCounterOnOpenCase();
 			resolve(draftbackup);
 		});
 	}

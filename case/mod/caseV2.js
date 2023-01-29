@@ -257,7 +257,7 @@ module.exports = function ( jq ) {
 		return $(headerRow);
 	}
 
-	function doCreateCaseItemCommand(ownerRow, caseItem) {
+	const doCreateCaseItemCommand = function(ownerRow, caseItem) {
 		const userdata = JSON.parse(localStorage.getItem('userdata'));
 		let operationCmdButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/arrow-down-icon.png" title="คลิกเพื่อเปิดรายการคำสั่งใช้งานของคุณ"/>');
 		$(operationCmdButton).on ('click', async(evt)=> {
@@ -332,7 +332,7 @@ module.exports = function ( jq ) {
 		return $(operationCmdButton);
 	}
 
-	function doCreateCaseItemRow(caseItem) {
+	const doCreateCaseItemRow = function(caseItem) {
 		return new Promise(async function(resolve, reject) {
 			let casedatetime = caseItem.case.createdAt.split('T');
 			let casedateSegment = casedatetime[0].split('-');
@@ -450,7 +450,7 @@ module.exports = function ( jq ) {
 			let rwTable = $('<table id="CaseTable" width="100%" cellpadding="5" cellspacing="0"></table>');
 			let headRow = $('<tr class="table-header-row"></tr>');
 			$(headRow).css(rowStyleClass);
-			let headColumns = $('<td width="10%" align="center">เวลาที่ส่งอ่าน</td><td width="10%" align="center">ชื่อ</td><td width="5%" align="center">เพศ/อายุ</td><td width="8%" align="center">HN</td><td width="5%" align="center">Mod.</td><td width="12%" align="center">Scan Part</td><td width="10%" align="center">ประเภทความด่วน</td><td width="10%" align="center">แพทย์ผู้ส่ง</td><td width="10%" align="center">รังสีแพทย์</td><td width="18%" align="center">สถานะเคส</td><td width="*" align="center">คำสั่ง</td>');
+			let headColumns = $('<td width="10%" align="center">เวลาที่ส่งอ่าน</td><td width="10%" align="center">ชื่อ</td><td width="5%" align="center">เพศ/อายุ</td><td width="8%" align="center">HN</td><td width="5%" align="center">Mod.</td><td width="12%" align="center">Scan Part</td><td width="10%" align="center">ประเภทความด่วน</td><td width="10%" align="center">แพทย์ผู้ส่ง</td><td width="10%" align="center">รังสีแพทย์</td><td width="*" align="center">สถานะเคส</td>'); //<td width="*" align="center">คำสั่ง</td>
 			$(rwTable).append($(headRow));
 			$(headRow).append($(headColumns));
 			console.log(incidents);
@@ -500,25 +500,14 @@ module.exports = function ( jq ) {
 				let caseStatusCol = $('<td align="center" valign="top"></td>').css({'cursor': 'pointer'});
 				$(caseStatusCol).append($(caseStatusBox));
 				$(dataRow).append($(caseStatusCol));
+
 				/*
-				if ((incidents[i].case.casestatus.id == 1) || (incidents[i].case.casestatus.id == 2) || (incidents[i].case.casestatus.id == 8)) {
-					let task = await common.doFindTaksOfCase(myTasks.Records, incidents[i].case.id);
-					console.log(myTasks.Records);
-					if ((task) && (task.triggerAt)) {
-						let caseTriggerAt = new Date(task.triggerAt);
-						let diffTime = Math.abs(caseTriggerAt - new Date());
-						let hh = parseInt(diffTime/(1000*60*60));
-						let mn = parseInt((diffTime - (hh*1000*60*60))/(1000*60));
-						let clockCountdownDiv = $('<div id="ClockCountDownBox"></div>');
-						$(clockCountdownDiv).countdownclock({countToHH: hh, countToMN: mn});
-						$(caseStatusCol).append($(clockCountdownDiv));
-					}
-				}
-				*/
 				let commandCol = $('<td align="center"></td>');
 				$(commandCol).appendTo($(dataRow));
+					*/
 				$(rwTable).append($(dataRow));
 
+				/*
 				let operationCmdButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/arrow-down-icon.png" title="คลิกเพื่อเปิดรายการคำสั่งใช้งานของคุณ"/>');
 				$(operationCmdButton).click(function() {
 					$('.operation-row').each((index, child) => {
@@ -537,7 +526,9 @@ module.exports = function ( jq ) {
 					}
 				});
 				$(operationCmdButton).appendTo($(commandCol));
+				*/
 
+				/*
 				let commnandRow = $('<tr></tr>');
 				$(commnandRow).appendTo($(rwTable));
 				let operationCol = $('<td id="' + incidents[i].case.id + '"colspan="12" align="right" style="background-color: #828080; display: none;" class="operation-row"></td>');
@@ -559,155 +550,215 @@ module.exports = function ( jq ) {
 						$(moreCmdBox).data('state', 'off');
 					}
 				});
-
-				let downlodDicomButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/zip-icon.png" title="Download Dicom in zip file."/>');
-				$(downlodDicomButton).click(function() {
-					//let patientNameEN = incidents[i].case.patient.Patient_NameEN + '_' + incidents[i].case.patient.Patient_LastNameEN;
-					//let savefile = patientNameEN + '-' + casedateSegment + '.zip';
+				*/
+				let doDownloadDicomZipEvtClick = function() {
 					let savefile = incidents[i].case.Case_DicomZipFilename;
 					common.doDownloadDicom(incidents[i].case.Case_OrthancStudyID, savefile);
+				}
+
+				let doEditCaseCmdEvtClick = function(){
+					doCallEditCase(incidents[i].case.id);
+				}
+
+				let doOpenCaseEventLogEvtClick = function(){
+					doOpenCaseEventLog(incidents[i].case.id);
+				}
+
+				let doCancelCaseCmdEvtClick = async function(){
+					let caseId = incidents[i].case.id;
+					let cancelStatus = 7;
+					let expiredDescription = 'Not found Task on Case Task Cron Job. Cancel by Status Short-cut.';
+					let response = await common.doUpdateCaseStatusByShortCut(caseId, cancelStatus, expiredDescription);
+					if (response.status.code == 200) {
+						$('#NegativeStatusSubCmd').click();
+					}
+				}
+
+				let doCancelCaseEvtClick = function() {
+					doCancelCase(incidents[i].case.id);
+				}
+
+				let doCloseCaseEvtCmdClick = async function() {
+					if (incidents[i].case.casestatus.id == 12) {
+						let closeCaseStatus = 6;
+						let closeDescription = 'Hospital try for close case from Edit mode';
+						await common.doUpdateCaseStatusByShortCut(incidents[i].case.id, closeCaseStatus, closeDescription);
+						casecounter.doSetupCounter();
+						$('#SuccessStatusSubCmd').click();
+					} else {
+						doCloseCase(incidents[i].case.id);
+					}
+				}
+
+				let doViewResultCmdEvtClick = function() {
+					doViewCaseReport(incidents[i].case.id);
+				}
+
+				let doConvertResultCmdEvtClick = function() {
+					doConvertCaseReport(incidents[i].case.id, incidents[i].case.Case_StudyInstanceUID, incidents[i].case.Case_OrthancStudyID, incidents[i].case.Case_Modality);
+				}
+
+				let doZoomCallRadioCmdEvtClick = function(){
+					doZoomCallRadio(incidents[i]);
+				}
+
+				let doDeleteCaseCmdEvtClick = function() {
+					doCallDeleteCase(incidents[i].case.id);
+				}
+
+				let doAttachFileCmdEvtClick = function() {
+					let patientNameEN = incidents[i].case.patient.Patient_NameEN + ' ' + incidents[i].case.patient.Patient_LastNameEN;
+					let dicomUrl = '/api/orthanc/add/attach/file';
+					let rqParams = {caseId: incidents[i].case.id, PatientNameEN: patientNameEN};
+					$.post(dicomUrl, rqParams, function(response){
+						console.log(response);
+					});
+				}
+
+				let contextMenuItems = [];
+
+				contextMenuItems.push({iconUrl: '/images/zip-icon.png', displayText: 'ดาวน์โหลด', callback: doDownloadDicomZipEvtClick});
+				/*
+				let downlodDicomButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/zip-icon.png" title="Download Dicom in zip file."/>');
+				$(downlodDicomButton).click(function() {
+					doDownloadDicomZipEvtClick();
 				});
 				$(downlodDicomButton).appendTo($(moreCmdBox));
+				*/
 
+				contextMenuItems.push({iconUrl: '/images/event-log-icon.png', displayText: 'เปิดบันทึกการเปลี่ยนแปลงเคส', callback: doOpenCaseEventLogEvtClick});
+				/*
 				let caseEventLogButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/event-log-icon.png" title="Open Case Event Log."/>');
 				$(caseEventLogButton).css({'width': '30px', 'height': 'auto'});
 				$(caseEventLogButton).click(function() {
-					doOpenCaseEventLog(incidents[i].case.id)
+					doOpenCaseEventLogEvtClick();
 				});
 				$(caseEventLogButton).appendTo($(operationCol));
-
-				if ((incidents[i].case.casestatus.id == 1) || (incidents[i].case.casestatus.id == 2) || (incidents[i].case.casestatus.id == 3) || (incidents[i].case.casestatus.id == 4) || (incidents[i].case.casestatus.id == 7)) {
+				*/
+				if ([1, 2, 3, 4, 7, 8, 9].includes(incidents[i].case.casestatus.id)) {
+					contextMenuItems.push({iconUrl: '/images/update-icon-2.png', displayText: 'แก้ไขเคส', callback: doEditCaseCmdEvtClick});
+					/*
 					let editCaseButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/update-icon-2.png" title="Edit Case Detail."/>');
 					$(editCaseButton).click(function() {
-						doCallEditCase(incidents[i].case.id);
+						doEditCaseCmdEvtClick();
 					});
 					$(editCaseButton).appendTo($(operationCmdBox));
+					*/
 
 					let task = await common.doFindTaksOfCase(myTasks.Records, incidents[i].case.id);
 					if((!task) && ((incidents[i].case.casestatus.id == 1) || (incidents[i].case.casestatus.id == 2) || (incidents[i].case.casestatus.id == 8))) {
 						//not foynd task.
+						contextMenuItems.push({iconUrl: '/images/cancel-icon.png', displayText: 'ยกเลิกเคส', callback: doCancelCaseCmdEvtClick});
+						/*
 						let cancelCaseButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/cancel-icon.png" title="Cancel incurrect Case by short-cut."/>');
-						$(cancelCaseButton).click(async function() {
-							//doCancelCase(incidents[i].case.id);
-							let caseId = incidents[i].case.id;
-							let cancelStatus = 7;
-							let expiredDescription = 'Not found Task on Case Task Cron Job. Cancel by Status Short-cut.';
-							let response = await common.doUpdateCaseStatusByShortCut(caseId, cancelStatus, expiredDescription);
-							if (response.status.code == 200) {
-								//casecounter.doSetupCounter();
-								$('#NegativeStatusSubCmd').click();
-							}
+						$(cancelCaseButton).click(function() {
+							doCancelCaseCmdEvtClick();
 						});
 						$(cancelCaseButton).appendTo($(moreCmdBox));
+						*/
 					}
 				}
 
-				if ((incidents[i].case.casestatus.id == 3) || (incidents[i].case.casestatus.id == 4)) {
+				if ([3, 4].includes(incidents[i].case.casestatus.id)) {
+					contextMenuItems.push({iconUrl: '/images/cancel-icon.png', displayText: 'ยกเลิกเคส', callback: doCancelCaseEvtClick});
+					/*
 					let cancelCaseButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/cancel-icon.png" title="Cancel Case."/>');
 					$(cancelCaseButton).click(function() {
-						doCancelCase(incidents[i].case.id);
+						doCancelCaseEvtClick();
 					});
 					$(cancelCaseButton).appendTo($(operationCmdBox));
+					*/
 				}
 
-				if ((incidents[i].case.casestatus.id == 5) || (incidents[i].case.casestatus.id == 6) || (incidents[i].case.casestatus.id == 10) || (incidents[i].case.casestatus.id == 11) || (incidents[i].case.casestatus.id == 12) || (incidents[i].case.casestatus.id == 13) || (incidents[i].case.casestatus.id == 14)) {
-					//let viewResultButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/pdf-icon-2.png" title="View Result."/>');
+				if ([5, 6, 10, 11, 12, 13, 14].includes(incidents[i].case.casestatus.id)) {
+					contextMenuItems.push({iconUrl: '/images/close-icon-3.png', displayText: 'ปิดเคส', callback: doCloseCaseEvtCmdClick});
+					/*
 					let closeCaseButton = $('<img class="pacs-command-dd" data-toggle="tooltip" src="/images/close-icon-3.png" title="Close Case to archive job."/>');
-					$(closeCaseButton).click(async function() {
-						if (incidents[i].case.casestatus.id == 12) {
-							let closeCaseStatus = 6;
-							let closeDescription = 'Hospital try for close case from Edit mode';
-							await common.doUpdateCaseStatusByShortCut(incidents[i].case.id, closeCaseStatus, closeDescription);
-							casecounter.doSetupCounter();
-							$('#SuccessStatusSubCmd').click();
-						} else {
-							doCloseCase(incidents[i].case.id);
-						}
+					$(closeCaseButton).click(function() {
+						doCloseCaseEvtCmdClick();
 					});
 					$(closeCaseButton).appendTo($(operationCmdBox));
+					*/
 
+					contextMenuItems.push({iconUrl: '/images/print-icon.png', displayText: 'เปิดผลอ่าน', callback: doViewResultCmdEvtClick});
+					/*
 					let viewResultButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/print-icon.png" title="View Result."/>');
 					$(viewResultButton).click(function() {
-						doViewCaseReport(incidents[i].case.id);
+						doViewResultCmdEvtClick();
 					});
 					$(viewResultButton).appendTo($(operationCmdBox));
-
-					/*
-					let printResultButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/print-icon.png" title="Print Read Result."/>');
-					$(printResultButton).click(function() {
-						doPrintCaseReport(incidents[i].case.id);
-					});
-					$(printResultButton).appendTo($(operationCmdBox));
 					*/
+					contextMenuItems.push({iconUrl: '/images/convert-icon.png', displayText: 'แปลงผลอ่านเข้า PACS', callback: doConvertResultCmdEvtClick});
+					/*
 					let convertResultButton = $('<img class="pacs-command-dd" data-toggle="tooltip" src="/images/convert-icon.png" title="Convert Result to Dicom."/>');
 					$(convertResultButton).click(function() {
-						doConvertCaseReport(incidents[i].case.id, incidents[i].case.Case_StudyInstanceUID, incidents[i].case.Case_OrthancStudyID, incidents[i].case.Case_Modality);
+						doConvertResultCmdEvtClick();
 					});
-					//$(convertResultButton).appendTo($(operationCmdBox));
 					$(convertResultButton).prependTo($(moreCmdBox));
+					*/
 
+					contextMenuItems.push({iconUrl: '/images/zoom-black-icon.png', displayText: 'ติดต่อรังสีแพทย์ทาง Zoom', callback: doZoomCallRadioCmdEvtClick});
+					/*
 					let zoomCallButton = $('<img class="pacs-command-dd" data-toggle="tooltip" src="/images/zoom-black-icon.png" title="Call Radiologist by zoom app."/>');
 					$(zoomCallButton).click(function() {
-						doZoomCallRadio(incidents[i]);
+						doZoomCallRadioCmdEvtClick();
 					});
-					//$(zoomCallButton).appendTo($(operationCmdBox));
 					$(zoomCallButton).prependTo($(moreCmdBox));
+					*/
 				}
 
-				if (incidents[i].case.casestatus.id == 7) {
+				if ([7].includes(incidents[i].case.casestatus.id)) {
+					contextMenuItems.push({iconUrl: '/images/delete-icon.png', displayText: 'ลบเคส', callback: doDeleteCaseCmdEvtClick});
+					/*
 					let deleteCaseButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/delete-icon.png" title="Delete Case."/>');
 					$(deleteCaseButton).click(function() {
-						doCallDeleteCase(incidents[i].case.id);
+						doDeleteCaseCmdEvtClick();
 					});
 					$(deleteCaseButton).appendTo($(operationCmdBox));
-				}
-
-				if (incidents[i].case.casestatus.id == 8){
-					let editCaseButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/update-icon-2.png" title="Edit Case Detail."/>');
-					$(editCaseButton).click(function() {
-						doCallEditCase(incidents[i].case.id);
-					});
-					$(editCaseButton).appendTo($(operationCmdBox));
-
-					let task = await common.doFindTaksOfCase(myTasks.Records, incidents[i].case.id);
-					if(!task){
-						//not foynd task.
-						let cancelCaseButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/cancel-icon.png" title="Cancel incurrect Case by short-cut."/>');
-						$(cancelCaseButton).click(async function() {
-							//doCancelCase(incidents[i].case.id);
-							let caseId = incidents[i].case.id;
-							let cancelStatus = 7;
-							let expiredDescription = 'Not found Task on Case Task Cron Job. Cancel by Status Short-cut.';
-							let response = await common.doUpdateCaseStatusByShortCut(caseId, cancelStatus, expiredDescription);
-							if (response.status.code == 200) {
-								//casecounter.doSetupCounter();
-								$('#NegativeStatusSubCmd').click();
-							}
-						});
-						$(cancelCaseButton).appendTo($(moreCmdBox));
-					}
+					*/
 				}
 
 				if ([1, 2, 8, 9].includes(incidents[i].case.casestatus.id)) {
+					contextMenuItems.push({iconUrl: '/images/attach-plus-icon.png', displayText: 'แนบไฟล์ภาพเพิ่ม', callback: doAttachFileCmdEvtClick});
+					/*
 					let attachPlusButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/attach-plus-icon.png" title="Add New Attach Zip File"/>');
-					$(attachPlusButton).click(async function() {
-						let patientNameEN = incidents[i].case.patient.Patient_NameEN + ' ' + incidents[i].case.patient.Patient_LastNameEN;
-						let dicomUrl = '/api/orthanc/add/attach/file';
-						let rqParams = {caseId: incidents[i].case.id, PatientNameEN: patientNameEN};
-						//$('body').loading('start');
-						$.post(dicomUrl, rqParams, function(response){
-							console.log(response);
-							//$('body').loading('stop');
-						});
+					$(attachPlusButton).click(function() {
+						doAttachFileCmdEvtClick();
 					});
 					$(attachPlusButton).appendTo($(operationCmdBox));
+					*/
 				}
 
+				/*
 				$(operationCol).append($(toggleMoreCmd)).prepend($(moreCmdBox));
 				let moreChild = $(moreCmdBox).find('.pacs-command');
 				if ($(moreChild).length > 0) {
 					$(toggleMoreCmd).show();
 				}
+				*/
+
+				console.log(contextMenuItems);
+				let caseContextOptions = {menuItems: contextMenuItems};
+				let caseContextMenuBox = $('<div></div>');
+				let caseContextMenu = $(caseContextMenuBox).contextmenu(caseContextOptions);
+				$(caseContextMenuBox).css(caseContextMenu.menuStyle);
+				$('#app').append($(caseContextMenuBox));
+
+				$(dataRow).bind('contextmenu', function (evt) {
+		 			var top = evt.pageY+5;
+		 			var left = evt.pageX;
+		 			$(caseContextMenuBox).toggle(100).css({
+				 		top: top + "px",
+				 		left: left + "px"
+		 			});
+		 			return false;
+				});
+				$(document).bind('contextmenu click',function(){
+					$(caseContextMenuBox).hide();
+				});
+				$(caseContextMenuBox).bind('contextmenu',function(){
+	 				return false;
+				});
 			}
 			resolve($(rwTable));
 		});
@@ -1144,10 +1195,19 @@ module.exports = function ( jq ) {
 	}
 
 	const doConvertCaseReport = function(caseId, studyInstanceUID, orthancStudyID, modality){
+		/*
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		let hospitalId = userdata.hospitalId;
 		let userId = userdata.id;
 		doConvertResultToDicom(caseId, hospitalId, userId, orthancStudyID, modality, studyInstanceUID);
+		*/
+		let callUrl = 'https://radconnext.info/api/uicommon/do/resubmit/' + caseId;
+		let params = {};
+		$.get(callUrl, params).then((response) => {
+			console.log(response);
+			//alert('แปลงผลอ่านเข้า PACS เรียบร้อย');
+			$.notify('แปลงผลอ่านเข้า PACS เรียบร้อย', 'success');
+		});
 	}
 
 	const doCloseCase = function(caseId){

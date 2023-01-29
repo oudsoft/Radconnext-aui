@@ -196,16 +196,17 @@ const doStartTestPPQC = function(evt, shopData){
           Shop_PromptPayNo: shopData.Shop_PromptPayNo,
           Shop_PromptPayName: shopData.Shop_PromptPayName,
           netAmount: newValue,
+          showAd: true
         };
         let shopRes = await common.doCallApi('/api/shop/shop/create/ppqrcode', params);
         if (shopRes.status.code == 200) {
           $.notify("สร้างพร้อมเพย์คิวอาร์โค้ดสำเร็จ", "success");
-          let ppqrImage = $('<img/>').attr('src', shopRes.result.qrLink).css({'width': '410px', 'height': 'auto'});
+          let ppqrImage = $('<img/>').attr('src', shopRes.result.qrLink).css({'width': '380px', 'height': 'auto'});
           $(ppqrImage).on('click', (evt)=>{
             evt.stopPropagation();
             window.open('/shop/share/?id=' + shopRes.result.qrFileName, '_blank');
           });
-          $(ppQRBox).empty().append($(ppqrImage));
+          $(ppQRBox).empty().append($(ppqrImage)).css({'height': 'auto'});
           $(dlgHandle.cancelCmd).show();
           $(dlgHandle.cancelCmd).val(' ตกลง ');
           $(dlgHandle.okCmd).hide();

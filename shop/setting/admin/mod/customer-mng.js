@@ -101,7 +101,7 @@ module.exports = function ( jq ) {
 					$('#HistoryTable').remove();
 					$('#NavigBar').remove();
 					let orderHostoryTable = await history.doCreateOrderHistoryTable(workAreaBox, 0, 0, selectDate);
-				})
+				});
 				let backCustomerCmd = $('<input type="button" value=" Back " class="action-btn"/>').css({'margin-left': '8px'});
 				$(backCustomerCmd).on('click', (evt)=>{
 					$(backCustomerCmd).remove();
@@ -113,6 +113,8 @@ module.exports = function ( jq ) {
 					$('.customer-row').show();
 					$(itemRow).css({'background-color': '', 'color': ''});
 					localStorage.removeItem('customerorders');
+					$('#HistoryTable').remove();
+					$('#NavigBar').remove();
 				});
 				$(commandCell).append($(fromDateCmd)).append($(backCustomerCmd));
 				$(itemRow).show();

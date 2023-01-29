@@ -142,9 +142,9 @@ module.exports = function ( jq ) {
 	}
 
 	const calendarOptions = {
-		lang:"th",
-		years:"2020-2030",
-		sundayFirst:false,
+		lang: "th",
+		years: "2020-2030",
+		sundayFirst: true,
 	};
 
 	const genUniqueID = function () {
@@ -380,6 +380,19 @@ module.exports = function ( jq ) {
 		}
 	}
 
+	const findCutoffDateFromDateOption = function(dUnit) {
+    let d = dUnit.substring(0, dUnit.length - 1);
+    let u = dUnit.substring(dUnit.length - 1);
+    let now = new Date();
+    if (u === 'D') {
+      return now.setDate(now.getDate() - parseInt(d));
+    } else if (u === 'M') {
+      return now.setMonth(now.getMonth() - parseInt(d));
+    } else if (u === 'Y') {
+      return now.setFullYear(now.getFullYear() - parseInt(d));
+    }
+  }
+
   return {
 		fileUploadMaxSize,
 		shopSensitives,
@@ -402,6 +415,7 @@ module.exports = function ( jq ) {
 		doResetSensitiveWord,
 		doConnectWebsocketMaster,
 		doPopupOrderChangeLog,
-		isMobileDeviceCheck
+		isMobileDeviceCheck,
+		findCutoffDateFromDateOption
 	}
 }

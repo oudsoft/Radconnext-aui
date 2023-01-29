@@ -28,6 +28,7 @@ $( document ).ready(function() {
     let momentWithLocalesPlugin = "../lib/moment-with-locales.min.js";
     let ionCalendarPlugin = "../lib/ion.calendar.min.js";
     let ionCalendarCssUrl = "../stylesheets/ion.calendar.css";
+    let excelexportjs = '../lib/excel/excelexportjs.js';
 
     $('head').append('<script src="' + jqueryUiJsUrl + '"></script>');
   	$('head').append('<link rel="stylesheet" href="' + jqueryUiCssUrl + '" type="text/css" />');
@@ -38,6 +39,9 @@ $( document ).ready(function() {
     //https://printjs.crabbly.com/
     $('head').append('<script src="' + printjs + '"></script>');
     //https://www.jqueryscript.net/other/Export-Table-JSON-Data-To-Excel-jQuery-ExportToExcel.html#google_vignette
+
+    $('head').append('<script src="' + excelexportjs + '"></script>');
+    
     $('head').append('<script src="' + jquerySimpleUploadUrl + '"></script>');
 
     $('head').append('<script src="' + utilityPlugin + '"></script>');

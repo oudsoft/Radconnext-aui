@@ -576,7 +576,7 @@ module.exports = function ( jq ) {
 				});
 				$(caseEventLogButton).appendTo($(operationCol));
 
-				if ((incidents[i].case.casestatus.id == 1) || (incidents[i].case.casestatus.id == 2) || (incidents[i].case.casestatus.id == 3) || (incidents[i].case.casestatus.id == 4) || (incidents[i].case.casestatus.id == 7)) {
+				if ([1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14].includes(incidents[i].case.casestatus.id)) {
 					let editCaseButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/update-icon-2.png" title="Edit Case Detail."/>');
 					$(editCaseButton).click(function() {
 						doCallEditCase(incidents[i].case.id);
@@ -602,7 +602,7 @@ module.exports = function ( jq ) {
 					}
 				}
 
-				if ((incidents[i].case.casestatus.id == 3) || (incidents[i].case.casestatus.id == 4)) {
+				if ([1, 3, 4, 8].includes(incidents[i].case.casestatus.id)) {
 					let cancelCaseButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/cancel-icon.png" title="Cancel Case."/>');
 					$(cancelCaseButton).click(function() {
 						doCancelCase(incidents[i].case.id);
@@ -662,6 +662,7 @@ module.exports = function ( jq ) {
 					$(deleteCaseButton).appendTo($(operationCmdBox));
 				}
 
+				/*
 				if (incidents[i].case.casestatus.id == 8){
 					let editCaseButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/update-icon-2.png" title="Edit Case Detail."/>');
 					$(editCaseButton).click(function() {
@@ -687,7 +688,7 @@ module.exports = function ( jq ) {
 						$(cancelCaseButton).appendTo($(moreCmdBox));
 					}
 				}
-
+				*/
 				if ([1, 2, 8, 9].includes(incidents[i].case.casestatus.id)) {
 					let attachPlusButton = $('<img class="pacs-command" data-toggle="tooltip" src="/images/attach-plus-icon.png" title="Add New Attach Zip File"/>');
 					$(attachPlusButton).click(async function() {

@@ -16,6 +16,7 @@ module.exports = function ( jq ) {
 		{fieldName: 'Shop_PromptPayNo', displayName: 'หมายเลขพร้อมเพย์', width: '8%', align: 'left', inputSize: '20', verify: false, showHeader: false},
 		{fieldName: 'Shop_PromptPayName', displayName: 'ขื่อบัญชีพร้อมเพย์', width: '10%', align: 'left', inputSize: '20', verify: false, showHeader: false},
 		{fieldName: 'Shop_BillQuota', displayName: 'Bill Quota', width: '7%', align: 'left', inputSize: '5', verify: false, showHeader: false},
+		{fieldName: 'Shop_StockingOption', displayName: 'Stocking Connect', width: '7%', align: 'left', inputSize: '5', verify: false, showHeader: false},
 		{fieldName: 'id', displayName: 'ShopId', width: '5%', align: 'center', inputSize: '40', verify: false, showHeader: false},
 	];
 

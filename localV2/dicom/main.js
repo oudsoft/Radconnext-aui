@@ -19,7 +19,7 @@ const casecounter = require('../../case/mod/casecounter.js')($);
 const urgentstd = require('../../case/mod/urgentstd.js')($);
 const consult = require('../../case/mod/consult.js')($);
 const portal = require('../../case/mod/portal-lib.js')($);
-const cases = require('../../case/mod/case.js')($);
+const cases = require('../../case/mod/caseV2.js')($);
 
 var wsl, sipUA;
 
@@ -94,8 +94,9 @@ const doLoadMainPage = function(){
   let chatBoxPlugin = "https://radconnext.info/setting/plugin/jquery-chatbox-plugin.js";
   let readystatePlugin = "https://radconnext.info/setting/plugin/jqury-readystate-plugin.js";
 
-  let jquerycontextMenuUrl = 'https://radconnext.info/lib/jquery.contextMenu.min.js';
-  let jqueryUIPositionUrl = 'https://radconnext.info/lib/jquery.ui.position.min.js';
+  let contextmenuPlugin = "https://radconnext.info/setting/plugin/jquery-contextmenu-plugin.js";
+  //let jquerycontextMenuUrl = 'https://radconnext.info/lib/jquery.contextMenu.min.js';
+  //let jqueryUIPositionUrl = 'https://radconnext.info/lib/jquery.ui.position.min.js';
 
   $('head').append('<script src="' + printjs + '"></script>');
   $('head').append('<script src="' + excelexportjs + '"></script>');
@@ -110,8 +111,9 @@ const doLoadMainPage = function(){
   $('head').append('<script src="' + chatBoxPlugin + '"></script>');
   $('head').append('<script src="' + readystatePlugin + '"></script>');
 
-  $('head').append('<script src="' + jquerycontextMenuUrl + '"></script>');
-  $('head').append('<script src="' + jqueryUIPositionUrl + '"></script>');
+  $('head').append('<script src="' + contextmenuPlugin + '?t=ml"></script>');
+  //$('head').append('<script src="' + jquerycontextMenuUrl + '"></script>');
+  //$('head').append('<script src="' + jqueryUIPositionUrl + '"></script>');
 
   $('head').append('<link rel="stylesheet" href="https://radconnext.info/lib/tui-image-editor.min.css" type="text/css" />');
 	$('head').append('<link rel="stylesheet" href="https://radconnext.info/lib/tui-color-picker.css" type="text/css" />');
@@ -119,7 +121,7 @@ const doLoadMainPage = function(){
 	$('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/scanpart.css" type="text/css" />');
   $('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/custom-select.css" type="text/css" />');
 
-  $('head').append('<link rel="stylesheet" href="https://radconnext.info/lib/jquery.contextMenu.min.css" type="text/css" />');
+  //$('head').append('<link rel="stylesheet" href="https://radconnext.info/lib/jquery.contextMenu.min.css" type="text/css" />');
 
   //$('body').append($('<div id="overlay"><div class="loader"></div></div>'));
 

@@ -442,11 +442,11 @@ function doLoadMainPage(){
       */
       $('.mainfull').bind('paste', (evt)=>{
         common.onSimpleEditorPaste(evt);
-        util.doResetPingCounter();
+        //util.doResetPingCounter();
       });
       $('#quickreply').bind('paste', (evt)=>{
         common.onSimpleEditorPaste(evt);
-        util.doResetPingCounter();
+        //util.doResetPingCounter();
       });
       $(document).on('draftbackupsuccess', async (evt, data)=>{
         //Paste ครั้งแรก ของการเปิด case ให้เซฟทันที
@@ -528,6 +528,13 @@ function doLoadMainPage(){
 }
 
 const onOpenCaseTrigger = function(caseData) {
+  let caseBK = localStorage.getItem('draftbackup');
+  if (caseBK) {
+    caseBK = JSON.parse(caseBK);
+    if ((caseBK) && (caseBK.caseId != caseData.caseId)) {
+      localStorage.removeItem('draftbackup');
+    }
+  }
   $("#TitleContent").empty();
   let opencaseTitlePage = acccase.doCreateAccCaseTitlePage();
   //$("#TitleContent").append($(opencaseTitlePage));

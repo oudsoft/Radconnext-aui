@@ -1,20 +1,110 @@
 module.exports = function ( jq ) {
 	const $ = jq;
   const common = require('../../../home/mod/common-lib.js')($);
+	const stock = require('./stock-cutoff.js')($);
 
   const menuitemTableFields = [
 		{fieldName: 'MenuName', displayName: 'ชื่อเมนู', width: '20%', align: 'left', inputSize: '30', verify: true, showHeader: true},
 		{fieldName: 'Desc', displayName: 'รายละเอียด', width: '20%', align: 'left', inputSize: '30', verify: false, showHeader: true},
-		{fieldName: 'MenuPicture', displayName: 'รูปเมนู', width: '15%', align: 'center', inputSize: '30', verify: false, showHeader: true},
-    {fieldName: 'Price', displayName: 'ราคา', width: '10%', align: 'right', inputSize: '20', verify: true, showHeader: true},
-		{fieldName: 'Unit', displayName: 'หน่วย', width: '15%', align: 'center', inputSize: '30', verify: true, showHeader: true}
+		{fieldName: 'MenuPicture', displayName: 'รูปเมนู', width: '10%', align: 'center', inputSize: '30', verify: false, showHeader: true},
+    {fieldName: 'Price', displayName: 'ราคา', width: '6%', align: 'right', inputSize: '20', verify: true, showHeader: true},
+		{fieldName: 'Unit', displayName: 'หน่วย', width: '10%', align: 'center', inputSize: '30', verify: true, showHeader: true}
 	];
   const menugroupTableFields = [
-		{fieldName: 'GroupName', displayName: 'กลุ่ม', width: '20%', align: 'center', inputSize: '30', verify: true, showHeader: true}
+		{fieldName: 'GroupName', displayName: 'กลุ่ม', width: '10%', align: 'center', inputSize: '30', verify: true, showHeader: true}
   ];
+
+	const doCreateStockOptionSelect = function() {
+		let optionSelector = $('<select id="StockingOption"></select>');
+		$(optionSelector).append($('<option value="0">ไม่ตัดสต็อค</option>'));
+		$(optionSelector).append($('<option value="1">ตัดสต็อค</option>'));
+		return $(optionSelector);
+	}
+
+	const doCreateStockInCmd = function(shopData, workAreaBox, menuitem) {
+		let stockInCmd = $('<input type="button" value=" นำเข้า " class="action-btn"/>');
+		$(stockInCmd).on('click', (evt)=>{
+			stock.doOpenStockInForm(shopData, workAreaBox, menuitem);
+		});
+		return $(stockInCmd);
+	}
+
+	const doCreateStockCutoffDateOptionSelect = function() {
+		let optionSelector = $('<select id="StockCutoffDateOption"></select>');
+		$(optionSelector).append($('<option value="1D">1 วันที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="2D">2 วันที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="3D">3 วันที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="5D">5 วันที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="7D">7 วันที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="10D">10 วันที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="15D">15 วันที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="1M">1 เดือนที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="2M">2 เดือนที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="3M">3 เดือนที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="6M">6 เดือนที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="1Y">1 ปีที่แล้ว</option>'));
+		return $(optionSelector);
+	}
+
+	const doCreateCheckStockCmd = function(shopData, workAreaBox, menuitem, row) {
+		let checkCtockCmd = $('<input type="button" value=" เช็ค " class="action-btn"/>');
+		$(checkCtockCmd).on('click', (evt)=>{
+			$('#TitlePageBox').text('เช็คสต็อครายการสินค้า');
+			$('#NewMenuitemCmdBox').hide();
+			$('.menuitem-row').hide();
+			$(row).show();
+			$(row).css({'background-color': 'gray', 'color': 'white'});
+			$(row).find('input[type="button"]').hide();
+			let commandCell = $(row).find('#CommandCell');
+			$(commandCell).find('img').hide();
+
+			let cutoffDateBox = $('<div id="CutoffDateBox"></div>');
+			let cutoffDateSelector = doCreateStockCutoffDateOptionSelect();
+			let fromDateText = $('<span>ตั้งแต่</span>');
+			$(cutoffDateBox).append($(fromDateText)).append($(cutoffDateSelector).css({'margin-left': '4px'}));
+			$(cutoffDateSelector).on('change', async (evt)=>{
+				$('#StockTable').remove();
+				$('#NavigBar').remove();
+				let cutoffDateValue = $(cutoffDateSelector).val();
+				let cutoffDate = common.findCutoffDateFromDateOption(cutoffDateValue);
+				let orderDateFmt = common.doFormatDateStr(new Date(cutoffDate));
+				cutoffDate = new Date(cutoffDate);
+				let params = {cutoffDate: cutoffDate};
+				let stockRes = await common.doCallApi('/api/shop/stocking/list/by/menuitem/' + menuitem.id, params);
+				let stockTable = await stock.doRenderCutoffStockTable(workAreaBox, 0, 0, cutoffDate, stockRes, menuitem);
+			});
+
+			let backMenuitemCmd = $('<input type="button" value=" Back " class="action-btn"/>').css({'margin-top': '4px'});
+			$(backMenuitemCmd).on('click', (evt)=>{
+				$(cutoffDateBox).remove();
+				$(backMenuitemCmd).remove();
+				$('#TitlePageBox').text('รายการสินค้าของร้าน');
+				$('#NewMenuitemCmdBox').show();
+				$('.menuitem-row').show();
+				$(row).css({'background-color': '', 'color': ''});
+				$(row).find('input[type="button"]').show();
+				$(commandCell).find('img').show();
+			});
+
+			$(commandCell).append($(cutoffDateBox)).append($(backMenuitemCmd));
+			$(cutoffDateSelector).change();
+		});
+		return $(checkCtockCmd);
+	}
 
   const doShowMenuitemItem = function(shopData, workAreaBox, groupId){
     return new Promise(async function(resolve, reject) {
+			let stockingOptionIndex = await menuitemTableFields.findIndex((item) =>{
+				return (item.fieldName == 'StockingOption');
+			});
+			if (stockingOptionIndex > -1) {
+				menuitemTableFields.splice(stockingOptionIndex, 1);
+			}
+
+			if (parseInt(shopData.Shop_StockingOption) == 1) {
+				menuitemTableFields.push({fieldName: 'StockingOption', displayName: 'Stock', width: '10%', align: 'center', inputSize: '30', verify: true, showHeader: true});
+			}
+
       let menugroupRes = await common.doCallApi('/api/shop/menugroup/options/' + shopData.id, {});
       let menugroups = menugroupRes.Options;
       localStorage.setItem('menugroups', JSON.stringify(menugroups));
@@ -26,9 +116,9 @@ module.exports = function ( jq ) {
 			}
       let menuitemRes = await common.doCallApi('/api/shop/menuitem/list/by/shop/' + shopData.id, listParams);
 			let menuitemItems = menuitemRes.Records;
-      let titlePageBox = $('<div style="padding: 4px;">รายการเมนูของร้าน</viv>').css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
+      let titlePageBox = $('<div id="TitlePageBox" style="padding: 4px;">รายการสินค้าของร้าน</viv>').css({'width': '99.1%', 'text-align': 'center', 'font-size': '22px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
       $(workAreaBox).append($(titlePageBox));
-      let newMenuitemCmdBox = $('<div style="padding: 4px;"></div>').css({'width': '99.5%', 'text-align': 'right'});
+      let newMenuitemCmdBox = $('<div id="NewMenuitemCmdBox" style="padding: 4px;"></div>').css({'width': '99.5%', 'text-align': 'right'});
       let newMenuitemCmd = $('<input type="button" value=" + New Menu " class="action-btn"/>');
       $(newMenuitemCmd).on('click', (evt)=>{
         doOpenNewMenuitemForm(shopData, workAreaBox, groupId);
@@ -69,13 +159,28 @@ module.exports = function ( jq ) {
 			$(menuitemTable).append($(headerRow));
 
       for (let x=0; x < menuitemItems.length; x++) {
-				let itemRow = $('<tr></tr>');
+				let itemRow = $('<tr class="menuitem-row"></tr>');
 				$(itemRow).append($('<td align="center">' + (x+1) + '</td>'));
 				let item = menuitemItems[x];
 				for (let i=0; i < menuitemTableFields.length; i++) {
 					let field = $('<td align="' + menuitemTableFields[i].align + '"></td>');
 					if (menuitemTableFields[i].fieldName !== 'MenuPicture') {
-						$(field).text(item[menuitemTableFields[i].fieldName]);
+						if (menuitemTableFields[i].fieldName !== 'StockingOption') {
+							$(field).text(item[menuitemTableFields[i].fieldName]);
+						} else {
+							let stockingOption = item[menuitemTableFields[i].fieldName];
+							let stockStateText = $('<div></div>');
+							if (parseInt(stockingOption) == 0) {
+								$(stockStateText).text('ไม่ตัดสต็อค');
+								$(field).append($(stockStateText));
+							} else if (parseInt(stockingOption) == 1) {
+								$(stockStateText).text('ตัดสต็อค');
+								$(field).append($(stockStateText));
+								let stockInCmd = doCreateStockInCmd(shopData, workAreaBox, item);
+								let checkStockCmd = doCreateCheckStockCmd(shopData, workAreaBox, item, itemRow);
+								$(field).append($(stockInCmd)).append($(checkStockCmd).css({'margin-left': '4px'}));
+							}
+						}
 						$(itemRow).append($(field));
 					} else {
 						let menuitemLogoIcon = new Image();
@@ -162,7 +267,7 @@ module.exports = function ( jq ) {
 				});
 				let menuitemBtnBox = $('<div></div>').css({'text-align': 'center'}).append($(editMenuitemCmd)).append($(deleteMenuitemCmd));
 
-				let commandCell = $('<td align="center"></td>');
+				let commandCell = $('<td id="CommandCell" align="center"></td>');
 				$(commandCell).append($(menuitemQRCodeBox));
 				$(commandCell).append($(menuitemBtnBox));
 				$(itemRow).append($(commandCell));
@@ -220,7 +325,12 @@ module.exports = function ( jq ) {
   			let fieldRow = $('<tr></tr>');
   			let labelField = $('<td width="40%" align="left">' + menuitemTableFields[i].displayName + (menuitemTableFields[i].verify?' <span style="color: red;">*</span>':'') + '</td>').css({'padding': '5px'});
   			let inputField = $('<td width="*" align="left"></td>').css({'padding': '5px'});
-  			let inputValue = $('<input type="text" id="' + menuitemTableFields[i].fieldName + '" size="' + menuitemTableFields[i].inputSize + '"/>');
+  			let inputValue = undefined;
+				if (menuitemTableFields[i].fieldName === 'StockingOption') {
+					inputValue = doCreateStockOptionSelect();
+				} else {
+					inputValue = $('<input type="text" id="' + menuitemTableFields[i].fieldName + '" size="' + menuitemTableFields[i].inputSize + '"/>');
+				}
   			if ((menuitemData) && (menuitemData[menuitemTableFields[i].fieldName])) {
   				$(inputValue).val(menuitemData[menuitemTableFields[i].fieldName]);
   			}
@@ -308,12 +418,12 @@ module.exports = function ( jq ) {
 						let params = {data: newMenuitemFormObj, shopId: shopData.id, groupId: newMenuitemFormObj.groupId};
             let menuitemRes = await common.doCallApi('/api/shop/menuitem/add', params);
             if (menuitemRes.status.code == 200) {
-              $.notify("เพิ่มรายการเมนูสำเร็จ", "success");
+              $.notify("เพิ่มรายการสินค้าสำเร็จ", "success");
               await doShowMenuitemItem(shopData, workAreaBox, groupId)
             } else if (menuitemRes.status.code == 201) {
-              $.notify("ไม่สามารถเพิ่มรายการเมนูได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
+              $.notify("ไม่สามารถเพิ่มรายการสินค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
             } else {
-              $.notify("เกิดข้อผิดพลาด ไม่สามารถเพิ่มรายการเมนูได้", "error");
+              $.notify("เกิดข้อผิดพลาด ไม่สามารถเพิ่มรายการสินค้าได้", "error");
             }
           }else {
             $.notify("ข้อมูลไม่ถูกต้อง", "error");
@@ -346,12 +456,12 @@ module.exports = function ( jq ) {
 						let params = {data: editMenuitemFormObj, id: menuitemData.id};
 						let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
 						if (menuitemRes.status.code == 200) {
-							$.notify("แก้ไขรายการเมนูสำเร็จ", "success");
+							$.notify("แก้ไขรายการสินค้าสำเร็จ", "success");
 							await doShowMenuitemItem(shopData, workAreaBox, groupId)
 						} else if (menuitemRes.status.code == 201) {
-							$.notify("ไม่สามารถแก้ไขรายการเมนูได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
+							$.notify("ไม่สามารถแก้ไขรายการสินค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
 						} else {
-							$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการเมนูได้", "error");
+							$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการสินค้าได้", "error");
 						}
 					}else {
 						$.notify("ข้อมูลไม่ถูกต้อง", "error");
@@ -380,12 +490,12 @@ module.exports = function ( jq ) {
 				radConfirmBox.closeAlert();
 				let menuitemRes = await common.doCallApi('/api/shop/menuitem/delete', {id: menuitemId});
 				if (menuitemRes.status.code == 200) {
-					$.notify("ลบรายการเมนูสำเร็จ", "success");
+					$.notify("ลบรายการสินค้าสำเร็จ", "success");
 					await doShowMenuitemItem(shopData, workAreaBox, groupId);
 				} else if (menuitemRes.status.code == 201) {
-					$.notify("ไม่สามารถลบรายการเมนูได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
+					$.notify("ไม่สามารถลบรายการสินค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
 				} else {
-					$.notify("เกิดข้อผิดพลาด ไม่สามารถลบรายการเมนูได้", "error");
+					$.notify("เกิดข้อผิดพลาด ไม่สามารถลบรายการสินค้าได้", "error");
 				}
 			},
 			onCancel: function(evt){
@@ -413,6 +523,7 @@ module.exports = function ( jq ) {
 			resolve(qrRes);
 		});
 	}
+
 
   return {
     doShowMenuitemItem,

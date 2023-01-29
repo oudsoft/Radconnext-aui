@@ -1115,12 +1115,15 @@ module.exports = function ( jq ) {
 		}
 	}
 
-  const doTransferDicomZip = function(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, event, radioId) {
+  const doTransferDicomZip = function(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, event, radioId, isChangeRadio) {
     return new Promise(async function(resolve, reject) {
       let transerDicomUrl = '/api/orthanc/transfer/dicom';
       let transferParams = {DicomZipFileName: dicomZipFileName, StudyTags: defualtValue.studyTags, HrPatientFiles: hrPatientFiles, OldHrPatientFiles: defualtValue.pn_history, radioId: radioId, userId: userId, caseId: caseId, event: event};
 			if (defualtValue.caseId) {
 				transferParams.caseId = defualtValue.caseId;
+			}
+			if (isChangeRadio) {
+				transferParams.isChangeRadio = isChangeRadio;
 			}
 			console.log(transferParams);
 			resolve();
@@ -1144,7 +1147,7 @@ module.exports = function ( jq ) {
 				$('#NegativeStatusSubCmd').click();
 			}
 			if (uploadStudyReplaceOption) {
-				doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, 'update', radioSelected);
+				doTransferDicomZip(dicomZipFileName, hrPatientFiles, defualtValue, caseId, userId, 'update', radioSelected, isChangeRadio);
 			}
 		}
 

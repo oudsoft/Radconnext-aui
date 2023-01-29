@@ -29,16 +29,22 @@ module.exports = function ( jq ) {
       let userItemPerPage = userDefualtSetting.itemperpage;
       let orderHistoryItems = JSON.parse(localStorage.getItem('customerorders'));
 
+			let fromDateTime = undefined;
       if (fromDate) {
-        let fromDateTime = (new Date(fromDate)).getTime();
-        orderHistoryItems = await orderHistoryItems.filter((item, i) => {
-          let orderDateTime = (new Date(item.createdAt)).getTime();
-          if (orderDateTime >= fromDateTime) {
-            return item;
-          }
-        });
-        titleText += ' ตั้งแต่วันที่ ' + fromDate;
-      }
+        fromDateTime = (new Date(fromDate)).getTime();
+      } else {
+				fromDate = new Date();
+			  fromDate.setDate(fromDate.getDate() - 30);
+				fromDateTime = (new Date(fromDate)).getTime();
+				fromDate = common.doFormatDateStr(fromDate);
+			}
+			orderHistoryItems = await orderHistoryItems.filter((item, i) => {
+				let orderDateTime = (new Date(item.createdAt)).getTime();
+				if (orderDateTime >= fromDateTime) {
+					return item;
+				}
+			});
+			titleText += ' ตั้งแต่วันที่ ' + fromDate;
 
       let totalItem = orderHistoryItems.length;
 

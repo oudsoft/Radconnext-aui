@@ -41,11 +41,14 @@ module.exports = function ( jq ) {
 			let queryString = localStorage.getItem('dicomfilter');
 			//console.log(queryString);
 			let dicomFilter = JSON.parse(queryString);
-			//console.log(dicomFilter);
+			console.log(dicomFilter);
       let userItemPerPage = userDefualtSetting.itemperpage;
 			let params = {};
 			if (dicomFilter.Query.StudyFromDate !== '*') {
 				params.studyFromDate = dicomFilter.Query.StudyFromDate;
+			}
+			if (dicomFilter.Query.Modality !== '*') {
+				params.modality = dicomFilter.Query.Modality;
 			}
       let localOrthancRes = await common.doCallLocalApi('/api/orthanc/study/list/lastmonth', params);
 			//let localOrthancRes = await common.doCallLocalApi('/api/orthanc/study/list/today', {});
@@ -141,6 +144,9 @@ module.exports = function ( jq ) {
 			$(dicomFilterForm).hide();
 			*/
 
+			let dicomFilter = JSON.parse(localStorage.getItem('dicomfilter'));
+			let mdlFilter = dicomFilter.Query.Modality;
+
 			const promiseList = new Promise(function(resolve2, reject2){
 				for (let i=0; i < dj.length; i++) {
 					let desc, protoname, mld, sa, studydate, bdp;
@@ -217,8 +223,14 @@ module.exports = function ( jq ) {
 						let hn = dj[i].PatientMainDicomTags.PatientID;
 						let name = dj[i].PatientMainDicomTags.PatientName;
 						let sdd =  desc +  protoname;
-						let dicomDataRow = doCreateDicomItemRow(no, studyDate, studyTime, hn, name, sa, mld, sdd, defualtValue, dj[i].Series, dj[i].ID);
-						$(dicomDataRow).appendTo($(table));
+
+						if (['DX', 'CR'].includes(mdlFilter)) {
+							let dicomDataRow = doCreatePlainFilmItemRow(no, studyDate, studyTime, hn, name, sa, mld, sdd, defualtValue, dj[i].Series, dj[i].ID);
+							$(dicomDataRow).appendTo($(table));
+						} else {
+							let dicomDataRow = doCreateDicomItemRow(no, studyDate, studyTime, hn, name, sa, mld, sdd, defualtValue, dj[i].Series, dj[i].ID);
+							$(dicomDataRow).appendTo($(table));
+						}
 					}
 				}
 
@@ -246,7 +258,9 @@ module.exports = function ( jq ) {
 	const doCreateDicomItemRow = function(no, studyDate, studyTime, hn, name, sa, mdl, sdd, defualtValue, dicomSeries, dicomID){
 		const tableRow = $('<div style="display: table-row; padding: 2px; cursor: pointer;" class="case-row"></div>');
 
-		let dicomValue = $('<div style="display: table-cell; padding: 2px; text-align: center; vertical-align: middle;">' + no + '</div>');
+		let dicomValue = $('<div style="display: table-cell; padding: 2px; text-align: center; vertical-align: middle;"></div>');
+		let noItem = $('<span></span>').text(no);
+		$(dicomValue).append($(noItem));
 		$(dicomValue).appendTo($(tableRow));
 
 		dicomValue = $('<div style="display: table-cell; padding: 2px; vertical-align: middle;">' + studyDate + studyTime + '</div>');
@@ -434,6 +448,54 @@ module.exports = function ( jq ) {
 		})
 		//console.log(defualtValue);
 		//return $(tableRow);
+
+		let rowGroup = $('<div style="display: table-row-group"></div>');
+		return $(rowGroup).append($(tableRow));
+	}
+
+	const doCreatePlainFilmItemRow = function(no, studyDate, studyTime, hn, name, sa, mdl, sdd, defualtValue, dicomSeries, dicomID){
+		const tableRow = $('<div style="display: table-row; padding: 2px; cursor: pointer;" class="case-row"></div>');
+
+		let dicomValue = $('<div style="display: table-cell; padding: 2px; text-align: center; vertical-align: middle;"></div>');
+		let noItem = $('<span></span>').text(no);
+		let selectItem = $('<input type="checkbox" style="transform: scale(1.5)">');
+		$(selectItem).prop('id', dicomID);
+		$(selectItem).prop('value', dicomID);
+		$(selectItem).on('click', (evt)=>{
+			let isSelect = $(selectItem).prop('checked');
+			if (isSelect) {
+				$(tableRow).css({'background-color': '#CAC7C7'});
+			} else {
+				$(tableRow).css({'background-color': ''});
+			}
+			evt.stopPropagation();
+		});
+		$(dicomValue).append($(selectItem));
+		$(dicomValue).append($(noItem).css({'margin-left': '4px'}));
+		$(dicomValue).appendTo($(tableRow));
+
+		dicomValue = $('<div style="display: table-cell; padding: 2px; vertical-align: middle;">' + studyDate + studyTime + '</div>');
+		$(dicomValue).appendTo($(tableRow));
+
+		dicomValue = $('<div style="display: table-cell; padding: 2px; vertical-align: middle;">' + hn + '</div>');
+		$(dicomValue).appendTo($(tableRow));
+
+		dicomValue = $('<div style="display: table-cell; padding: 2px; vertical-align: middle;">' + name + '</div>');
+		$(dicomValue).appendTo($(tableRow));
+
+		dicomValue = $('<div style="display: table-cell; padding: 2px; vertical-align: middle;">' + sa + '</div>');
+		$(dicomValue).appendTo($(tableRow));
+
+		dicomValue = $('<div style="display: table-cell; padding: 2px; vertical-align: middle;">' + mdl + '</div>');
+		$(dicomValue).appendTo($(tableRow));
+
+		dicomValue = $('<div style="display: table-cell; padding: 2px; vertical-align: middle;">' + sdd + '</div>');
+		$(dicomValue).appendTo($(tableRow));
+
+
+		$(tableRow).on('click', async (evt)=>{
+
+		});
 
 		let rowGroup = $('<div style="display: table-row-group"></div>');
 		return $(rowGroup).append($(tableRow));

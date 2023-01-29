@@ -88,7 +88,7 @@ module.exports = function ( jq, ut, cm ) {
         $(box).empty();
         $(box).append($('<div></div>').text('แจ้งรังสีแพทย์รับเคสทาง Line แล้ว'));
 				let callTriggerBox = $(box).find('#CallTrigger');
-				console.log(callBox.length);
+				console.log(callTriggerBox.length);
 				if (callTriggerBox.length == 0) {
 	        let callUrl = '/api/voiptask/list';
 	        doCallTaskDirect(callUrl, data.caseId).then((clockBox)=>{
