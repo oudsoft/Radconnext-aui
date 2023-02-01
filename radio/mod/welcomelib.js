@@ -119,7 +119,8 @@ module.exports = function ( jq ) {
 			let newList = await common.doCallApi(loadUrl, rqParams);
 			if (newList.status.code == 200){
 			*/
-			let allStatusList = await common.doCallApi(loadUrl, rqParams);
+			let allStatusList = await apiconnector.doCallApiDirect(loadUrl, rqParams);
+			//let allStatusList = await common.doCallApi(loadUrl, rqParams);
 			if (allStatusList.status.code == 200){
 				/*
 				rqParams.casestatusIds = [2, 8, 9, 13, 14];
@@ -128,7 +129,8 @@ module.exports = function ( jq ) {
 				loadUrl = '/api/consult/load/list/by/status/radio';
 				rqParams = {userId: userId};
 				rqParams.casestatusIds = [1];
-				let newConsultList = await common.doCallApi(loadUrl, rqParams);
+				let newConsultList = await apiconnector.doCallApiDirect(loadUrl, rqParams);
+				//let newConsultList = await common.doCallApi(loadUrl, rqParams);
 				resolve({newList: allStatusList.Records[0], accList:allStatusList.Records[1], newConsultList});
 			} else 	if (allStatusList.status.code == 210) {
 				reject({error: {code: 210, cause: 'Token Expired!'}});

@@ -453,6 +453,9 @@ module.exports = function ( jq ) {
 	  if (wsm) {
 	  	let userdata = JSON.parse(localStorage.getItem('userdata'));
 	    wsm.send(JSON.stringify({type: 'logout', username: userdata.username}));
+			if (userdata.usertypeId == 4){
+				localStorage.removeItem('draftbackup');
+			}
 	  }
 	  localStorage.removeItem('token');
 		localStorage.removeItem('userdata');

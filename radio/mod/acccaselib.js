@@ -242,7 +242,8 @@ module.exports = function ( jq ) {
 			let rqParams = {userId: userId, statusId: common.caseResultWaitStatus};
 			let apiUrl = '/api/cases/filter/radio';
 			try {
-				let response = await common.doCallApi(apiUrl, rqParams);
+				let response = await apiconnector.doCallApiDirect(apiUrl, rqParams);
+				//let response = await common.doCallApi(apiUrl, rqParams);
         resolve(response);
 			} catch(e) {
 	      reject(e);
@@ -258,7 +259,8 @@ module.exports = function ( jq ) {
 			let rqParams = {userId: userId, username: username, statusId: common.caseReadWaitStatus};
 			let apiUrl = '/api/tasks/filter/radio/' + userId;
 			try {
-				let response = await common.doCallApi(apiUrl, rqParams);
+				let response = await apiconnector.doCallApiDirect(apiUrl, rqParams);
+				//let response = await common.doCallApi(apiUrl, rqParams);
         resolve(response);
 			} catch(e) {
 	      reject(e);

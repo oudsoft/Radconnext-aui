@@ -366,7 +366,6 @@ module.exports = function ( jq ) {
 		if ((responseHTML) && (responseHTML !== '')) {
 			const createNewResponseCmd = $(evt.currentTarget);
 			const saveNewResponseData = $(createNewResponseCmd).data('createNewResponseData');
-			console.log(saveNewResponseData);
 	    const userdata = JSON.parse(localStorage.getItem('userdata'));
 			const radioNameTH = userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH;
 			/*
@@ -408,6 +407,8 @@ module.exports = function ( jq ) {
 				let patientFullName = saveNewResponseData.patientFullName;
 				let fileExt = 'pdf';
 				let fileName = (patientFullName.split(' ').join('_')) + '-' + casedate + '-' + casetime + '.' + fileExt;
+
+				saveNewResponseData.Response_Text = responseText;
 
 				let params = {
 					caseId: caseId,
@@ -577,6 +578,8 @@ module.exports = function ( jq ) {
 	const doSubmitResult = function(responseType, reportType, saveResponseData){
 		return new Promise(async function(resolve, reject) {
 			//$('body').loading('start');
+			//console.log(saveResponseData);
+
 	    const userdata = JSON.parse(localStorage.getItem('userdata'));
 			let caseId = saveResponseData.caseId
 			let userId = userdata.id;
@@ -603,6 +606,9 @@ module.exports = function ( jq ) {
 				$("#dialog").empty();
 				if (saveResponseData.previewOption === 0){
 					resolve(saveResponseRes);
+					let responseTextFilename = saveResponseData.patientFullName.split(' ').join('_') + '.txt';
+					//console.log(responseTextFilename);
+					doSaveResponseTextToLocalFile(saveResponseData.Response_Text, responseTextFilename);
 					setTimeout(()=>{
 						$('#AcceptedCaseCmd').click();
 					}, 1800);
@@ -617,6 +623,8 @@ module.exports = function ( jq ) {
 					$(resultPDFDialog).css({'margin': '20px auto'});
 					$("#dialog").append($(resultPDFDialog));
 					resolve(pdfReportLink);
+					let responseTextFilename = saveResponseData.patientFullName.split(' ').join('_') + '.txt';
+					doSaveResponseTextToLocalFile(saveResponseData.Response_Text, responseTextFilename);
 				}
 			} else {
 				$.notify("ไม่สามารถส่งผลอ่าน - Error โปรดติดต่อผู้ดูแลระบบ", "error");
@@ -1957,6 +1965,16 @@ module.exports = function ( jq ) {
 		if (myWsm) {
 			myWsm.send(JSON.stringify({type: 'reset', what: 'pingcounter'}));
 		}
+	}
+
+	const doSaveResponseTextToLocalFile = function(responseText, filname) {
+		let pom = document.createElement('a');
+		let file = new Blob([responseText], { type: 'text/plain' });
+		let stremLink = URL.createObjectURL(file);
+		pom.setAttribute('target', "_blank");
+		pom.setAttribute('href', stremLink);
+		pom.setAttribute('download', filname);
+		pom.click();
 	}
 
   return {

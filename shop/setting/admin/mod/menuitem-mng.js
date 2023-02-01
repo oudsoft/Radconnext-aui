@@ -78,6 +78,7 @@ module.exports = function ( jq ) {
 			$(backMenuitemCmd).on('click', (evt)=>{
 				$(cutoffDateBox).remove();
 				$(backMenuitemCmd).remove();
+				$('#StockTable').remove();
 				$('#TitlePageBox').text('รายการสินค้าของร้าน');
 				$('#NewMenuitemCmdBox').show();
 				$('.menuitem-row').show();

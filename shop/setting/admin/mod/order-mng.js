@@ -688,7 +688,11 @@ module.exports = function ( jq ) {
 								 let sum = stockRes.sumQty.Qty;
 								 if (stockRes.Records.length > 0) {
 									 for (let k=0; k < stockRes.Records.length; k++) {
-										 sum = sum + stockRes.Records[k].Qty;
+											if (stockRes.Records[k].Direction == '+') {
+												sum = sum + stockRes.Records[k].Qty;
+											} else if (stockRes.Records[k].Direction == '-') {
+												sum = sum - stockRes.Records[k].Qty;
+											}
 									 }
 								 }
 								 doShowStockInfo(goodItems[i], sum);
