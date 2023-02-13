@@ -91,7 +91,7 @@ module.exports = function ( jq ) {
       $(progBar.progressBox).screencenter({offset: {x: 50, y: 50}});
       let apiURL = apiurl;
       if (window.location.hostname == 'localhost') {
-        apiURL = 'https://radconnext.info' + apiurl;
+        apiURL = 'https://radconnext.tech' + apiurl;
       }
       $.ajax({
         url: apiURL,
@@ -106,7 +106,7 @@ module.exports = function ( jq ) {
               var event = new CustomEvent('response-progress', {detail: {event: evt, resfrom: apiurl}});
               document.dispatchEvent(event);
               */
-							
+
 							/*
               let loaded = evt.loaded;
               let total = evt.total;
@@ -144,7 +144,7 @@ module.exports = function ( jq ) {
 		return new Promise(function(resolve, reject) {
       let apiURL = apiurl;
       if (window.location.hostname == 'localhost') {
-        apiURL = 'https://radconnext.info' + apiurl;
+        apiURL = 'https://radconnext.tech' + apiurl;
       }
 			$.get(apiURL, params, function(data){
 				resolve(data);

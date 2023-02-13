@@ -338,7 +338,8 @@ module.exports = function ( jq ) {
 
 		const billCallback = async function(newBillData, paymentData){
 			$(pageHandle.toggleMenuCmd).click();
-			let billParams = {data: newBillData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId, shopData: shopData};
+			let userdata = JSON.parse(localStorage.getItem('userdata'));
+			let billParams = {data: newBillData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId, shopData: userdata.shop};
 			let billRes = await common.doCallApi('/api/shop/bill/add', billParams);
 			if (billRes.status.code == 200) {
 				let billId = billRes.Record.id;
@@ -384,7 +385,8 @@ module.exports = function ( jq ) {
 
 		const taxinvoiceCallback = async function(newTaxInvoiceData, paymentData){
 			$(pageHandle.toggleMenuCmd).click();
-			let taxinvoiceParams = {data: newTaxInvoiceData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId, shopData: shopData};
+			let userdata = JSON.parse(localStorage.getItem('userdata'));
+			let taxinvoiceParams = {data: newTaxInvoiceData, shopId: shopId, orderId: orderObj.id, userId: userId, userinfoId: userinfoId, shopData: userdata.shop};
 			let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/add', taxinvoiceParams);
 
 			if (taxinvoiceRes.status.code == 200) {

@@ -8,9 +8,9 @@ module.exports = function ( jq ) {
 	const submain = require('./submainlib.js')($);
 
   const phProp = {
-    attachFileUploadApiUrl: 'https://radconnext.info/api/uploadpatienthistory',
-    scannerUploadApiUrl: 'https://radconnext.info/api/scannerupload',
-    captureUploadApiUrl: 'https://radconnext.info/api/captureupload',
+    attachFileUploadApiUrl: 'https://radconnext.tech/api/uploadpatienthistory',
+    scannerUploadApiUrl: 'https://radconnext.tech/api/scannerupload',
+    captureUploadApiUrl: 'https://radconnext.tech/api/captureupload',
     attachFileUploadIconUrl: '/images/paperclip-icon.png',
     scannerUploadIconUrl: '/images/scanner-icon.png',
     captureUploadIconUrl: '/images/screen-capture-icon.png',
@@ -454,8 +454,8 @@ module.exports = function ( jq ) {
 
 			let scanpartSettings = {
         iconCmdUrl: '/images/case-incident.png',
-        loadOriginUrl: 'https://radconnext.info/api/scanpartref/list',
-				addScanpartItemUrl: 'https://radconnext.info/api/scanpartref/add',
+        loadOriginUrl: 'https://radconnext.tech/api/scanpartref/list',
+				addScanpartItemUrl: 'https://radconnext.tech/api/scanpartref/add',
 				externalStyle: {'margin-top': '67px'},
 				headerBackgroundColor: common.headBackgroundColor,
 				selectedMainJson: scanparts,
@@ -728,7 +728,7 @@ module.exports = function ( jq ) {
 		if (attachFiles.length > 0) {
 			pnHistories = [];
 			for (let a=0; a < attachFiles.length; a++) {
-				pnHistories.push({link: 'https://radconnext.info/img/usr/zip/' + attachFiles[a]})
+				pnHistories.push({link: 'https://radconnext.tech/img/usr/zip/' + attachFiles[a]})
 			}
 			defualtValue.pn_history = pnHistories;
 			phProp.fileType = 'application/zip';
@@ -889,7 +889,7 @@ module.exports = function ( jq ) {
       let radioCustomSelectorBox = $('<div id="Radiologist"></div>');
       $(radioCustomSelectorBox).appendTo($(tableCell));
       let customSelectPluginOption = {
-        loadOptionsUrl: 'https://radconnext.info/api/radiologist/state/current',
+        loadOptionsUrl: 'https://radconnext.tech/api/radiologist/state/current',
         /* "font-family": "THSarabunNew", "font-size": "24px",  */
         externalStyle: {"width": "410px", "line-height": "35px", "min-height": "35px"},
         startLoad: function(){$('#Radiologist').loading('start');},

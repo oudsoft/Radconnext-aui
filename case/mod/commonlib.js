@@ -500,7 +500,7 @@ module.exports = function ( jq ) {
 			$('body').loading('stop');
 		});
 		*/
-		let downloadURL = 'https://radconnext.info/img/usr/zip/' + dicomFilename;
+		let downloadURL = 'https://radconnext.tech/img/usr/zip/' + dicomFilename;
 		console.log(downloadURL);
 		let pom = document.createElement('a');
 		pom.setAttribute('href', downloadURL);
@@ -852,7 +852,7 @@ module.exports = function ( jq ) {
 			let hospitalId = userdata.hospitalId;
 			let userId = userdata.id;
 			let rqParams = { hospitalId: hospitalId, userId: userId, studyDesc: studyDesc, protocolName: protocolName};
-			let apiUrl = 'https://radconnext.info/api/scanpartaux/select';
+			let apiUrl = 'https://radconnext.tech/api/scanpartaux/select';
 			try {
 				/*
 				let response = await doCallApi(apiUrl, rqParams);
@@ -1229,8 +1229,9 @@ module.exports = function ( jq ) {
 		if ((htmlPastedData) && (htmlPastedData !== '')) {
 			//console.log(htmlPastedData);
 			let htmlFormat = htmlformat(htmlPastedData); //<-- ถ้าเป็น full html จะสกัดเอาเฉพาะใน body ของ html
+			console.log(htmlFormat);
 			htmlFormat = doExtractHTMLFromAnotherSource(htmlFormat);
-			//console.log(htmlFormat);
+			console.log(htmlFormat);
 			document.execCommand('insertHTML', false, htmlFormat);
 			let newContent = oldContent + htmlFormat;
 			let draftbackup = {caseId: caseData.caseId, content: newContent, backupAt: new Date()};
@@ -1250,25 +1251,7 @@ module.exports = function ( jq ) {
 	}
 
 	const onSimpleEditorPaste = function(evt){
-		console.log(evt);
-		/*
-		let pathElems = evt.originalEvent.path;
-		if (pathElems) {
-			let simpleEditorPath = pathElems.find((path)=>{
-				if (path.className === 'jqte_editor') {
-					return path;
-				}
-			});
-			if (simpleEditorPath) {
-				simpleEditorPaste(evt);
-			}
-		} else if (evt.target.className === 'jqte_editor') {
-			simpleEditorPaste(evt);
-		}
-		*/
-
 		simpleEditorPaste(evt);
-
 		evt.stopPropagation();
 		evt.preventDefault();
 	}
@@ -1283,12 +1266,12 @@ module.exports = function ( jq ) {
 			let endPosition = tempToken.indexOf(endPointText);
 			tempToken = tempToken.slice((startPosition+20), (endPosition));
 		}
-		/*
-		tempToken = tempToken.split(startPointText).join('<div>');
-		tempToken = tempToken.split(endPointText).join('</div>');
-		*/
 		tempToken = tempToken.replace(startPointText, '<div>');
 		tempToken = tempToken.replace(endPointText, '</div>');
+
+		let regex = new RegExp('<'+'font'+'[^><]*>|<.'+'font'+'[^><]*>','gi')
+		tempToken = tempToken.replace(regex, '');
+
 		return tempToken;
 	}
 

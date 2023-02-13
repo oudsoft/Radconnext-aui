@@ -964,10 +964,11 @@ module.exports = function ( jq ) {
 			let callZoomMsg = {type: 'callzoom', sendTo: radioSockets[0].id, openurl: zoomMeeting.join_url, password: zoomMeeting.password, topic: zoomMeeting.topic, sender: userdata.username, hospitalId: userdata.hospitalId}
 			//let myWsm = main.doGetWsm();
 			//console.log(JSON.stringify(callZoomMsg));
-			const main = require('../main.js');
-			let myWsm = main.doGetWsm();
-			myWsm.send(JSON.stringify(callZoomMsg));
 			window.open(zoomMeeting.start_url, '_blank');
+			if (util.wsm) {
+				util.wsm.send(JSON.stringify(callZoomMsg));
+				window.open(zoomMeeting.start_url, '_blank');
+			}
 		} else {
 			//radio offline
 			let userConfirm = confirm('ระบบไม่สามารถติดต่อไปยังปลายทางของคุณได้ในขณะนี้\nตุณต้องการส่งข้อมูล conference ไปให้ปลายทางผ่านช่องทางอื่น เช่น อีเมล์ ไลน์ หรทอไม่\nคลิกตกลงหรือ OK ถ้าต้องการ');
@@ -1083,7 +1084,7 @@ module.exports = function ( jq ) {
 		let reportRes = await common.doCallApi('/api/casereport/select/' + caseId, {});
 		//console.log(reportRes);
 		if (reportRes.Records.length > 0){
-			let pdfReportLink = 'https://radconnext.info' + reportRes.Records[0].PDF_Filename  + '?t=' + common.genUniqueID();
+			let pdfReportLink = 'https://radconnext.tech' + reportRes.Records[0].PDF_Filename  + '?t=' + common.genUniqueID();
 			console.log(pdfReportLink);
 			//let pdfDialog = doCreateResultPDFDialog(pdfReportLink);
 			let pdfDialog = $('<object data="' + pdfReportLink + '" type="application/pdf" width="99%" height="380"></object>');

@@ -393,11 +393,11 @@ module.exports = function ( jq ) {
 
 		let wsUrl = wsProtocol + hostname + ':' + port + '/' + username + '/' + hospitalId + '?type=' + connecttype;
 		if (hostname == 'localhost') {
-			wsUrl = 'wss://radconnext.info/' + username + '/' + hospitalId + '?type=' + connecttype;
+			wsUrl = 'wss://radconnext.tech/' + username + '/' + hospitalId + '?type=' + connecttype;
 		}
 		*/
 
-		let wsUrl = 'wss://radconnext.info/' + username + '/' + hospitalId + '?type=' + connecttype;
+		let wsUrl = 'wss://radconnext.tech/' + username + '/' + hospitalId + '?type=' + connecttype;
 	  wsm = new WebSocket(wsUrl);
 		wsm.onopen = function () {
 			//console.log('Master Websocket is connected to the signaling server')

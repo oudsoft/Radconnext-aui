@@ -52,13 +52,13 @@ $( document ).ready(function() {
     }
 	};
 
-  let jqueryUiCssUrl = "https://radconnext.info/lib/jquery-ui.min.css";
-  let jqueryUiJsUrl = "https://radconnext.info/lib/jquery-ui.min.js";
-  let jqueryLoadingUrl = 'https://radconnext.info/lib/jquery.loading.min.js';
-  let jqueryNotifyUrl = 'https://radconnext.info/lib/notify.min.js';
-  let jssipUrl = "https://radconnext.info/lib/jssip-3.9.0.min.js";
-  let sipPhonePlugin = "https://radconnext.info/setting/plugin/jquery-sipphone-income-plugin.js";
-  let radUtilityPlugin = "https://radconnext.info/setting/plugin/jquery-radutil-plugin.js";
+  let jqueryUiCssUrl = "https://radconnext.tech/lib/jquery-ui.min.css";
+  let jqueryUiJsUrl = "https://radconnext.tech/lib/jquery-ui.min.js";
+  let jqueryLoadingUrl = 'https://radconnext.tech/lib/jquery.loading.min.js';
+  let jqueryNotifyUrl = 'https://radconnext.tech/lib/notify.min.js';
+  let jssipUrl = "https://radconnext.tech/lib/jssip-3.9.0.min.js";
+  let sipPhonePlugin = "https://radconnext.tech/setting/plugin/jquery-sipphone-income-plugin.js";
+  let radUtilityPlugin = "https://radconnext.tech/setting/plugin/jquery-radutil-plugin.js";
 
   $('head').append('<script src="' + jqueryUiJsUrl + '"></script>');
   $('head').append('<link rel="stylesheet" href="' + jqueryUiCssUrl + '" type="text/css" />');
@@ -82,17 +82,17 @@ const doLoadLogin = function(){
 }
 
 const doLoadMainPage = function(){
-  let printjs = 'https://radconnext.info/lib/print/print.min.js';
-  let excelexportjs = 'https://radconnext.info/lib/excel/excelexportjs.js';
-  let jquerySimpleUploadUrl = 'https://radconnext.info/lib/simpleUpload.min.js';
-  let patientHistoryPluginUrl = "https://radconnext.info/setting/plugin/jquery-patient-history-image-plugin.js";
-	let countdownclockPluginUrl = "https://radconnext.info/setting/plugin/jquery-countdown-clock-plugin.js";
-	let scanpartPluginUrl = "https://radconnext.info/setting/plugin/jquery-scanpart-plugin.js";
-	let customUrgentPlugin = "https://radconnext.info/setting/plugin/jquery-custom-urgent-plugin.js";
-	let controlPagePlugin = "https://radconnext.info/setting/plugin/jquery-controlpage-plugin.js"
-  let customSelectPlugin = "https://radconnext.info/setting/plugin/jquery-custom-select-plugin.js";
-  let chatBoxPlugin = "https://radconnext.info/setting/plugin/jquery-chatbox-plugin.js";
-  let readystatePlugin = "https://radconnext.info/setting/plugin/jqury-readystate-plugin.js";
+  let printjs = 'https://radconnext.tech/lib/print/print.min.js';
+  let excelexportjs = 'https://radconnext.tech/lib/excel/excelexportjs.js';
+  let jquerySimpleUploadUrl = 'https://radconnext.tech/lib/simpleUpload.min.js';
+  let patientHistoryPluginUrl = "https://radconnext.tech/setting/plugin/jquery-patient-history-image-plugin.js";
+	let countdownclockPluginUrl = "https://radconnext.tech/setting/plugin/jquery-countdown-clock-plugin.js";
+	let scanpartPluginUrl = "https://radconnext.tech/setting/plugin/jquery-scanpart-plugin.js";
+	let customUrgentPlugin = "https://radconnext.tech/setting/plugin/jquery-custom-urgent-plugin.js";
+	let controlPagePlugin = "https://radconnext.tech/setting/plugin/jquery-controlpage-plugin.js"
+  let customSelectPlugin = "https://radconnext.tech/setting/plugin/jquery-custom-select-plugin.js";
+  let chatBoxPlugin = "https://radconnext.tech/setting/plugin/jquery-chatbox-plugin.js";
+  let readystatePlugin = "https://radconnext.tech/setting/plugin/jqury-readystate-plugin.js";
 
   $('head').append('<script src="' + printjs + '"></script>');
   $('head').append('<script src="' + excelexportjs + '"></script>');
@@ -107,20 +107,20 @@ const doLoadMainPage = function(){
   $('head').append('<script src="' + chatBoxPlugin + '"></script>');
   $('head').append('<script src="' + readystatePlugin + '"></script>');
 
-  $('head').append('<link rel="stylesheet" href="https://radconnext.info/lib/tui-image-editor.min.css" type="text/css" />');
-	$('head').append('<link rel="stylesheet" href="https://radconnext.info/lib/tui-color-picker.css" type="text/css" />');
-  $('head').append('<link rel="stylesheet" href="https://radconnext.info/lib/print/print.min.css" type="text/css" />');
-	$('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/scanpart.css" type="text/css" />');
-  $('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/custom-select.css" type="text/css" />');
+  $('head').append('<link rel="stylesheet" href="https://radconnext.tech/lib/tui-image-editor.min.css" type="text/css" />');
+	$('head').append('<link rel="stylesheet" href="https://radconnext.tech/lib/tui-color-picker.css" type="text/css" />');
+  $('head').append('<link rel="stylesheet" href="https://radconnext.tech/lib/print/print.min.css" type="text/css" />');
+	$('head').append('<link rel="stylesheet" href="https://radconnext.tech/case/css/scanpart.css" type="text/css" />');
+  $('head').append('<link rel="stylesheet" href="https://radconnext.tech/case/css/custom-select.css" type="text/css" />');
 
   //$('body').append($('<div id="overlay"><div class="loader"></div></div>'));
 
   //$('body').loading({overlay: $("#overlay"), stoppable: true});
 
-  $('head').append('<link rel="stylesheet" href="https://radconnext.info/stylesheets/style.css" type="text/css" />');
-  $('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/style.css" type="text/css" />');
-  $('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/main-fix.css" type="text/css" />');
-  $('head').append('<link rel="stylesheet" href="https://radconnext.info/case/css/menu-fix.css" type="text/css" />');
+  $('head').append('<link rel="stylesheet" href="https://radconnext.tech/stylesheets/style.css" type="text/css" />');
+  $('head').append('<link rel="stylesheet" href="https://radconnext.tech/case/css/style.css" type="text/css" />');
+  $('head').append('<link rel="stylesheet" href="https://radconnext.tech/case/css/main-fix.css" type="text/css" />');
+  $('head').append('<link rel="stylesheet" href="https://radconnext.tech/case/css/menu-fix.css" type="text/css" />');
 
   document.addEventListener("triggercasecounter", casecounter.onCaseChangeStatusTrigger);
   document.addEventListener("triggerconsultcounter", casecounter.onConsultChangeStatusTrigger);

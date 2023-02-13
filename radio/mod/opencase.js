@@ -594,6 +594,8 @@ module.exports = function ( jq ) {
 				report: saveResponseData.report,
 			};
 
+			params.report.Response_Text = saveResponseData.patientFullName + '\n====================\n' + saveResponseData.Response_Text;
+
 			let saveResponseRes = await doCallSubmitResult(params);
 			//Uri = '/api/uicommon/radio/submitresult';
 			console.log(saveResponseRes);
@@ -608,7 +610,7 @@ module.exports = function ( jq ) {
 					resolve(saveResponseRes);
 					let responseTextFilename = saveResponseData.patientFullName.split(' ').join('_') + '.txt';
 					//console.log(responseTextFilename);
-					doSaveResponseTextToLocalFile(saveResponseData.Response_Text, responseTextFilename);
+					//doSaveResponseTextToLocalFile(saveResponseData.Response_Text, responseTextFilename);
 					setTimeout(()=>{
 						$('#AcceptedCaseCmd').click();
 					}, 1800);
@@ -624,7 +626,7 @@ module.exports = function ( jq ) {
 					$("#dialog").append($(resultPDFDialog));
 					resolve(pdfReportLink);
 					let responseTextFilename = saveResponseData.patientFullName.split(' ').join('_') + '.txt';
-					doSaveResponseTextToLocalFile(saveResponseData.Response_Text, responseTextFilename);
+					//doSaveResponseTextToLocalFile(saveResponseData.Response_Text, responseTextFilename);
 				}
 			} else {
 				$.notify("ไม่สามารถส่งผลอ่าน - Error โปรดติดต่อผู้ดูแลระบบ", "error");

@@ -152,6 +152,12 @@ module.exports = function ( jq ) {
       doTemplateMngClickCallBack(evt, shopData);
     });
 
+		let calculatorCmd = $('<span>เครื่องคิดเลข</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 0px 0px 10px', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey', 'float': 'left'});
+		$(calculatorCmd).hover(()=>{	$(calculatorCmd).css({'border': '3px solid black'});}, ()=>{ $(calculatorCmd).css({'border': '3px solid grey'});});
+    $(calculatorCmd).on('click', (evt)=>{
+      doOpenCalculatorCallBack(evt, shopData);
+    });
+
 		let logoutCmd = $('<span>ออกจากระบบ</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 5px 0px 0px', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey', 'float': 'right'});
 		$(logoutCmd).on('click', (evt)=>{
 			common.doUserLogout();
@@ -161,7 +167,7 @@ module.exports = function ( jq ) {
 		},()=>{
 			$(logoutCmd).css({'border': '3px solid grey'});
 		});
-    return $(commandsBox).append($(orderMngCmd)).append($(menuitemMngCmd)).append($(menugroupMngCmd)).append($(customerMngCmd)).append($(userMngCmd)).append($(templateMngCmd)).append($(logoutCmd));
+    return $(commandsBox).append($(orderMngCmd)).append($(menuitemMngCmd)).append($(menugroupMngCmd)).append($(customerMngCmd)).append($(userMngCmd)).append($(templateMngCmd)).append($(calculatorCmd)).append($(logoutCmd));
   }
 
   const doShowShopMng = function(shopData, uploadLogCallback, editShopCallback){
@@ -256,6 +262,29 @@ module.exports = function ( jq ) {
 	const doTemplateMngClickCallBack = async function(evt, shopData){
 		let workingAreaBox = $('#WorkingAreaBox');
 		await template.doShowTemplateDesign(shopData, workingAreaBox)
+	}
+
+	const doOpenCalculatorCallBack = function(evt, shopData){
+		let calcBox = $('<div id="root"></div>');
+		let calcDlgOption = {
+			title: 'เครื่องคิดเลข',
+			msg: $(calcBox),
+			width: '365px',
+			onOk: function(evt) {
+				$(calcScript).remove();
+				dlgHandle.closeAlert();
+			},
+			onCancel: function(evt) {
+				$(calcScript).remove();
+				dlgHandle.closeAlert();
+			}
+		}
+		let dlgHandle = $('body').radalert(calcDlgOption);
+		$(dlgHandle.cancelCmd).hide();
+		let calcScript = document.createElement("script");
+		calcScript.type = "text/javascript";
+		calcScript.src = "../lib/calculator.js";
+		$("head").append($(calcScript));
 	}
 
   return {

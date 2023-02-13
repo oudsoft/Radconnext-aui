@@ -140,140 +140,179 @@ module.exports = function ( jq ) {
 					await doShowMenuitemItem(shopData, workAreaBox);
 				}
 			});
-      $(newMenuitemCmdBox).append($(menugroupFilter)).append($(newMenuitemCmd).css({'margin-left': '10px'}));
+
+			let readySwitch = undefined;
+			let stockFilter = false;
+			if (parseInt(shopData.Shop_StockingOption) == 1) {
+				let readySwitchBox = $('<div id="ReadyState" style="position: relative; display: inline-block; top: -4px;"></div>');
+				let readyOption = {switchTextOnState: 'กรองเฉพาะที่ตัดสต็อค', switchTextOffState: 'ไม่กรอง(แสดงทั้งหมด)',
+					onActionCallback: async ()=>{
+						stockFilter = true;
+						$(menuitemTable).remove()
+						doRenderMenuitemTable();
+						$(workAreaBox).append($(menuitemTable));
+					},
+					offActionCallback: async ()=>{
+						stockFilter = false;
+						$(menuitemTable).remove()
+						doRenderMenuitemTable();
+						$(workAreaBox).append($(menuitemTable));
+					}
+				};
+				readySwitch = $(readySwitchBox).readystate(readyOption);
+				readySwitch.offAction();
+				$(newMenuitemCmdBox).append($(readySwitchBox));
+      	$(newMenuitemCmdBox).append($(menugroupFilter).css({'margin-left': '10px'})).append($(newMenuitemCmd).css({'margin-left': '10px'}));
+			} else {
+      	$(newMenuitemCmdBox).append($(menugroupFilter)).append($(newMenuitemCmd).css({'margin-left': '10px'}));
+			}
       $(workAreaBox).append($(newMenuitemCmdBox));
 
-      let menuitemTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="1"></table>');
-			let headerRow = $('<tr></tr>');
-			$(headerRow).append($('<td width="2%" align="center"><b>#</b></td>'));
-			for (let i=0; i < menuitemTableFields.length; i++) {
-        if (menuitemTableFields[i].showHeader) {
-          $(headerRow).append($('<td width="' + menuitemTableFields[i].width + '" align="center"><b>' + menuitemTableFields[i].displayName + '</b></td>'));
-        }
-			}
-      for (let i=0; i < menugroupTableFields.length; i++) {
-        if (menugroupTableFields[i].showHeader) {
-          $(headerRow).append($('<td width="' + menugroupTableFields[i].width + '" align="center"><b>' + menugroupTableFields[i].displayName + '</b></td>'));
-        }
-			}
-			$(headerRow).append($('<td width="*" align="center"><b>คำสั่ง</b></td>'));
-			$(menuitemTable).append($(headerRow));
+//doRenderMenuitemTable();
+			let menuitemTable = undefined;
 
-      for (let x=0; x < menuitemItems.length; x++) {
-				let itemRow = $('<tr class="menuitem-row"></tr>');
-				$(itemRow).append($('<td align="center">' + (x+1) + '</td>'));
-				let item = menuitemItems[x];
+			const doRenderMenuitemTable = function() {
+				menuitemTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="1"></table>');
+				let headerRow = $('<tr></tr>');
+				$(headerRow).append($('<td width="2%" align="center"><b>#</b></td>'));
 				for (let i=0; i < menuitemTableFields.length; i++) {
-					let field = $('<td align="' + menuitemTableFields[i].align + '"></td>');
-					if (menuitemTableFields[i].fieldName !== 'MenuPicture') {
-						if (menuitemTableFields[i].fieldName !== 'StockingOption') {
-							$(field).text(item[menuitemTableFields[i].fieldName]);
-						} else {
-							let stockingOption = item[menuitemTableFields[i].fieldName];
-							let stockStateText = $('<div></div>');
-							if (parseInt(stockingOption) == 0) {
-								$(stockStateText).text('ไม่ตัดสต็อค');
-								$(field).append($(stockStateText));
-							} else if (parseInt(stockingOption) == 1) {
-								$(stockStateText).text('ตัดสต็อค');
-								$(field).append($(stockStateText));
-								let stockInCmd = doCreateStockInCmd(shopData, workAreaBox, item);
-								let checkStockCmd = doCreateCheckStockCmd(shopData, workAreaBox, item, itemRow);
-								$(field).append($(stockInCmd)).append($(checkStockCmd).css({'margin-left': '4px'}));
+	        if (menuitemTableFields[i].showHeader) {
+	          $(headerRow).append($('<td width="' + menuitemTableFields[i].width + '" align="center"><b>' + menuitemTableFields[i].displayName + '</b></td>'));
+	        }
+				}
+	      for (let i=0; i < menugroupTableFields.length; i++) {
+	        if (menugroupTableFields[i].showHeader) {
+	          $(headerRow).append($('<td width="' + menugroupTableFields[i].width + '" align="center"><b>' + menugroupTableFields[i].displayName + '</b></td>'));
+	        }
+				}
+				$(headerRow).append($('<td width="*" align="center"><b>คำสั่ง</b></td>'));
+				$(menuitemTable).append($(headerRow));
+
+				let unRenderCount = 0;
+
+	      for (let x=0; x < menuitemItems.length; x++) {
+					let item = menuitemItems[x];
+					let stockingOption = item.StockingOption;
+					let isRendeItem = (!stockFilter) || (!stockingOption) || ((stockFilter) && (parseInt(stockingOption) == 1));
+					if (isRendeItem) {
+						let itemRow = $('<tr class="menuitem-row"></tr>');
+						$(itemRow).append($('<td align="center">' + (x + 1 - unRenderCount) + '</td>'));
+						for (let i=0; i < menuitemTableFields.length; i++) {
+							let field = $('<td align="' + menuitemTableFields[i].align + '"></td>');
+							if (menuitemTableFields[i].fieldName !== 'MenuPicture') {
+								if (menuitemTableFields[i].fieldName !== 'StockingOption') {
+									$(field).text(item[menuitemTableFields[i].fieldName]);
+								} else {
+									let stockStateText = $('<div></div>');
+									if (parseInt(stockingOption) == 0) {
+										$(stockStateText).text('ไม่ตัดสต็อค');
+										$(field).append($(stockStateText));
+									} else if (parseInt(stockingOption) == 1) {
+										$(stockStateText).text('ตัดสต็อค');
+										$(field).append($(stockStateText));
+										let stockInCmd = doCreateStockInCmd(shopData, workAreaBox, item);
+										let checkStockCmd = doCreateCheckStockCmd(shopData, workAreaBox, item, itemRow);
+										$(field).append($(stockInCmd)).append($(checkStockCmd).css({'margin-left': '4px'}));
+									}
+								}
+								$(itemRow).append($(field));
+							} else {
+								let menuitemLogoIcon = new Image();
+								menuitemLogoIcon.id = 'MenuPicture_' + item.id;
+								if ((item['MenuPicture']) && (item['MenuPicture'] !== '')) {
+									menuitemLogoIcon.src = item['MenuPicture'];
+								} else {
+									menuitemLogoIcon.src = '/shop/favicon.ico'
+								}
+								$(menuitemLogoIcon).css({"width": "80px", "height": "auto", "cursor": "pointer", "padding": "2px", "border": "2px solid #ddd"});
+								$(menuitemLogoIcon).on('click', (evt)=>{
+									window.open(item['MenuPicture'], '_blank');
+								});
+
+								let menuItemLogoIconBox = $('<div></div>').css({"position": "relative", "width": "fit-content", "border": "2px solid #ddd"});
+						    $(menuItemLogoIconBox).append($(menuitemLogoIcon));
+								let editMenuItemLogoCmd = $('<img src="../../images/tools-icon-wh.png"/>').css({'position': 'absolute', 'width': '25px', 'height': 'auto', 'cursor': 'pointer', 'right': '2px', 'bottom': '2px', 'display': 'none', 'z-index': '21'});
+								$(editMenuItemLogoCmd).attr('title', 'เปลี่ยนภาพใหม่');
+								$(menuItemLogoIconBox).append($(editMenuItemLogoCmd));
+								$(menuItemLogoIconBox).hover(()=>{
+									$(editMenuItemLogoCmd).show();
+								},()=>{
+									$(editMenuItemLogoCmd).hide();
+								});
+								$(editMenuItemLogoCmd).on('click', (evt)=>{
+									evt.stopPropagation();
+									doStartUploadPicture(evt, menuitemLogoIcon, field, item.id, shopData, workAreaBox, groupId);
+								});
+								$(field).append($(menuItemLogoIconBox));
+
+								let clearMenuitemLogoCmd = $('<input type="button" value=" เคลียร์รูป " class="action-btn"/>');
+								$(clearMenuitemLogoCmd).on('click', async (evt)=>{
+									let callRes = await common.doCallApi('/api/shop/menuitem/change/logo', {data: {MenuPicture: ''}, id: item.id});
+									menuitemLogoIcon.src = '/shop/favicon.ico'
+								});
+								$(field).append($('<div style="width: 100%;"></div>').append($(clearMenuitemLogoCmd)));
+								$(itemRow).append($(field));
 							}
 						}
-						$(itemRow).append($(field));
-					} else {
-						let menuitemLogoIcon = new Image();
-						menuitemLogoIcon.id = 'MenuPicture_' + item.id;
-						if ((item['MenuPicture']) && (item['MenuPicture'] !== '')) {
-							menuitemLogoIcon.src = item['MenuPicture'];
+		        for (let i=0; i < menugroupTableFields.length; i++) {
+		          let field = $('<td align="' + menugroupTableFields[i].align + '"></td>');
+							if ((item.menugroup.GroupPicture) && (item.menugroup.GroupPicture !== '')) {
+								let menuGroupLogoIconBox = $('<div></div>').css({"position": "relative", "width": "fit-content", "border": "2px solid #ddd"});
+								let groupLogoImg = new Image();
+								groupLogoImg.src = item.menugroup.GroupPicture;
+								$(groupLogoImg).attr('title', item.menugroup[menugroupTableFields[i].fieldName]);
+								$(groupLogoImg).css({"width": "80px", "height": "auto"})
+								$(menuGroupLogoIconBox).append($(groupLogoImg));
+								$(field).append($(menuGroupLogoIconBox));
+							}
+		          $(field).append($('<div style="position: relative; display: block;">' + item.menugroup[menugroupTableFields[i].fieldName] + '</div>'));
+		          $(itemRow).append($(field));
+		        }
+
+						let qrcodeImg = new Image();
+						qrcodeImg.id = 'MenuQRCode_' + item.id;
+						if ((item.QRCodePicture) && (item.QRCodePicture != '')) {
+							let qrLink = '/shop/img/usr/qrcode/' + item.QRCodePicture + '.png';
+			      	qrcodeImg.src = qrLink;
+							// open dialog for print qrcode
+							$(qrcodeImg).attr('title', 'พิมพ์คิวอาร์โค้ดรายการนี้');
+							$(qrcodeImg).css({'width': '55px', 'height': 'auto', 'cursor': 'pointer'});
+							$(qrcodeImg).on('click', (evt)=>{
+								doOpenQRCodePopup(evt, item.id, item.QRCodePicture, qrLink);
+							});
 						} else {
-							menuitemLogoIcon.src = '/shop/favicon.ico'
+							qrcodeImg.src = '../../images/scan-qrcode-icon.png';
+							$(qrcodeImg).attr('title', 'สร้างคิวอาร์โค้ดให้รายการนี้');
+							$(qrcodeImg).css({'width': '45px', 'height': 'auto', 'cursor': 'pointer'});
+							// generate new qrcode
+							$(qrcodeImg).on('click', async (evt)=>{
+								await doCreateNewQRCode(evt, item.id);
+							});
 						}
-						$(menuitemLogoIcon).css({"width": "80px", "height": "auto", "cursor": "pointer", "padding": "2px", "border": "2px solid #ddd"});
-						$(menuitemLogoIcon).on('click', (evt)=>{
-							window.open(item['MenuPicture'], '_blank');
-						});
+						let menuitemQRCodeBox = $('<div></div>').css({'text-align': 'center'}).append($(qrcodeImg));
 
-						let menuItemLogoIconBox = $('<div></div>').css({"position": "relative", "width": "fit-content", "border": "2px solid #ddd"});
-				    $(menuItemLogoIconBox).append($(menuitemLogoIcon));
-						let editMenuItemLogoCmd = $('<img src="../../images/tools-icon-wh.png"/>').css({'position': 'absolute', 'width': '25px', 'height': 'auto', 'cursor': 'pointer', 'right': '2px', 'bottom': '2px', 'display': 'none', 'z-index': '21'});
-						$(editMenuItemLogoCmd).attr('title', 'เปลี่ยนภาพใหม่');
-						$(menuItemLogoIconBox).append($(editMenuItemLogoCmd));
-						$(menuItemLogoIconBox).hover(()=>{
-							$(editMenuItemLogoCmd).show();
-						},()=>{
-							$(editMenuItemLogoCmd).hide();
+						let editMenuitemCmd = $('<input type="button" value=" Edit " class="action-btn"/>');
+						$(editMenuitemCmd).on('click', (evt)=>{
+							doOpenEditMenuitemForm(shopData, workAreaBox, item, groupId);
 						});
-						$(editMenuItemLogoCmd).on('click', (evt)=>{
-							evt.stopPropagation();
-							doStartUploadPicture(evt, menuitemLogoIcon, field, item.id, shopData, workAreaBox, groupId);
+						let deleteMenuitemCmd = $('<input type="button" value=" Delete " class="action-btn"/>').css({'margin-left': '8px'});
+						$(deleteMenuitemCmd).on('click', (evt)=>{
+							doDeleteMenuitem(shopData, workAreaBox, item.id, groupId);
 						});
-						$(field).append($(menuItemLogoIconBox));
+						let menuitemBtnBox = $('<div></div>').css({'text-align': 'center'}).append($(editMenuitemCmd)).append($(deleteMenuitemCmd));
 
-						let clearMenuitemLogoCmd = $('<input type="button" value=" เคลียร์รูป " class="action-btn"/>');
-						$(clearMenuitemLogoCmd).on('click', async (evt)=>{
-							let callRes = await common.doCallApi('/api/shop/menuitem/change/logo', {data: {MenuPicture: ''}, id: item.id});
-							menuitemLogoIcon.src = '/shop/favicon.ico'
-						});
-						$(field).append($('<div style="width: 100%;"></div>').append($(clearMenuitemLogoCmd)));
-						$(itemRow).append($(field));
+						let commandCell = $('<td id="CommandCell" align="center"></td>');
+						$(commandCell).append($(menuitemQRCodeBox));
+						$(commandCell).append($(menuitemBtnBox));
+						$(itemRow).append($(commandCell));
+						$(menuitemTable).append($(itemRow));
+					} else {
+						unRenderCount += 1;
 					}
 				}
-        for (let i=0; i < menugroupTableFields.length; i++) {
-          let field = $('<td align="' + menugroupTableFields[i].align + '"></td>');
-					if ((item.menugroup.GroupPicture) && (item.menugroup.GroupPicture !== '')) {
-						let menuGroupLogoIconBox = $('<div></div>').css({"position": "relative", "width": "fit-content", "border": "2px solid #ddd"});
-						let groupLogoImg = new Image();
-						groupLogoImg.src = item.menugroup.GroupPicture;
-						$(groupLogoImg).attr('title', item.menugroup[menugroupTableFields[i].fieldName]);
-						$(groupLogoImg).css({"width": "80px", "height": "auto"})
-						$(menuGroupLogoIconBox).append($(groupLogoImg));
-						$(field).append($(menuGroupLogoIconBox));
-					}
-          $(field).append($('<div style="position: relative; display: block;">' + item.menugroup[menugroupTableFields[i].fieldName] + '</div>'));
-          $(itemRow).append($(field));
-        }
-
-				let qrcodeImg = new Image();
-				qrcodeImg.id = 'MenuQRCode_' + item.id;
-				if ((item.QRCodePicture) && (item.QRCodePicture != '')) {
-					let qrLink = '/shop/img/usr/qrcode/' + item.QRCodePicture + '.png';
-	      	qrcodeImg.src = qrLink;
-					// open dialog for print qrcode
-					$(qrcodeImg).attr('title', 'พิมพ์คิวอาร์โค้ดรายการนี้');
-					$(qrcodeImg).css({'width': '55px', 'height': 'auto', 'cursor': 'pointer'});
-					$(qrcodeImg).on('click', (evt)=>{
-						doOpenQRCodePopup(evt, item.id, item.QRCodePicture, qrLink);
-					});
-				} else {
-					qrcodeImg.src = '../../images/scan-qrcode-icon.png';
-					$(qrcodeImg).attr('title', 'สร้างคิวอาร์โค้ดให้รายการนี้');
-					$(qrcodeImg).css({'width': '45px', 'height': 'auto', 'cursor': 'pointer'});
-					// generate new qrcode
-					$(qrcodeImg).on('click', async (evt)=>{
-						await doCreateNewQRCode(evt, item.id);
-					});
-				}
-				let menuitemQRCodeBox = $('<div></div>').css({'text-align': 'center'}).append($(qrcodeImg));
-
-				let editMenuitemCmd = $('<input type="button" value=" Edit " class="action-btn"/>');
-				$(editMenuitemCmd).on('click', (evt)=>{
-					doOpenEditMenuitemForm(shopData, workAreaBox, item, groupId);
-				});
-				let deleteMenuitemCmd = $('<input type="button" value=" Delete " class="action-btn"/>').css({'margin-left': '8px'});
-				$(deleteMenuitemCmd).on('click', (evt)=>{
-					doDeleteMenuitem(shopData, workAreaBox, item.id, groupId);
-				});
-				let menuitemBtnBox = $('<div></div>').css({'text-align': 'center'}).append($(editMenuitemCmd)).append($(deleteMenuitemCmd));
-
-				let commandCell = $('<td id="CommandCell" align="center"></td>');
-				$(commandCell).append($(menuitemQRCodeBox));
-				$(commandCell).append($(menuitemBtnBox));
-				$(itemRow).append($(commandCell));
-				$(menuitemTable).append($(itemRow));
 			}
+
+			doRenderMenuitemTable();
 
       $(workAreaBox).append($(menuitemTable));
       resolve();

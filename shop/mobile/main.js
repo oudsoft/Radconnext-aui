@@ -130,14 +130,23 @@ const doCreateUserInfoBox = function(){
     $(pageHandle.toggleMenuCmd).click();
     doStartTestPPQC(evt, userdata.shop);
   });
+  let calculatorCmd = $('<div>เครื่องคิดเลข</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
+  $(calculatorCmd).on('click', (evt)=>{
+    evt.stopPropagation();
+    $(pageHandle.toggleMenuCmd).click();
+    doOpenCalculatorCallBack(evt, userdata.shop);
+  });
   let userLogoutCmd = $('<div>ออกจากระบบ</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
   $(userLogoutCmd).on('click', (evt)=>{
     common.doUserLogout();
   });
-  return $(userInfoBox).append($(userPictureBox)).append($(userInfo)).append($(userPPQRTestCmd)).append($(userLogoutCmd));
+
+  return $(userInfoBox).append($(userPictureBox)).append($(userInfo)).append($(userPPQRTestCmd)).append($(calculatorCmd)).append($(userLogoutCmd));
 }
 
 const doCreatePPInfoBox = function(shopData) {
+  let userdata = JSON.parse(localStorage.getItem('userdata'));
+  let mainBox = $('<div style="width: 97%; text-align: left; padding: 5px; border: 2px solid grey;"></div>');
   let ppTitleBox = $('<div style="width: 100%; text-align: left;"></div>');
   $(ppTitleBox).append($('<p>ข้อมูลพร้อมเพย์ที่จะออกคิวอาร์โค้ด</p>'));
   let ppNameBox = $('<div></div>');
@@ -146,13 +155,17 @@ const doCreatePPInfoBox = function(shopData) {
   let ppNumberBox = $('<div></div>');
   $(ppNumberBox).append($('<p>หมายเลขพร้อมเพย์ :</p>'));
   $(ppNumberBox).append($('<p></p>').text(shopData.Shop_PromptPayNo).css({'font-weight': 'bold', 'font-size': '22px'}));
-  let ppFooterBox = $('<div style="width: 100%; text-align: left;"></div>');
-  $(ppFooterBox).append($('<p>หากข้อมูลไม่ถูกต้องโปรดแก้ไข โดยคลิกปุ่ม <b style="font-size: 22px;">แก้ไขข้อมูลพร้อมเพย์</b></p>'));
-  let mainBox = $('<div style="width: 97%; text-align: left; padding: 5px; border: 2px solid grey;"></div>');
-  return $(mainBox).append($(ppTitleBox)).append($(ppNameBox)).append($(ppNumberBox)).append($(ppFooterBox));
+  if ([1, 2, 3].includes(userdata.usertypeId)) {
+    let ppFooterBox = $('<div style="width: 100%; text-align: left;"></div>');
+    $(ppFooterBox).append($('<p>หากข้อมูลไม่ถูกต้องโปรดแก้ไข โดยคลิกปุ่ม <b style="font-size: 22px;">แก้ไขข้อมูลพร้อมเพย์</b></p>'));
+    return $(mainBox).append($(ppTitleBox)).append($(ppNameBox)).append($(ppNumberBox)).append($(ppFooterBox));
+  } else {
+    return $(mainBox).append($(ppTitleBox)).append($(ppNameBox)).append($(ppNumberBox));
+  }
 }
 
 const doStartTestPPQC = function(evt, shopData){
+  let userdata = JSON.parse(localStorage.getItem('userdata'));
   let editInput = $('<input type="number"/>').val(common.doFormatNumber(100)).css({'width': '100px', 'margin-left': '20px'});
   $(editInput).on('keyup', (evt)=>{
     if (evt.keyCode == 13) {
@@ -166,24 +179,32 @@ const doStartTestPPQC = function(evt, shopData){
 
   if ((shopData.Shop_PromptPayNo !== '') && (shopData.Shop_PromptPayName !== '')) {
     let ppInfoBox = doCreatePPInfoBox(shopData);
-    settingPPDataCmd = common.doCreateTextCmd('แก้ไขข้อมูลพร้อมเพย์', 'green', 'white');
-    $(ppInfoBox).append($('<div style="width: 100%; text-align: center; margin-bottom: 20px;"></div>').append($(settingPPDataCmd)));
+    if ([1, 2, 3].includes(userdata.usertypeId)) {
+      settingPPDataCmd = common.doCreateTextCmd('แก้ไขข้อมูลพร้อมเพย์', 'green', 'white');
+      $(ppInfoBox).append($('<div style="width: 100%; text-align: center; margin-bottom: 20px;"></div>').append($(settingPPDataCmd)));
+    }
     ppQRBox = $('<div></div>').css({'width': '100%', 'height': '480px', 'margin-top': '20px'});
     $(ppQRBox).append($(ppInfoBox));
     $(ppQRBox).append($('<div style="width: 100%; margin-top: 40px;"></div>').append('<p>แก้ไขจำนวนเงินที่ต้องการแล้วคลิกปุ่ม <b style="font-size: 22px;">ตกลง</b></p>'));
     $(ppQRBox).append($(editLabel)).append($(editInput));
   } else {
-    settingPPDataCmd = common.doCreateTextCmd('ตั้งค่าข้อมูลพร้อมเพย์', 'orange', 'white');
-    ppQRBox = $('<div></div>').css({'width': '100%', 'height': '480px', 'margin-top': '20px'});
-    $(ppQRBox).append($('<span>คุณยังไม่ได้ตั้งค่าข้อมูลพร้อมเพย์ของร้าน</span>'));
-    $(ppQRBox).append($('<br/>')).append($('<span>คลิกที่ปุ่ม <b>ตั้งค่าข้อมูลพร้อมเพย์</b> เพื่อตั้งค่าก่อนออกคิวอาร์โค้ด</span>'));
-    $(ppQRBox).append($('<div style="width: 100%; text-align: center; margin-top: 50px;"></div>').append($(settingPPDataCmd)));
+    if ([1, 2, 3].includes(userdata.usertypeId)) {
+      settingPPDataCmd = common.doCreateTextCmd('ตั้งค่าข้อมูลพร้อมเพย์', 'orange', 'white');
+      ppQRBox = $('<div></div>').css({'width': '100%', 'height': '480px', 'margin-top': '20px'});
+      $(ppQRBox).append($('<span>คุณยังไม่ได้ตั้งค่าข้อมูลพร้อมเพย์ของร้าน</span>'));
+      $(ppQRBox).append($('<br/>')).append($('<span>คลิกที่ปุ่ม <b>ตั้งค่าข้อมูลพร้อมเพย์</b> เพื่อตั้งค่าก่อนออกคิวอาร์โค้ด</span>'));
+      $(ppQRBox).append($('<div style="width: 100%; text-align: center; margin-top: 50px;"></div>').append($(settingPPDataCmd)));
+    } else {
+      ppQRBox = $('<div></div>').css({'width': '100%', 'height': '480px', 'margin-top': '20px'});
+      $(ppQRBox).append($('<span>คุณยังไม่ได้ตั้งค่าข้อมูลพร้อมเพย์ของร้าน</span>'));
+    }
   }
   $(settingPPDataCmd).on('click', (evt)=>{
     evt.stopPropagation();
     dlgHandle.closeAlert();
     doOpenPPDataForm(evt, shopData);
   });
+
   let editDlgOption = {
     title: 'สร้างพร้อมเพย์คิวอาร์โค้ด',
     msg: $(ppQRBox),
@@ -279,4 +300,27 @@ const doOpenPPDataForm = function(evt, shopData) {
       $(ppNameInput).css({'border': '1px solid red'});
     }
   });
+}
+
+const doOpenCalculatorCallBack = function(evt, shopData){
+  let calcBox = $('<div id="root"></div>');
+  let calcDlgOption = {
+    title: 'เครื่องคิดเลข',
+    msg: $(calcBox),
+    width: '365px',
+    onOk: function(evt) {
+      $(calcScript).remove();
+      dlgHandle.closeAlert();
+    },
+    onCancel: function(evt) {
+      $(calcScript).remove();
+      dlgHandle.closeAlert();
+    }
+  }
+  let dlgHandle = $('body').radalert(calcDlgOption);
+  $(dlgHandle.cancelCmd).hide();
+  let calcScript = document.createElement("script");
+  calcScript.type = "text/javascript";
+  calcScript.src = "../lib/calculator.js";
+  $("head").append($(calcScript));
 }

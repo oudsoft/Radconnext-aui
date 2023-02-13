@@ -1133,7 +1133,7 @@ module.exports = function ( jq ) {
 		let reportRes = await common.doCallApi('/api/casereport/select/' + caseId, {});
 		//console.log(reportRes);
 		if (reportRes.Records.length > 0){
-			let pdfReportLink = 'https://radconnext.info' + reportRes.Records[0].PDF_Filename  + '?t=' + common.genUniqueID();
+			let pdfReportLink = 'https://radconnext.tech' + reportRes.Records[0].PDF_Filename  + '?t=' + common.genUniqueID();
 			console.log(pdfReportLink);
 			//let pdfDialog = doCreateResultPDFDialog(pdfReportLink);
 			let pdfDialog = $('<object data="' + pdfReportLink + '" type="application/pdf" width="99%" height="380"></object>');
@@ -1201,7 +1201,7 @@ module.exports = function ( jq ) {
 		let userId = userdata.id;
 		doConvertResultToDicom(caseId, hospitalId, userId, orthancStudyID, modality, studyInstanceUID);
 		*/
-		let callUrl = 'https://radconnext.info/api/uicommon/do/resubmit/' + caseId;
+		let callUrl = 'https://radconnext.tech/api/uicommon/do/resubmit/' + caseId;
 		let params = {};
 		$.get(callUrl, params).then((response) => {
 			console.log(response);
