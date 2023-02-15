@@ -41,7 +41,7 @@ $( document ).ready(function() {
     //https://www.jqueryscript.net/other/Export-Table-JSON-Data-To-Excel-jQuery-ExportToExcel.html#google_vignette
 
     $('head').append('<script src="' + excelexportjs + '"></script>');
-    
+
     $('head').append('<script src="' + jquerySimpleUploadUrl + '"></script>');
 
     $('head').append('<script src="' + utilityPlugin + '"></script>');
@@ -77,7 +77,19 @@ $( document ).ready(function() {
 
 	initPage();
   //doTestCreateInvoice();
+  document.addEventListener("loading-trigger", doTriggerLoading);
 });
+
+const doTriggerLoading = function(evt) {
+  let triggerData = evt.detail;
+  let action = triggerData.action;
+  if (action === 'start') {
+    $('body').loading('start');
+  } else if (action === 'stop') {
+    $('body').loading('stop');
+  }
+}
+
 
 const doShowShopItems = function(){
   shopitem.doShowShopItem();

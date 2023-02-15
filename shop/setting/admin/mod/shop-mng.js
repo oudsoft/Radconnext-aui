@@ -158,16 +158,24 @@ module.exports = function ( jq ) {
       doOpenCalculatorCallBack(evt, shopData);
     });
 
+    $(commandsBox).append($(orderMngCmd)).append($(menuitemMngCmd)).append($(menugroupMngCmd)).append($(customerMngCmd)).append($(userMngCmd)).append($(templateMngCmd)).append($(calculatorCmd));
+
+		if (parseInt(shopData.Shop_StockingOption) == 1) {
+			let earningCmd = $('<span>กำไร-ขาดทุน</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 0px 0px 10px', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey', 'float': 'left'});
+			$(earningCmd).hover(()=>{	$(earningCmd).css({'border': '3px solid black'});}, ()=>{ $(earningCmd).css({'border': '3px solid grey'});});
+			$(earningCmd).on('click', async (evt)=>{
+				doOpenEarningCallBack(evt, shopData);
+			});
+			$(commandsBox).append($(earningCmd));
+		}
+
 		let logoutCmd = $('<span>ออกจากระบบ</span>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'margin': '-3px 5px 0px 0px', 'padding': '4px', 'font-size': '16px', 'border': '3px solid grey', 'float': 'right'});
 		$(logoutCmd).on('click', (evt)=>{
 			common.doUserLogout();
 		});
-		$(logoutCmd).hover(()=>{
-			$(logoutCmd).css({'border': '3px solid black'});
-		},()=>{
-			$(logoutCmd).css({'border': '3px solid grey'});
-		});
-    return $(commandsBox).append($(orderMngCmd)).append($(menuitemMngCmd)).append($(menugroupMngCmd)).append($(customerMngCmd)).append($(userMngCmd)).append($(templateMngCmd)).append($(calculatorCmd)).append($(logoutCmd));
+		$(logoutCmd).hover(()=>{$(logoutCmd).css({'border': '3px solid black'});},()=>{$(logoutCmd).css({'border': '3px solid grey'});});
+
+		return $(commandsBox).append($(logoutCmd));
   }
 
   const doShowShopMng = function(shopData, uploadLogCallback, editShopCallback){
@@ -285,6 +293,32 @@ module.exports = function ( jq ) {
 		calcScript.type = "text/javascript";
 		calcScript.src = "../lib/calculator.js";
 		$("head").append($(calcScript));
+	}
+
+	const doOpenEarningCallBack = function(evt, shopData){
+		localStorage.setItem('earnShopData', JSON.stringify(shopData));
+		let earningBox = $('<div id="root"></div>');
+		let earningDlgOption = {
+			title: 'สรุปกำไร-ขาดทุน',
+			msg: $(earningBox),
+			width: '615px',
+			onOk: function(evt) {
+				$(earningScript).remove();
+				localStorage.removeItem('earnShopData');
+				dlgHandle.closeAlert();
+			},
+			onCancel: function(evt) {
+				$(earningScript).remove();
+				localStorage.removeItem('earnShopData');
+				dlgHandle.closeAlert();
+			}
+		}
+		let dlgHandle = $('body').radalert(earningDlgOption);
+		$(dlgHandle.cancelCmd).hide();
+		let earningScript = document.createElement("script");
+		earningScript.type = "text/javascript";
+		earningScript.src = "../lib/earning.js";
+		$("head").append($(earningScript));
 	}
 
   return {

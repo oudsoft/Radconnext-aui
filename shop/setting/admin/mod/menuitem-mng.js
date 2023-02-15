@@ -70,7 +70,8 @@ module.exports = function ( jq ) {
 				let orderDateFmt = common.doFormatDateStr(new Date(cutoffDate));
 				cutoffDate = new Date(cutoffDate);
 				let params = {cutoffDate: cutoffDate};
-				let stockRes = await common.doCallApi('/api/shop/stocking/list/by/menuitem/' + menuitem.id, params);
+				let stockCutoffUrl = '/api/shop/stocking/list/by/menuitem/' + menuitem.id;
+				let stockRes = await common.doCallApi(stockCutoffUrl, params);
 				let stockTable = await stock.doRenderCutoffStockTable(workAreaBox, 0, 0, cutoffDate, stockRes, menuitem);
 			});
 
@@ -79,6 +80,7 @@ module.exports = function ( jq ) {
 				$(cutoffDateBox).remove();
 				$(backMenuitemCmd).remove();
 				$('#StockTable').remove();
+				$('#NavigBar').remove();
 				$('#TitlePageBox').text('รายการสินค้าของร้าน');
 				$('#NewMenuitemCmdBox').show();
 				$('.menuitem-row').show();
@@ -168,7 +170,7 @@ module.exports = function ( jq ) {
 			}
       $(workAreaBox).append($(newMenuitemCmdBox));
 
-//doRenderMenuitemTable();
+
 			let menuitemTable = undefined;
 
 			const doRenderMenuitemTable = function() {
