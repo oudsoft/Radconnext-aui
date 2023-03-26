@@ -675,7 +675,7 @@ module.exports = function ( jq ) {
             	$(commandCell).append($(increaseBtnCmd)).append($(decreaseBtnCmd)).append($(deleteGoodItemCmd));
 						}
 
-						if ((parseInt(shopData.Shop_StockingOption) == 1) && (parseInt(goodItems[i].StockingOption) == 1)) {
+						if ((orderData.Status > 0) && (parseInt(shopData.Shop_StockingOption) == 1) && (parseInt(goodItems[i].StockingOption) == 1)) {
 							 let stockInfoCmd = common.doCreateImageCmd('../../images/stock-icon.png', 'เช็คสต็อค');
 							 $(stockInfoCmd).on('click', async (evt)=>{
 								 let cutoffDateValue = '1D';
