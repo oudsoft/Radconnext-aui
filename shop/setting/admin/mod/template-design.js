@@ -104,37 +104,43 @@ module.exports = function ( jq ) {
 		$(addTextElementCmd).on('click', (evt)=>{
 			let elemAc = $(reportcontainerBox).find('.elementActive');
 			let elemData = $(elemAc).data();
-			if (elemData.customTdelement) {
+			//console.log(elemData);
+			if (elemData && elemData.customTdelement) {
 				if (elemData.customTdelement.options.elementType == 'td') {
 					elementProperty.doCreateElement(elemAc, 'text');
 				} else {
 					elementProperty.doCreateElement(reportcontainerBox, 'text');
 				}
+			} else {
+				elementProperty.doCreateElement(reportcontainerBox, 'text');
 			}
 		});
 		$(addHrElementCmd).on('click', (evt)=>{
 			let elemAc = $(reportcontainerBox).find('.elementActive');
 			let elemData = $(elemAc).data();
-			if (elemData.customTdelement) {
+			if (elemData && elemData.customTdelement) {
 				if (elemData.customTdelement.options.elementType == 'td') {
 					elementProperty.doCreateElement(elemAc, 'hr');
 				} else {
 					elementProperty.doCreateElement(reportcontainerBox, 'hr');
 				}
+			} else {
+				elementProperty.doCreateElement(reportcontainerBox, 'hr');
 			}
 		});
 		$(addImageElementCmd).on('click', (evt)=>{
 			let elemAc = $(reportcontainerBox).find('.elementActive');
 			let elemData = $(elemAc).data();
-			console.log(elemData.customTdelement);
-			if (elemData.customTdelement) {
-				console.log(elemData.customTdelement.options);
+			if (elemData && elemData.customTdelement) {
+				//console.log(elemData.customTdelement.options);
 				if (elemData.customTdelement.options.elementType == 'td') {
 					elementProperty.doCreateElement(elemAc, 'image');
 					console.log('ok');
 				} else {
 					elementProperty.doCreateElement(reportcontainerBox, 'image');
 				}
+			} else {
+				elementProperty.doCreateElement(reportcontainerBox, 'image');
 			}
 		});
 
@@ -142,7 +148,7 @@ module.exports = function ( jq ) {
   }
 
 	const doLoadCommandAction = function(){
-    $("#add-item-cmd").prop('disabled', true);
+    $("#add-item-cmd").prop('disabled', false);
     $("#remove-item-cmd").prop('disabled', true);
     $("#text-element-cmd").data({type: "text"});
     $("#hr-element-cmd").data({type: "hr"});
@@ -208,7 +214,7 @@ module.exports = function ( jq ) {
 		let tableWidth = $(tableBox).width();
 		let rowWidth = tableWidth * 0.94;
 		let tableData = $(tableBox).data().customTableelement.options;
-		console.log(tableData);
+		//console.log(tableData);
 		let tableDesignData = {elementType: 'table', id: tableData.id, x: tableData.x, y: tableData.y, width: tableData.width, height: tableData.height, cols: tableData.cols, border: tableData.border, rows: []};
 		let trs = $(tableBox).find('.trElement');
 		$(trs).each((i, tr)=>{

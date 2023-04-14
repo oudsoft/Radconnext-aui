@@ -108,6 +108,7 @@ module.exports = function ( jq ) {
   }
 
 	const doCreateElement = function(wrapper, elemType, prop){
+		//doFindMaxYWrapper(wrapper);
     let defHeight = 50;
     switch (elemType) {
       case "text":
@@ -138,7 +139,7 @@ module.exports = function ( jq ) {
 				return $(textbox).css({'position': 'absolute'});
       break;
       case "hr":
-        var hrTypeLength = $(".hrElement").length;
+        var hrTypeLength = $(".textElement").length;
         var oProp;
         if (prop) {
           oProp = {x: prop.x, y: prop.y, width: prop.width, height: prop.height, id: prop.id};
@@ -160,7 +161,7 @@ module.exports = function ( jq ) {
 				return $(hrbox).css({'position': 'absolute'});
       break;
       case "image":
-        var imageTypeLength = $(".imageElement").length;
+        var imageTypeLength = $(".textElement").length;
         var oProp;
         if (prop) {
           oProp = {x: prop.x, y: prop.y, width: prop.width, height: prop.height, id: prop.id, url: prop.url};
@@ -816,6 +817,15 @@ module.exports = function ( jq ) {
     return $(formbox);
   }
 
+	const doFindMaxYWrapper = function(wrapper) {
+		let maxY = 0;
+		$(wrapper).each(function() {
+  		//let options = parseFloat($(this).data());
+			let options = $(this).data();
+			console.log(options);
+  		//maximum = (value > maximum) ? value : maximum;
+		});
+	}
 
   return {
 		resetActive,
@@ -826,7 +836,7 @@ module.exports = function ( jq ) {
 		elementResizeStop,
 		doCreateElement,
 
-  	createElementPropertyForm
-
+  	createElementPropertyForm,
+		doFindMaxYWrapper
 	}
 }
