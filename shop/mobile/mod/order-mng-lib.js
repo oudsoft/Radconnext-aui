@@ -52,6 +52,7 @@ module.exports = function ( jq ) {
         let calendar = doCreateCalendar(common.calendarOptions);
         $(pageHandle.menuContent).empty().append($(calendar).css({'position': 'relative', 'margin-top': '15px'}));
         $(pageHandle.toggleMenuCmd).click();
+				$(pageHandle.userInfoBox).hide();
       });
       $(titlePageBox).append($(titleTextBox)).append($(orderDateBox));
 			$(workAreaBox).append($(titlePageBox));

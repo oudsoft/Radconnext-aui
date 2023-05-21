@@ -110,7 +110,7 @@ const doCreatePageLayout = function(){
       $(toggleMenuCmd).attr('src', '../../images/bill-icon.png');
     }
   });
-  let handle = {mainBox, menuBox, toggleMenuCmd, mainContent, menuContent};
+  let handle = {mainBox, menuBox, toggleMenuCmd, mainContent, menuContent, userInfoBox};
   return handle;
 }
 

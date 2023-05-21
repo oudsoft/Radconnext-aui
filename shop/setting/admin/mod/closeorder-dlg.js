@@ -33,13 +33,23 @@ module.exports = function ( jq ) {
         }
       }
 
+			const checkboxVatClick = function(evt) {
+				let check = $(checkboxVat).prop('checked');
+				if (check == true){
+					$(vatInput).val(common.doFormatNumber(0.07*orderTotal));
+				} else {
+					$(vatInput).val('0');
+				}
+				keyChangeValue(evt);
+			}
+
       let wrapperBox = $('<div></div>');
       let closeOrderTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
-      let dataRow = $('<tr></tr>').css({'height': '40px'});
+      let dataRow = $('<tr class="first-step"></tr>').css({'height': '40px'});
       $(dataRow).append($('<td width="40%" align="left"><b>ยอดรวมค่าสินค้า</b></td>'));
       $(dataRow).append($('<td width="*" align="right"><b>' + common.doFormatNumber(orderTotal) + '</b></td>'));
       $(closeOrderTable).append($(dataRow));
-      dataRow = $('<tr></tr>').css({'height': '40px'});
+      dataRow = $('<tr class="first-step"></tr>').css({'height': '40px'});
       $(dataRow).append($('<td align="left">ส่วนลด</td>'));
       let discountInputCell = $('<td align="right"></td>');
       let discountInput = $('<input type="number" value="0"/>').css({'width': '80px'});
@@ -48,15 +58,20 @@ module.exports = function ( jq ) {
       $(dataRow).append($(discountInputCell));
       $(closeOrderTable).append($(dataRow));
 
-      let vatInput = $('<input type="number" value="0"/>').css({'width': '80px'});
+      let vatInput = $('<input type="number" value="0"/>').css({'width': '80px', 'margin-left': '4px'});
+			let checkboxVat = $('<input type="checkbox"/>').css({'transform': 'scale(1.5)'});
       if (shopData.Shop_VatNo !== '') {
+				$(checkboxVat).attr('checked', true);
+				$(checkboxVat).on('click', checkboxVatClick);
         $(vatInput).on('keyup', keyChangeValue);
-        dataRow = $('<tr></tr>').css({'height': '40px'});
+        dataRow = $('<tr class="first-step"></tr>').css({'height': '40px'});
         $(dataRow).append($('<td align="left">ภาษีมูลค่าเพิ่ม (7%)</td>'));
         $(vatInput).val(common.doFormatNumber(0.07*orderTotal));
-        $(dataRow).append($('<td align="right"></td>').append($(vatInput)));
+        $(dataRow).append($('<td align="right"></td>').append($(checkboxVat)).append($(vatInput)));
         $(closeOrderTable).append($(dataRow));
-      }
+      } else {
+				$(checkboxVat).attr('checked', false);
+			}
       dataRow = $('<tr></tr>').css({'background-color': '#ddd', 'height': '40px'});
       $(dataRow).append($('<td width="55%" align="left"><b>รวมทั้งสิ้น</b></td>'));
       let discountValue = $(discountInput).val();
@@ -103,12 +118,16 @@ module.exports = function ( jq ) {
 	      let closeOrderCmd = common.doCreateTextCmd('เก็บเงิน', 'green', 'white');
 	      $(closeOrderCmd).css({'margin-left': '10px'});
 	      $(closeOrderCmd).on('click', async(evt)=>{
+					$('.first-step').hide();
 	        let paytypeRes = await common.doCallApi('/api/shop/paytype/options', {});
 	        $(middleActionCmdRow).remove();
 	        let paytypeSelect = $('<select></select>');
 	        paytypeRes.Options.forEach((item, i) => {
 	          $(paytypeSelect).append($('<option value="' + item.Value + '">' + item.DisplayText + '</option>'));
 	        });
+					let discountValue = $(discountInput).val();
+					let vatValue = $(vatInput).val();
+					let grandTotal = (Number(orderTotal) - Number(discountValue)) + Number(vatValue);
 	        payAmountInput = $('<input type="number" value="0"/>').css({'width': '120px'});
 	        $(payAmountInput).val(grandTotal);
 	        dataRow = $('<tr></tr>').css({'height': '40px'});
@@ -151,44 +170,47 @@ module.exports = function ( jq ) {
 	        $(finalActionCmdRow).append($(finalCommandCell));
 	        $(closeOrderTable).append($(finalActionCmdRow));
 
-	        let createBillCmd = common.doCreateTextCmd('พิมพ์ใบเสร็จ', 'green', 'white');
-	        $(finalCommandCell).append($(createBillCmd));
+					let checkVat = $(checkboxVat).prop('checked');
 
-	        $(createBillCmd).on('click', async(evt)=>{
-	          let shopId = shopData.id;
-	          let nextBillNo = '000000001';
-						let filename = shopId.toString().lpad("0", 5) + '-2-' + nextBillNo + '.pdf';
-						let discountValue = parseFloat($(discountInput).val());
-						let vatValue = parseFloat($(vatInput).val());
+					if (checkVat == false) {
+						let createBillCmd = common.doCreateTextCmd('พิมพ์ใบเสร็จ', 'green', 'white');
+		        $(finalCommandCell).append($(createBillCmd));
+	        	$(createBillCmd).on('click', async(evt)=>{
+		          let shopId = shopData.id;
+		          let nextBillNo = '000000001';
+							let filename = shopId.toString().lpad("0", 5) + '-2-' + nextBillNo + '.pdf';
+							let discountValue = parseFloat($(discountInput).val());
+							let vatValue = parseFloat($(vatInput).val());
 
-						let payAmountValue = parseFloat($(payAmountInput).val());
-						let payType = parseInt($(paytypeSelect).val());
-						let paymentData = {Amount: payAmountValue, PayType: payType};
-						let hasHiddenRemarkBox = ($(remarkBox).css('display') == 'none');
-	          let lastbillnoRes = await common.doCallApi('/api/shop/bill/find/last/billno/' + shopId, {});
-						console.log(lastbillnoRes);
-	          if (lastbillnoRes.Records.length > 0) {
-	            let lastbillno = lastbillnoRes.Records[0].No;
-	            let nextNo = Number(lastbillno);
-	            nextNo = nextNo + 1;
-	            nextBillNo = nextNo.toString().lpad("0", 9);
-	            filename = shopId.toString().lpad("0", 5) + '-2-' + nextBillNo + '.pdf';
-	            let billData = {No: nextBillNo, Discount: discountValue, Vat:vatValue, Filename: filename};
-							if (!hasHiddenRemarkBox) {
-								billData.Remark = $(remarkBox).val();
+							let payAmountValue = parseFloat($(payAmountInput).val());
+							let payType = parseInt($(paytypeSelect).val());
+							let paymentData = {Amount: payAmountValue, PayType: payType};
+							let hasHiddenRemarkBox = ($(remarkBox).css('display') == 'none');
+		          let lastbillnoRes = await common.doCallApi('/api/shop/bill/find/last/billno/' + shopId, {});
+							console.log(lastbillnoRes);
+		          if (lastbillnoRes.Records.length > 0) {
+		            let lastbillno = lastbillnoRes.Records[0].No;
+		            let nextNo = Number(lastbillno);
+		            nextNo = nextNo + 1;
+		            nextBillNo = nextNo.toString().lpad("0", 9);
+		            filename = shopId.toString().lpad("0", 5) + '-2-' + nextBillNo + '.pdf';
+		            let billData = {No: nextBillNo, Discount: discountValue, Vat:vatValue, Filename: filename};
+								if (!hasHiddenRemarkBox) {
+									billData.Remark = $(remarkBox).val();
+								}
+								billSuccessCallback(billData, paymentData);
+		          } else {
+								let billData = {No: nextBillNo, Discount: discountValue, Vat:vatValue, Filename: filename};
+								if (!hasHiddenRemarkBox) {
+									billData.Remark = $(remarkBox).val();
+								}
+								billSuccessCallback(billData, paymentData);
 							}
-							billSuccessCallback(billData, paymentData);
-	          } else {
-							let billData = {No: nextBillNo, Discount: discountValue, Vat:vatValue, Filename: filename};
-							if (!hasHiddenRemarkBox) {
-								billData.Remark = $(remarkBox).val();
-							}
-							billSuccessCallback(billData, paymentData);
-						}
-	        });
+		        });
+					}
 
-	        if (shopData.Shop_VatNo !== '') {
-	          createTaxInvoiceCmd = common.doCreateTextCmd('พิมพ์กำกับภาษี', 'green', 'white');
+	        if ((shopData.Shop_VatNo !== '') && (checkVat == true)) {
+	          let createTaxInvoiceCmd = common.doCreateTextCmd('พิมพ์ใบกำกับภาษี', 'green', 'white');
 	          $(createTaxInvoiceCmd).css({'margin-left': '10px'});
 	          $(finalCommandCell).append($(createTaxInvoiceCmd));
 	          $(createTaxInvoiceCmd).on('click', async (evt)=>{
