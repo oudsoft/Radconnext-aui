@@ -119,6 +119,7 @@ module.exports = function ( jq ) {
 		let userinfoId = userdata.userinfoId;
 
     let orderObj = {};
+
     $(workAreaBox).empty();
     let titleText = $('<div>เปิด<span id="titleOrderForm" class="sensitive-word">ออร์เดอร์</span>ใหม่</div>');
     if (orderData) {
@@ -172,7 +173,7 @@ module.exports = function ( jq ) {
       orderObj.gooditems = [];
     }
 
-		console.log(orderObj);
+		//console.log(orderObj);
 
     let dlgHandle = undefined;
 
@@ -237,7 +238,7 @@ module.exports = function ( jq ) {
     });
 
     if ((orderObj) && (orderObj.gooditems)){
-      let goodItemTable = await doRenderGoodItemTable(orderObj, itemlistWorkingBox);
+      let goodItemTable = await doRenderGoodItemTable(orderObj, itemlistWorkingBox, selectDate);
 			let lastCell = $(goodItemTable).children(":first").children(":last");
 			if (addNewGoodItemCmd) {
 				$(lastCell).append($(addNewGoodItemCmd));
@@ -342,7 +343,7 @@ module.exports = function ( jq ) {
 
     const gooditemSelectedCallback = async function(gooditemSelected){
       orderObj.gooditems.push(gooditemSelected);
-      goodItemTable = await doRenderGoodItemTable(orderObj, itemlistWorkingBox);
+      goodItemTable = await doRenderGoodItemTable(orderObj, itemlistWorkingBox, selectDate);
 			let lastCell = $(goodItemTable).children(":first").children(":last");
 			if (addNewGoodItemCmd) {
 				$(lastCell).append($(addNewGoodItemCmd));
@@ -437,7 +438,7 @@ module.exports = function ( jq ) {
 				} else {
 					$.notify("บันทึกข้อมูลการชำระเงินไม่สำเร็จ", "error");
 				}
-			} else {
+			} else {doOpenOrderForm
 				$.notify("บันทึกใบกำกับภาษีไม่สำเร็จ", "error");
 			}
 		}
@@ -529,7 +530,7 @@ module.exports = function ( jq ) {
     return $(customerDataTable);
   }
 
-  const doRenderGoodItemTable = function(orderData, gooditemWorkingBox){
+  const doRenderGoodItemTable = function(orderData, gooditemWorkingBox, orderdate){
     return new Promise(async function(resolve, reject) {
 			let userdata = JSON.parse(localStorage.getItem('userdata'));
 			let shopData = userdata.shop;
@@ -652,7 +653,14 @@ module.exports = function ( jq ) {
               }
             });
 
-            let deleteGoodItemCmd = common.doCreateImageCmd('../../images/cross-red-icon.png', 'ลบรายการ');
+						let splitGoodItemCmd = common.doCreateImageCmd('../../images/split-icon.png', 'แยกออเดอร์');
+						$(splitGoodItemCmd).on('click', async(evt)=>{
+							doSplitGooditem(evt, shopData, orderData, i, orderdate, async(newName)=>{
+
+							});
+						});
+
+						let deleteGoodItemCmd = common.doCreateImageCmd('../../images/cross-red-icon.png', 'ลบรายการ');
             $(deleteGoodItemCmd).on('click', async (evt)=>{
 							$(goodItemRow).remove();
               let newGoodItems = await doDeleteGoodItem(i, orderData);
@@ -672,7 +680,7 @@ module.exports = function ( jq ) {
               $(totalValueCell).empty().append($('<span><b>' + common.doFormatNumber(total) + '</b></span>').css({'margin-right': '4px'}));
             });
 						if ([1, 2].includes(orderData.Status)) {
-            	$(commandCell).append($(increaseBtnCmd)).append($(decreaseBtnCmd)).append($(deleteGoodItemCmd));
+            	$(commandCell).append($(increaseBtnCmd)).append($(decreaseBtnCmd)).append($(splitGoodItemCmd)).append($(deleteGoodItemCmd));
 						}
 
 						if (/*(orderData.Status > 0)*/ [1, 2].includes(orderData.Status) && (parseInt(shopData.Shop_StockingOption) == 1) && (parseInt(goodItems[i].StockingOption) == 1)) {
@@ -1182,6 +1190,54 @@ module.exports = function ( jq ) {
 		}
 		let dlgHandle = $('body').radalert(editDlgOption);
 		$(dlgHandle.cancelCmd).hide();
+	}
+
+	const doSplitGooditem = function(event, shopData, orderData, index, orderDate, successCallback){
+		return new Promise(async function(resolve, reject) {
+			let gooditems = orderData.gooditems;
+			let orderReqParams = {orderDate: orderDate};
+			let orderRes = await common.doCallApi('/api/shop/order/active/by/shop/' + shopData.id, orderReqParams);
+			let orders = orderRes.Records;
+			console.log(orders);
+
+			let splitForm = $('<div></div>').css({'width': '100%'});
+			$(splitForm).append('<p>โปรดเลือกออเดอร์ปลายทางที่จะแยกรายการนี้ไป</p>');
+			for (let i=0; i < orders.length; i++) {
+				let order = orders[i];
+				if (order.id != orderData.id) {
+					let targetOrder = $('<div></div>').css({'width': '100%', 'text-align': 'center', 'margin-top': '5px', 'background-color': 'yellow', 'border': '2px solid black', 'cursor': 'pointer'});
+					$(targetOrder).append($('<p></p>').text(order.customer.Name));
+					if ((order.customer.Address) && (order.customer.Address !== '')) {
+						$(targetOrder).append($('<p></p>').text(order.customer.Address).css({'font-size': '14px'}));
+					}
+					$(targetOrder).on('click', (evt)=>{
+						console.log(evt);
+					});
+					$(splitForm).append($(targetOrder));
+				}
+			}
+			let newOrder = $('<div></div>').css({'width': '100%', 'text-align': 'center', 'margin-top': '5px', 'background-color': 'blue', 'border': '2px solid black', 'cursor': 'pointer'});
+			$(newOrder).append($('<p></p>').text('เปิดออเดอร์ใหม่'));
+			$(newOrder).on('click', (evt)=>{
+				console.log(evt);
+			});
+			$(splitForm).append($(newOrder));
+
+			let splitDlgOption = {
+				title: 'ย้ายออเดอร์',
+				msg: $(splitForm),
+				width: '400px',
+				onOk: async function(evt) {
+					dlgHandle.closeAlert();
+				},
+				onCancel: function(evt){
+					dlgHandle.closeAlert();
+				}
+			}
+			let dlgHandle = $('body').radalert(splitDlgOption);
+			$(dlgHandle.okCmd).hide();
+			resolve(orders);
+		});
 	}
 
   return {
