@@ -216,7 +216,7 @@ module.exports = function ( jq ) {
 		}
 
     if ((orderObj) && (orderObj.gooditems)){
-      let goodItemTable = await doRenderGoodItemTable(orderObj);
+      let goodItemTable = await doRenderGoodItemTable(orderObj, selectDate);
 			let addItemCmdBox = $(goodItemTable).find('#AddItemCmdBox');
 			if (addNewGoodItemCmd) {
 				$(addItemCmdBox).append($(addNewGoodItemCmd));
@@ -304,7 +304,7 @@ module.exports = function ( jq ) {
 
     const gooditemSelectedCallback = async function(gooditemSelected){
       orderObj.gooditems.push(gooditemSelected);
-      goodItemTable = await doRenderGoodItemTable(orderObj);
+      goodItemTable = await doRenderGoodItemTable(orderObj, selectDate);
 			let addItemCmdBox = $(goodItemTable).find('#AddItemCmdBox');
 			if (addNewGoodItemCmd) {
 				$(addItemCmdBox).append($(addNewGoodItemCmd));
@@ -460,7 +460,7 @@ module.exports = function ( jq ) {
     return $(customerDataTable);
   }
 
-	const doRenderGoodItemTable = function(orderData){
+	const doRenderGoodItemTable = function(orderData, selectDate){
     return new Promise(async function(resolve, reject) {
 			let mainBox = $('<div id="MainGoodItemBox"></div>').css({'position': 'relative', 'width': '98%'});
 			let addItemCmdBox = $('<div id="AddItemCmdBox"></div>').css({'position': 'relative', 'width': '100%', 'text-align': 'right', 'padding': '4px', 'border-bottom': '1px solid black'});
@@ -486,6 +486,7 @@ module.exports = function ( jq ) {
 						let goodItemSubTotalText = $('<span></span>').text(common.doFormatNumber(subTotal)).css({'position': 'relative', 'width': '100%', 'padding': '2px', 'font-size': '20px', 'font-weight': 'bold'});
 						let increaseBtnCmd = common.doCreateImageCmd('../../images/plus-sign-icon.png', 'เพิ่มจำนวน');
 						let decreaseBtnCmd = common.doCreateImageCmd('../../images/minus-sign-icon.png', 'ลดจำนวน');
+						let splitGoodItemCmd = common.doCreateImageCmd('../../images/split-icon.png', 'แยกออเดอร์');
 						let deleteGoodItemCmd = common.doCreateImageCmd('../../images/cross-red-icon.png', 'ลบรายการ');
 						$(increaseBtnCmd).css({'width': '22px', 'height': 'auto', 'margin-left': '8px', 'margin-bottom': '-4px'});
 						$(increaseBtnCmd).on('click', async(evt)=>{
@@ -521,7 +522,23 @@ module.exports = function ( jq ) {
 							$(totalBox).text(common.doFormatNumber(newTotal));
 						});
 
+						$(splitGoodItemCmd).on('click', async (evt)=>{
+							evt.stopPropagation();
+							let userdata = JSON.parse(localStorage.getItem('userdata'));
+							let shopData = userdata.shop
+							doSplitGooditem(evt, shopData, orderData, i, selectDate, async(newOrderData)=>{
+
+								//console.log(newOrderData);
+								let newGoodItems = await doDeleteGoodItem(i, orderData);
+								orderData.gooditems = newGoodItems;
+								let newTotal = await doCalOrderTotal(orderData.gooditems);
+								$(totalBox).text(common.doFormatNumber(newTotal));
+
+							});
+						});
+
 						$(decreaseBtnCmd).css({'width': '22px', 'height': 'auto', 'margin-left': '4px', 'margin-bottom': '-4px'});
+						$(splitGoodItemCmd).css({'width': '22px', 'height': 'auto', 'margin-left': '4px', 'margin-bottom': '-4px'});
 						$(deleteGoodItemCmd).css({'width': '32px', 'height': 'auto', 'margin-left': '8px'});
 						$(goodItemQtyUnitBox).append($(goodItemQtyBox)).append($(goodItemUnitBox));
 						$(goodItemQtyUnitBox).on('click', (evt)=>{
@@ -542,7 +559,7 @@ module.exports = function ( jq ) {
 						});
 
 						if ([1, 2].includes(orderData.Status)) {
-							$(goodItemQtyUnitBox).append($(decreaseBtnCmd)).append($(increaseBtnCmd));
+							$(goodItemQtyUnitBox).append($(decreaseBtnCmd)).append($(increaseBtnCmd)).append($(splitGoodItemCmd));
 						}
 						$(goodItemSubTotalBox).append($(goodItemSubTotalText));
 						if ([1, 2].includes(orderData.Status)) {
@@ -788,6 +805,172 @@ module.exports = function ( jq ) {
 		})
 	}
 
+	const doSplitGooditem = function(event, shopData, orderData, index, orderDate, successCallback) {
+		return new Promise(async function(resolve, reject) {
+			let gooditems = orderData.gooditems;
+			let orderReqParams = {orderDate: orderDate};
+			let orderRes = await common.doCallApi('/api/shop/order/active/by/shop/' + shopData.id, orderReqParams);
+			let orders = orderRes.Records;
+
+			let splitForm = $('<div></div>');
+			$(pageHandle.menuContent).empty().append($(splitForm).css({'position': 'relative', 'margin-top': '15px'}));
+			$(pageHandle.toggleMenuCmd).click();
+			$(pageHandle.userInfoBox).hide();
+
+			$(splitForm).append('<p>โปรดเลือกออเดอร์ปลายทางที่จะแยกรายการนี้ไป</p>');
+			for (let i=0; i < orders.length; i++) {
+				let order = orders[i];
+				if (order.id != orderData.id) {
+					let targetOrder = $('<div></div>').css({'width': '100%', 'text-align': 'center', 'margin-top': '5px', 'background-color': 'yellow', 'border': '2px solid black', 'cursor': 'pointer'});
+					$(targetOrder).append($('<p></p>').text(order.customer.Name));
+					if ((order.customer.Address) && (order.customer.Address !== '')) {
+						$(targetOrder).append($('<p></p>').text(order.customer.Address).css({'font-size': '14px'}));
+					}
+					$(targetOrder).on('click', async (evt)=>{
+						let params = {srcOrderId: orderData.id, tgtOrderId: order.id, srcIndex: index};
+						let orderRes = await common.doCallApi('/api/shop/order/swap/item', params);
+						if (orderRes.status.code == 200) {
+							$.notify("ย้ายบิลสำเร็จ", "success");
+							// re-render Src order form
+							orderData.gooditems = orderRes.srcOrders[0].Items;
+							successCallback(orderData);
+							$(pageHandle.toggleMenuCmd).click();
+						} else {
+							$.notify("ระบบไม่สามารถย้ายบิลได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+							$(pageHandle.toggleMenuCmd).click();
+						}
+					});
+					$(splitForm).append($(targetOrder));
+				}
+			}
+
+			let newOrder = $('<div></div>').css({'width': '100%', 'text-align': 'center', 'margin-top': '5px', 'background-color': '#2579B8', 'color': 'white', 'border': '2px solid black', 'cursor': 'pointer'});
+			$(newOrder).append($('<p></p>').text('เปิดออเดอร์ใหม่'));
+			$(newOrder).on('click', async (evt)=>{
+				let customers = JSON.parse(localStorage.getItem('customers'));
+				//console.log(customers);
+				$(splitForm).empty();
+				$(splitForm).append('<p>โปรดเลือกชื่อลูกค้าสำหรับสร้างออเดอร์ใหม่</p>');
+				let customerSelect = $('<select></select>');
+				for (let i=0; i < customers.length; i++) {
+					let customer = customers[i];
+					let customerName = customer.Name;
+					if ((customer.Address) && (customer.Address !== '')) {
+						customerName = customerName + ' ' + customer.Address;
+					}
+					$(customerSelect).append($('<option value="' + customer.id + '">' + customerName + '</option>'));
+				}
+				$(customerSelect).append($('<option value="0">สร้างลูกค้าใหม่</option>'));
+				$(splitForm).append($(customerSelect));
+				newOrder = $('<div></div>').css({'width': '100%', 'text-align': 'center', 'margin-top': '5px', 'background-color': '#2579B8', 'color': 'white', 'border': '2px solid black', 'cursor': 'pointer'});
+				$(newOrder).append($('<p></p>').text('สร้างออเดอร์ใหม่'));
+				$(newOrder).on('click', async (evt)=>{
+					let customerId = $(customerSelect).val();
+					let userdata = JSON.parse(localStorage.getItem('userdata'));
+					let userId = userdata.id;
+					let userinfoId = userdata.userinfoId;
+					params = {data: {Status: 1}, shopId: shopData.id, customerId: customerId, userId: userId, userinfoId: userinfoId};
+					orderRes = await common.doCallApi('/api/shop/order/add', params);
+          if (orderRes.status.code == 200) {
+            $.notify("สร้างรายการออร์เดอร์สำเร็จ", "success");
+						params = {srcOrderId: orderData.id, tgtOrderId: orderRes.Records[0].id, srcIndex: index};
+						orderRes = await common.doCallApi('/api/shop/order/swap/item', params);
+						if (orderRes.status.code == 200) {
+							$.notify("ย้ายบิลสำเร็จ", "success");
+							// re-render Src order form
+							orderData.gooditems = orderRes.srcOrders[0].Items;
+							successCallback(orderData);
+							$(pageHandle.toggleMenuCmd).click();
+						} else {
+							$.notify("ระบบไม่สามารถย้ายบิลได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+							$(pageHandle.toggleMenuCmd).click();
+						}
+          } else {
+            $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ใหม่ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+						$(pageHandle.toggleMenuCmd).click();
+          }
+				});
+				$(splitForm).append($(newOrder));
+				$(customerSelect).on('change', async (evt)=> {
+					let selectedVal = $(customerSelect).val();
+					if (selectedVal == 0) {
+						$(splitForm).empty();
+						$(splitForm).append('<p>โปรดระบุข้อมูลลูกค้าที่จะสร้างใหม่สำหรับสร้างออเดอร์ใหม่</p>');
+						let tableForm = $('<table width="100%" cellspacing="4" cellpadding="0" border="0"></table>');
+						let row = $('<tr></tr>');
+						let cell1 = $('<td width="25%" align="left">ชื่อ <span style="color: red;">*</span></td>');
+						let customerName = $('<input type="text"/>').css({'width': '180px'});
+						let cell2 = $('<td width="*" align="left"></td>');
+						$(cell2).append($(customerName));
+						$(row).append(cell1).append(cell2);
+						$(tableForm).append($(row));
+						row = $('<tr></tr>');
+						cell1 = $('<td align="left">ที่อยู่</td>');
+						let customerAddress = $('<input type="text"/>').css({'width': '280px'});
+						cell2 = $('<td align="left"></td>');
+						$(cell2).append($(customerAddress));
+						$(row).append(cell1).append(cell2);
+						$(tableForm).append($(row));
+						row = $('<tr></tr>');
+						cell1 = $('<td align="left">เบอร์โทร</td>');
+						let customerPhone = $('<input type="text"/>').css({'width': '180px'});
+						cell2 = $('<td align="left"></td>');
+						$(cell2).append($(customerPhone));
+						$(row).append(cell1).append(cell2);
+						$(tableForm).append($(row));
+						$(splitForm).append($(tableForm));
+
+						newOrder = $('<div></div>').css({'width': '100%', 'text-align': 'center', 'margin-top': '5px', 'background-color': '#2579B8', 'color': 'white', 'border': '2px solid black', 'cursor': 'pointer'});
+						$(newOrder).append($('<p></p>').text('สร้างออเดอร์จากลูกค้าใหม่'));
+						$(newOrder).on('click', async (evt)=>{
+							if ($(customerName).val() !== '') {
+								$(customerName).css({'border': ''});
+								let newCustomer = {Name: $(customerName).val(), Address: $(customerAddress).val(), Tel: $(customerPhone).val()}
+								params = {data: newCustomer, shopId: shopData.id};
+								let userRes = await common.doCallApi('/api/shop/customer/add', params);
+								if (userRes.status.code == 200) {
+									$.notify("เพิ่มรายการลูกค้าสำเร็จ", "success");
+									let newCustomerId = userRes.Record.id;
+									let userdata = JSON.parse(localStorage.getItem('userdata'));
+									let userId = userdata.id;
+									let userinfoId = userdata.userinfoId;
+									params = {data: {Status: 1}, shopId: shopData.id, customerId: newCustomerId, userId: userId, userinfoId: userinfoId};
+									orderRes = await common.doCallApi('/api/shop/order/add', params);
+									if (orderRes.status.code == 200) {
+										$.notify("สร้างรายการออร์เดอร์สำเร็จ", "success");
+										params = {srcOrderId: orderData.id, tgtOrderId: orderRes.Records[0].id, srcIndex: index};
+										orderRes = await common.doCallApi('/api/shop/order/swap/item', params);
+										if (orderRes.status.code == 200) {
+											$.notify("ย้ายบิลสำเร็จ", "success");
+											// re-render Src order form
+											orderData.gooditems = orderRes.srcOrders[0].Items;
+											successCallback(orderData);
+											$(pageHandle.toggleMenuCmd).click();
+										} else {
+											$.notify("ระบบไม่สามารถย้ายบิลได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+											$(pageHandle.toggleMenuCmd).click();
+										}
+									} else {
+				            $.notify("ระบบไม่สามารถบันทึกออร์เดอร์ใหม่ได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "error");
+										$(pageHandle.toggleMenuCmd).click();
+				          }
+								} else {
+									$.notify("เกิดข้อผิดพลาด ไม่สามารถเพิ่มรายการลูกค้าได้", "error");
+								}
+							} else {
+								$(customerName).css({'border': '1px solid red'});
+								$.notify("ข้อมูลไม่ถูกต้อง", "error");
+							}
+						});
+						$(splitForm).append($(newOrder));
+					}
+				});
+			});
+			$(splitForm).append($(newOrder));
+
+			resolve(orders);
+		});
+	}
 
   return {
     setupPageHandle,
