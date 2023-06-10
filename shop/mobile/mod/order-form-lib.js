@@ -527,13 +527,11 @@ module.exports = function ( jq ) {
 							let userdata = JSON.parse(localStorage.getItem('userdata'));
 							let shopData = userdata.shop
 							doSplitGooditem(evt, shopData, orderData, i, selectDate, async(newOrderData)=>{
-
-								//console.log(newOrderData);
 								let newGoodItems = await doDeleteGoodItem(i, orderData);
 								orderData.gooditems = newGoodItems;
-								let newTotal = await doCalOrderTotal(orderData.gooditems);
-								$(totalBox).text(common.doFormatNumber(newTotal));
-
+								let goodItemTable = await doRenderGoodItemTable(orderData, selectDate);
+								let itemlistWorkingBox = $('#OrderItemList');
+								$(itemlistWorkingBox).empty().append($(goodItemTable));
 							});
 						});
 
