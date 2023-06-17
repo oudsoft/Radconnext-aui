@@ -73,6 +73,13 @@ const doShowRegisterForm = function(){
               if (isMobileDevice) {
                 gotoPage = '/shop/mobile/index.html';
               };
+              /*
+              เริ่มสั่งให้เริ่มสร้าง new Template ของ ใบแจ้งหนี้ และ บิลจากตรงนี้ โดยใช้ shopId ที่ได้มา
+              */
+              let params = {shopId: shopId};
+              let templateRes = await common.doCallApi('/api/shop/template/create/default', params);
+              console.log(templateRes);
+              
               window.location.replace(gotoPage);
             } else {
               $.notify("เกิดข้อผิดพลาด ล็อกอินเข้าใช้งานระบบไม่ได้ในขณะนี้", "error");
