@@ -105,10 +105,26 @@ module.exports = function ( jq ) {
 				$('#Shop_BillQuota').attr('readOnly', true);
 			});
 		}
+
+		let billUsageUrl = '/api/shop/bill/mount/count/' + shopData.id
+		let params = {};
+		common.doCallApi(billUsageUrl, params).then(async(billRes)=>{
+			//console.log(billRes);
+			let shopBillUsage = $('<p>จำนวนบิลที่ใช้เดือนนี้ <span style="font-weight: bold;">' + billRes.count + '</span> บิล</p>').css({'line-height': '11px'});
+			$(middleCell).append($(shopBillUsage))
+			if (shopData['Shop_VatNo'] !== '') {
+				let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/mount/count/' + shopData.id, {});
+				//console.log(taxinvoiceRes);
+				let shopTaxinvoiceUsage = $('<p>จำนวนใบกำกับภาษีที่ใช้เดือนนี้ <span style="font-weight: bold;">' + taxinvoiceRes.count + '</span> ใบ</p>').css({'line-height': '11px'});
+				$(middleCell).append($(shopTaxinvoiceUsage))
+			}
+		});
+
     $(layoutRow).append($(letfSideCell)).append($(middleCell)).append($(rightSideCell));
     $(layoutPage).append($(layoutRow));
     return $(titlePageBox).append($(layoutPage));
-  }
+	}
+
 
   const doCreateContolShopCmds = function(shopData){
     let commandsBox = $('<div style="padding: 4px;"></viv>').css({'width': '99.1%', 'height': '35px', 'text-align': 'left', 'border': '2px solid black', 'border-radius': '4px', 'background-color': 'grey', 'margin-top': '5px'});
