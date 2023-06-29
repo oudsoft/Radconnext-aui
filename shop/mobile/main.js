@@ -22,6 +22,7 @@ $( document ).ready(function() {
   	let jqueryUiJsUrl = "../lib/jquery-ui.min.js";
   	let jqueryLoadingUrl = '../lib/jquery.loading.min.js';
   	let jqueryNotifyUrl = '../lib/notify.min.js';
+    let jquerySimpleUploadUrl = '../lib/simpleUpload.min.js';
 
     let momentWithLocalesPlugin = "../lib/moment-with-locales.min.js";
     let ionCalendarPlugin = "../lib/ion.calendar.min.js";
@@ -39,6 +40,7 @@ $( document ).ready(function() {
 
     $('head').append('<script src="' + momentWithLocalesPlugin + '"></script>');
     $('head').append('<script src="' + ionCalendarPlugin + '"></script>');
+    $('head').append('<script src="' + jquerySimpleUploadUrl + '"></script>');
     //$('head').append('<script src="' + printjs + '"></script>');
 
     $('head').append('<link rel="stylesheet" href="../stylesheets/style.css" type="text/css" />');
@@ -136,12 +138,20 @@ const doCreateUserInfoBox = function(){
     $(pageHandle.toggleMenuCmd).click();
     doOpenCalculatorCallBack(evt, userdata.shop);
   });
+
+  let uploadBillLogoCmd = $('<div>แก้ไขรูปสัญลักษณ์ในบิล</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
+  $(uploadBillLogoCmd).on('click', (evt)=>{
+    evt.stopPropagation();
+    $(pageHandle.toggleMenuCmd).click();
+    doOpenUploadBillLogo(evt, userdata.shop);
+  });
+
   let userLogoutCmd = $('<div>ออกจากระบบ</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
   $(userLogoutCmd).on('click', (evt)=>{
     common.doUserLogout();
   });
 
-  return $(userInfoBox).append($(userPictureBox)).append($(userInfo)).append($(userPPQRTestCmd)).append($(calculatorCmd)).append($(userLogoutCmd));
+  return $(userInfoBox).append($(userPictureBox)).append($(userInfo)).append($(userPPQRTestCmd)).append($(calculatorCmd)).append($(uploadBillLogoCmd)).append($(userLogoutCmd));
 }
 
 const doCreatePPInfoBox = function(shopData) {
@@ -323,4 +333,36 @@ const doOpenCalculatorCallBack = function(evt, shopData){
   calcScript.type = "text/javascript";
   calcScript.src = "../lib/calculator.js";
   $("head").append($(calcScript));
+}
+
+const doOpenUploadBillLogo = function(evt, shopData) {
+  let userdata = JSON.parse(localStorage.getItem('userdata'));
+  let shopId = shopData.id;
+  let fileBrowser = $('<input type="file"/>');
+  $(fileBrowser).attr("name", 'templatelogo');
+  $(fileBrowser).attr("multiple", true);
+  $(fileBrowser).css('display', 'none');
+  $(fileBrowser).on('change', function(e) {
+    const defSize = 10000000;
+    let fileSize = e.currentTarget.files[0].size;
+    let fileType = e.currentTarget.files[0].type;
+    if (fileSize <= defSize) {
+      let uploadUrl = '/api/shop/upload/template/logo';
+      $(fileBrowser).simpleUpload(uploadUrl, {
+        success: async function(data){
+          $(fileBrowser).remove();
+          let params = {shopId: shopId, link: data.link};
+          let tempRes = await common.doCallApi('/api/shop/template//update/template/logo', params);
+          $.notify("แก้ไขรูปสัญลักษณ์ในบิลสำเร็จ", "success");
+        },
+        progress: function(progress){
+          $('body').loading({message: Math.round(progress) + ' %'});
+        }
+      });
+    } else {
+      $(pageHandle.mainContent).append($('<span>' + 'File not excess ' + defSize + ' Byte.' + '</span>'));
+    }
+  });
+  $(fileBrowser).appendTo($(pageHandle.mainContent));
+  $(fileBrowser).click();
 }

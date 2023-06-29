@@ -73,6 +73,7 @@ const doShowRegisterForm = function(){
               if (isMobileDevice) {
                 gotoPage = '/shop/mobile/index.html';
               };
+              
               /*
               เริ่มสั่งให้เริ่มสร้าง new Template ของ ใบแจ้งหนี้ และ บิลจากตรงนี้ โดยใช้ shopId ที่ได้มา
               */
