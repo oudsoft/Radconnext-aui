@@ -126,11 +126,11 @@ const doCreateUserInfoBox = function(){
     });
   });
   let userInfo = $('<div></div>').text(userdata.userinfo.User_NameTH + ' ' + userdata.userinfo.User_LastNameTH).css({'position': 'relative', 'margin-top': '-15px', 'padding': '2px', 'font-size': '14px'});
-  let userPPQRTestCmd = $('<div>สร้างพร้อมเพย์คิวอาร์โค้ด</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
+  let userPPQRTestCmd = $('<div id="UserPPQRTestCmd">สร้างพร้อมเพย์คิวอาร์โค้ด</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
   $(userPPQRTestCmd).on('click', (evt)=>{
     evt.stopPropagation();
     $(pageHandle.toggleMenuCmd).click();
-    doStartTestPPQC(evt, userdata.shop);
+    doStartTestPPQC(evt);
   });
   let calculatorCmd = $('<div>เครื่องคิดเลข</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
   $(calculatorCmd).on('click', (evt)=>{
@@ -174,8 +174,9 @@ const doCreatePPInfoBox = function(shopData) {
   }
 }
 
-const doStartTestPPQC = function(evt, shopData){
+const doStartTestPPQC = function(evt){
   let userdata = JSON.parse(localStorage.getItem('userdata'));
+  let shopData = userdata.shop;
   let editInput = $('<input type="number"/>').val(common.doFormatNumber(100)).css({'width': '100px', 'margin-left': '20px'});
   $(editInput).on('keyup', (evt)=>{
     if (evt.keyCode == 13) {
@@ -187,7 +188,9 @@ const doStartTestPPQC = function(evt, shopData){
   let settingPPDataCmd = undefined;
   let ppQRBox = undefined;
 
-  if ((shopData.Shop_PromptPayNo !== '') && (shopData.Shop_PromptPayName !== '')) {
+  //console.log(shopData);
+
+  if (((shopData.Shop_PromptPayNo) && (shopData.Shop_PromptPayNo !== '')) && ((shopData.Shop_PromptPayName) && (shopData.Shop_PromptPayName !== ''))) {
     let ppInfoBox = doCreatePPInfoBox(shopData);
     if ([1, 2, 3].includes(userdata.usertypeId)) {
       settingPPDataCmd = common.doCreateTextCmd('แก้ไขข้อมูลพร้อมเพย์', 'green', 'white');
@@ -227,7 +230,7 @@ const doStartTestPPQC = function(evt, shopData){
           Shop_PromptPayNo: shopData.Shop_PromptPayNo,
           Shop_PromptPayName: shopData.Shop_PromptPayName,
           netAmount: newValue,
-          showAd: true
+          showAd: false
         };
         let shopRes = await common.doCallApi('/api/shop/shop/create/ppqrcode', params);
         if (shopRes.status.code == 200) {
@@ -256,7 +259,13 @@ const doStartTestPPQC = function(evt, shopData){
     }
   }
   let dlgHandle = $('body').radalert(editDlgOption);
-  $(dlgHandle.cancelCmd).hide();
+  if (((shopData.Shop_PromptPayNo) && (shopData.Shop_PromptPayNo !== '')) && ((shopData.Shop_PromptPayName) && (shopData.Shop_PromptPayName !== ''))) {
+    $(dlgHandle.cancelCmd).hide();
+    $(dlgHandle.okCmd).show();
+  } else {
+    $(dlgHandle.okCmd).hide();
+    $(dlgHandle.cancelCmd).show();
+  }
   return dlgHandle;
 }
 
@@ -296,10 +305,16 @@ const doOpenPPDataForm = function(evt, shopData) {
         if (shopRes.status.code == 200) {
           $.notify("บันทึกข้อมูลพร้อมเพย์สำเร็จ", "success");
           let userdata = JSON.parse(localStorage.getItem('userdata'));
+          localStorage.removeItem('userdata');
           userdata.shop.Shop_PromptPayName = ppName;
           userdata.shop.Shop_PromptPayNo = ppNumber;
           localStorage.setItem('userdata', JSON.stringify(userdata));
-          $(ppCancelCmd).click();
+
+          userdata = JSON.parse(localStorage.getItem('userdata'));
+          console.log(userdata);
+
+          $(pageHandle.mainContent).empty();
+          doStartTestPPQC(evt);
         } else {
           $.notify("ไม่สามารถบันทึกข้อมูลพร้อมเพย์ได้ในขณะนี้", "error");
         }
@@ -352,8 +367,13 @@ const doOpenUploadBillLogo = function(evt, shopData) {
         success: async function(data){
           $(fileBrowser).remove();
           let params = {shopId: shopId, link: data.link};
-          let tempRes = await common.doCallApi('/api/shop/template//update/template/logo', params);
+          let tempRes = await common.doCallApi('/api/shop/template/update/template/logo', params);
           $.notify("แก้ไขรูปสัญลักษณ์ในบิลสำเร็จ", "success");
+          if (userdata.usertypeId == 5) {
+            orderProc.doShowOrderList(userdata.shopId, pageHandle.mainContent);
+          } else {
+            orderMng.doShowOrderList(userdata.shopId, pageHandle.mainContent);
+          }
         },
         progress: function(progress){
           $('body').loading({message: Math.round(progress) + ' %'});
