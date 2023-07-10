@@ -674,17 +674,18 @@ module.exports = function ( jq ) {
               let newGoodItems = await doDeleteGoodItem(i, orderData);
               orderData.gooditems = newGoodItems;
 
-							let params = undefined;
-							if (newGoodItems.length > 0) {
-								params = {data: {Items: newGoodItems}, id: orderData.id};
-							} else {
-								/*
-								ปัญหาเกิดจากการอัพเดท Items ซึงเป็น jsonb ด้วย [] empty array
-								*/
-								params = {data: {Status: 1}, id: orderData.id};
+							if (orderData.id) {
+								let params = undefined;
+								if (newGoodItems.length > 0) {
+									params = {data: {Items: newGoodItems}, id: orderData.id};
+								} else {
+									/*
+									ปัญหาเกิดจากการอัพเดท Items ซึงเป็น jsonb ด้วย [] empty array
+									*/
+									params = {data: {Status: 1}, id: orderData.id};
+								}
+								let orderRes = await common.doCallApi('/api/shop/order/update', params);
 							}
-							let orderRes = await common.doCallApi('/api/shop/order/update', params);
-
 							itenNoCells = await itenNoCells.filter((item)=>{
 								if ($(item).text() !== $(itenNoCell).text()) {
 									if ($(item).text() > $(itenNoCell).text()) {
@@ -978,25 +979,36 @@ module.exports = function ( jq ) {
 				$(dlgHandle.okCmd).click();
 			}
 		});
-		let editLabel = $('<label>ราคา:</label>').attr('for', $(editInput)).css({'width': '100%'})
+		let editLabel = $('<label>ราคา:</label>').attr('for', $(editInput)).css({'width': '100%'});
+		let editOption = $('<input type="checkbox" checked="checked"/>').css({'transform' : 'scale(1.5)'});
+		let optionLabel = $('<label>บันทึกการแก้ไขราคาลงในข้อมูลสินค้า</label>').attr('for', $(editOption)).css({'width': '100%'});
+		let editBox = $('<div></div>').css({'width': '100%', 'height': '70px', 'margin-top': '20px'});
+		$(editBox).append($('<div></div>').append($(editLabel)).append($(editInput)));
+		$(editBox).append($('<div style="margin-top: 6px;"></div>').append($(editOption)).append($(optionLabel)));
 		let editDlgOption = {
 			title: 'แก้ไขราคา',
-			msg: $('<div></div>').css({'width': '100%', 'height': '70px', 'margin-top': '20px'}).append($(editLabel)).append($(editInput)),
-			width: '220px',
+			msg: $(editBox),
+			width: '350px',
 			onOk: async function(evt) {
 				let newValue = $(editInput).val();
 				if(newValue !== '') {
 					$(editInput).css({'border': ''});
-					let params = {data: {Price: newValue}, id: gooditems[index].id};
-					let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
-					if (menuitemRes.status.code == 200) {
-						$.notify("แก้ไขรายการสินค้าสำเร็จ", "success");
+					let optionUpdate = $(editOption).prop("checked");
+					if (optionUpdate == true) {
+						let params = {data: {Price: newValue}, id: gooditems[index].id};
+						let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
+						if (menuitemRes.status.code == 200) {
+							$.notify("แก้ไขรายการสินค้าสำเร็จ", "success");
+							dlgHandle.closeAlert();
+							successCallback(newValue);
+						} else if (menuitemRes.status.code == 201) {
+							$.notify("ไม่สามารถแก้ไขรายการสินค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
+						} else {
+							$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการสินค้าได้", "error");
+						}
+					} else {
 						dlgHandle.closeAlert();
 						successCallback(newValue);
-					} else if (menuitemRes.status.code == 201) {
-						$.notify("ไม่สามารถแก้ไขรายการสินค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
-					} else {
-						$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการสินค้าได้", "error");
 					}
 				} else {
 					$.notify('ราคาสินค้าต้องไม่ว่าง', 'error');
@@ -1019,24 +1031,35 @@ module.exports = function ( jq ) {
 			}
 		});
 		let editLabel = $('<label>ชื่อสินค้า:</label>').attr('for', $(editInput)).css({'width': '100%'})
+		let editOption = $('<input type="checkbox" checked="checked"/>').css({'transform' : 'scale(1.5)'});
+		let optionLabel = $('<label>บันทึกการแก้ไขชื่อสินค้าลงในข้อมูลสินค้า</label>').attr('for', $(editOption)).css({'width': '100%'});
+		let editBox = $('<div></div>').css({'width': '100%', 'height': '70px', 'margin-top': '20px'});
+		$(editBox).append($('<div></div>').append($(editLabel)).append($(editInput)));
+		$(editBox).append($('<div style="margin-top: 6px;"></div>').append($(editOption)).append($(optionLabel)));
 		let editDlgOption = {
 			title: 'แก้ไขชื่อสินค้า',
-			msg: $('<div></div>').css({'width': '100%', 'height': '70px', 'margin-top': '20px'}).append($(editLabel)).append($(editInput)),
-			width: '320px',
+			msg: editBox,
+			width: '350px',
 			onOk: async function(evt) {
 				let newValue = $(editInput).val();
 				if(newValue !== '') {
 					$(editInput).css({'border': ''});
-					let params = {data: {MenuName: newValue}, id: gooditems[index].id};
-					let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
-					if (menuitemRes.status.code == 200) {
-						$.notify("แก้ไขรายการสินค้าสำเร็จ", "success");
+					let optionUpdate = $(editOption).prop("checked");
+					if (optionUpdate == true) {
+						let params = {data: {MenuName: newValue}, id: gooditems[index].id};
+						let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
+						if (menuitemRes.status.code == 200) {
+							$.notify("แก้ไขรายการสินค้าสำเร็จ", "success");
+							dlgHandle.closeAlert();
+							successCallback(newValue);
+						} else if (menuitemRes.status.code == 201) {
+							$.notify("ไม่สามารถแก้ไขรายการสินค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
+						} else {
+							$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการสินค้าได้", "error");
+						}
+					} else {
 						dlgHandle.closeAlert();
 						successCallback(newValue);
-					} else if (menuitemRes.status.code == 201) {
-						$.notify("ไม่สามารถแก้ไขรายการสินค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
-					} else {
-						$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการสินค้าได้", "error");
 					}
 				} else {
 					$.notify('ชื่อสินค้าต้องไม่ว่าง', 'error');
@@ -1067,6 +1090,7 @@ module.exports = function ( jq ) {
 				let newValue = $(editInput).val();
 				if(newValue !== '') {
 					$(editInput).css({'border': ''});
+					/*
 					let params = {data: {Qty: newValue}, id: gooditems[index].id};
 					let menuitemRes = await common.doCallApi('/api/shop/menuitem/update', params);
 					if (menuitemRes.status.code == 200) {
@@ -1078,6 +1102,9 @@ module.exports = function ( jq ) {
 					} else {
 						$.notify("เกิดข้อผิดพลาด ไม่สามารถแก้ไขรายการสินค้าได้", "error");
 					}
+					*/
+					dlgHandle.closeAlert();
+					successCallback(newValue);
 				} else {
 					$.notify('จำนวนสินค้าต้องไม่ว่าง', 'error');
 					$(editInput).css({'border': '1px solid red'});

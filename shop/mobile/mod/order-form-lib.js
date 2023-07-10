@@ -521,7 +521,6 @@ module.exports = function ( jq ) {
 							let newTotal = await doCalOrderTotal(orderData.gooditems);
 							$(totalBox).text(common.doFormatNumber(newTotal));
 						});
-
 						$(splitGoodItemCmd).on('click', async (evt)=>{
 							evt.stopPropagation();
 							let userdata = JSON.parse(localStorage.getItem('userdata'));

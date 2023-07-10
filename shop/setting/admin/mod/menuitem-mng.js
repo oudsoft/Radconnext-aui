@@ -382,7 +382,7 @@ module.exports = function ( jq ) {
   			$(menuitemFormTable).append($(fieldRow));
       }
 		}
-		if (menuitemData.Qty) {
+		if ((menuitemData) && (menuitemData.Qty)) {
     	let fieldRow = $('<tr></tr>');
 			let labelField = $('<td width="40%" align="left">จำนวน <span style="color: red;">*</span></td>').css({'padding': '5px'});
 			let inputField = $('<td width="*" align="left"></td>').css({'padding': '5px'});
