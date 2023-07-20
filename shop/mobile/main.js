@@ -12,6 +12,7 @@ const common = require('../home/mod/common-lib.js')($);
 
 const orderMng = require('./mod/order-mng-lib.js')($);
 const orderProc = require('./mod/order-proc-lib.js')($);
+const orderForm = require('./mod/order-form-lib.js')($);
 
 let pageHandle = undefined;
 let wss = undefined;
@@ -240,9 +241,16 @@ const doStartTestPPQC = function(evt){
             evt.stopPropagation();
             window.open('/shop/share/?id=' + shopRes.result.qrFileName, '_blank');
           });
-          $(ppQRBox).empty().append($(ppqrImage)).css({'height': 'auto'});
+          let openNewOrderCmd = common.doCreateTextCmd('ออกบิลใหม่', 'green', 'white');
+          $(openNewOrderCmd).on('click', (evt)=>{
+            evt.stopPropagation();
+            dlgHandle.closeAlert();
+            let workAreaBox = pageHandle.mainContent;
+            orderForm.doOpenOrderForm(shopData.id, workAreaBox, undefined, undefined, orderMng.doShowOrderList);
+          });
+          $(ppQRBox).empty().append($(ppqrImage)).append($(openNewOrderCmd)).css({'height': 'auto', 'text-align': 'center'});
           $(dlgHandle.cancelCmd).show();
-          $(dlgHandle.cancelCmd).val(' ตกลง ');
+          $(dlgHandle.cancelCmd).val(' ปิด ');
           $(dlgHandle.okCmd).hide();
         } else if (shopRes.status.code == 201) {
           $.notify("ไม่สามารถสร้างพร้อมเพย์คิวอาร์โค้ดได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
