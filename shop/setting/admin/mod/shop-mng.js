@@ -235,7 +235,22 @@ module.exports = function ( jq ) {
 							evt.stopPropagation();
 							window.open('/shop/share/?id=' + shopRes.result.qrFileName, '_blank');
 						});
-						$(ppQRBox).empty().append($(ppqrImage));
+
+						let openNewOrderCmd = common.doCreateTextCmd('ออกบิลใหม่', 'green', 'white');
+						$(openNewOrderCmd).addClass('sensitive-word');
+						$(newOrderCmd).attr('id', 'newOrderCmd');
+						$(openNewOrderCmd).on('click', (evt)=>{
+							evt.stopPropagation();
+							dlgHandle.closeAlert();
+							/*
+							let workAreaBox = pageHandle.mainContent;
+							orderForm.doOpenOrderForm(shopData.id, workAreaBox, undefined, undefined, orderMng.doShowOrderList);
+							*/
+							let workingAreaBox = $('#WorkingAreaBox');
+							order.doOpenOrderForm(shopData, workAreaBox);
+						});
+
+						$(ppQRBox).empty().append($(ppqrImage)).append($(openNewOrderCmd)).css({'text-align': 'center'});
 						$(dlgHandle.cancelCmd).show();
 						$(dlgHandle.cancelCmd).val(' ตกลง ');
 						$(dlgHandle.okCmd).hide();
