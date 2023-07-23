@@ -20,8 +20,82 @@ module.exports = function ( jq ) {
 		{fieldName: 'id', displayName: 'ShopId', width: '5%', align: 'center', inputSize: '40', verify: false, showHeader: false},
 	];
 
+	const doCreateShopListTable = function(shopItems, pOptions) {
+		let shopTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="1"></table>');
+		let headerRow = $('<tr></tr>');
+		$(headerRow).append($('<td width="2%" align="center"><b>#</b></td>'));
+		for (let i=0; i < shopTableFields.length; i++) {
+			if (shopTableFields[i].showHeader) {
+				$(headerRow).append($('<td width="' + shopTableFields[i].width + '" align="center"><b>' + shopTableFields[i].displayName + '</b></td>'));
+			}
+		}
+		$(headerRow).append($('<td width="*" align="center"><b>คำสั่ง</b></td>'));
+		$(shopTable).append($(headerRow));
+
+		let from = 0;
+		let to = shopItems.length;
+		if (pOptions) {
+			from = pOptions.from;
+			to = pOptions.to + 1;
+		}
+		for (let x=from; x < to; x++) {
+		//for (let x=0; x < shopItems.length; x++) {
+			let itemRow = $('<tr></tr>');
+			$(itemRow).append($('<td align="center">' + (x+1) + '</td>'));
+			let item = shopItems[x];
+			for (let i=0; i < shopTableFields.length; i++) {
+				if (shopTableFields[i].showHeader) {
+					let field = $('<td align="' + shopTableFields[i].align + '"></td>');
+					if (shopTableFields[i].fieldName !== 'Shop_LogoFilename') {
+						$(field).text(item[shopTableFields[i].fieldName]);
+						$(itemRow).append($(field));
+					} else {
+						let shopLogoIcon = new Image();
+						shopLogoIcon.id = 'Shop_LogoFilename_' + item.id;
+						if (item['Shop_LogoFilename'] !== ''){
+							shopLogoIcon.src = item['Shop_LogoFilename'];
+						} else {
+							shopLogoIcon.src = '/shop/favicon.ico'
+						}
+						$(shopLogoIcon).css({"width": "80px", "height": "auto", "cursor": "pointer", "padding": "2px", "border": "2px solid #ddd"});
+						$(shopLogoIcon).on('click', (evt)=>{
+							window.open(item['Shop_LogoFilename'], '_blank');
+						});
+						$(field).append($(shopLogoIcon));
+						let updateShopLogoCmd = $('<input type="button" value=" เปลี่ยนรูป " class="action-btn"/>');
+						$(updateShopLogoCmd).on('click', (evt)=>{
+							doStartUploadPicture(evt, field, item.id);
+						});
+						$(field).append($('<div style="width: 100%; text-align: center;"></div>').append($(updateShopLogoCmd)));
+						$(itemRow).append($(field));
+					}
+				}
+			}
+			let editShopCmd = $('<input type="button" value=" Edit " class="action-btn"/>');
+			$(editShopCmd).on('click', (evt)=>{
+				doOpenEditShopForm(item);
+			});
+			let mngShopCmd = $('<input type="button" value=" Manage " class="action-btn"/>').css({'margin-left': '8px'});
+			$(mngShopCmd).on('click', (evt)=>{
+				doOpenManageShop(item, doStartUploadPicture, doOpenEditShopForm);
+			});
+			let deleteShopCmd = $('<input type="button" value=" Delete " class="action-btn"/>').css({'margin-left': '8px'});
+			$(deleteShopCmd).on('click', (evt)=>{
+				doDeleteShop(item.id);
+			});
+
+			let commandCell = $('<td align="center"></td>');
+			$(commandCell).append($(editShopCmd)).append($(mngShopCmd)).append($(deleteShopCmd));
+			$(itemRow).append($(commandCell));
+			$(shopTable).append($(itemRow));
+		}
+		return $(shopTable);
+	}
+
   const doShowShopItem = function(){
     return new Promise(async function(resolve, reject) {
+			let itemPerPage = 20;
+
 			$('#App').empty();
       let shopRes = await common.doCallApi('/api/shop/shop/list', {});
 			if ((shopRes) &&/* (shopRes.status) && (shopRes.status.code) && */ (shopRes.status.code == 210)) {
@@ -36,6 +110,7 @@ module.exports = function ( jq ) {
 			$(titlePageBox).append($(logoutCmd));
 
 			$('#App').append($(titlePageBox));
+
 			let newShopCmdBox = $('<div style="padding: 4px;"></div>').css({'width': '99.5%', 'text-align': 'right'});
 			let newShopCmd = $('<input type="button" value=" + New Shop " class="action-btn"/>');
 			$(newShopCmd).on('click', (evt)=>{
@@ -43,69 +118,48 @@ module.exports = function ( jq ) {
 			});
 			$(newShopCmdBox).append($(newShopCmd))
 			$('#App').append($(newShopCmdBox));
-			let shopTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="1"></table>');
-			let headerRow = $('<tr></tr>');
-			$(headerRow).append($('<td width="2%" align="center"><b>#</b></td>'));
-			for (let i=0; i < shopTableFields.length; i++) {
-				if (shopTableFields[i].showHeader) {
-					$(headerRow).append($('<td width="' + shopTableFields[i].width + '" align="center"><b>' + shopTableFields[i].displayName + '</b></td>'));
-				}
-			}
-			$(headerRow).append($('<td width="*" align="center"><b>คำสั่ง</b></td>'));
-			$(shopTable).append($(headerRow));
-			for (let x=0; x < shopItems.length; x++) {
-				let itemRow = $('<tr></tr>');
-				$(itemRow).append($('<td align="center">' + (x+1) + '</td>'));
-				let item = shopItems[x];
-				for (let i=0; i < shopTableFields.length; i++) {
-					if (shopTableFields[i].showHeader) {
-						let field = $('<td align="' + shopTableFields[i].align + '"></td>');
-						if (shopTableFields[i].fieldName !== 'Shop_LogoFilename') {
-							$(field).text(item[shopTableFields[i].fieldName]);
-							$(itemRow).append($(field));
-						} else {
-							let shopLogoIcon = new Image();
-							shopLogoIcon.id = 'Shop_LogoFilename_' + item.id;
-							if (item['Shop_LogoFilename'] !== ''){
-								shopLogoIcon.src = item['Shop_LogoFilename'];
-							} else {
-								shopLogoIcon.src = '/shop/favicon.ico'
-							}
-							$(shopLogoIcon).css({"width": "80px", "height": "auto", "cursor": "pointer", "padding": "2px", "border": "2px solid #ddd"});
-							$(shopLogoIcon).on('click', (evt)=>{
-								window.open(item['Shop_LogoFilename'], '_blank');
-							});
-							$(field).append($(shopLogoIcon));
-							let updateShopLogoCmd = $('<input type="button" value=" เปลี่ยนรูป " class="action-btn"/>');
-							$(updateShopLogoCmd).on('click', (evt)=>{
-								doStartUploadPicture(evt, field, item.id);
-							});
-							$(field).append($('<div style="width: 100%; text-align: center;"></div>').append($(updateShopLogoCmd)));
-							$(itemRow).append($(field));
-						}
-					}
-				}
-				let editShopCmd = $('<input type="button" value=" Edit " class="action-btn"/>');
-				$(editShopCmd).on('click', (evt)=>{
-					doOpenEditShopForm(item);
-				});
-				let mngShopCmd = $('<input type="button" value=" Manage " class="action-btn"/>').css({'margin-left': '8px'});
-				$(mngShopCmd).on('click', (evt)=>{
-					doOpenManageShop(item, doStartUploadPicture, doOpenEditShopForm);
-				});
-				let deleteShopCmd = $('<input type="button" value=" Delete " class="action-btn"/>').css({'margin-left': '8px'});
-				$(deleteShopCmd).on('click', (evt)=>{
-					doDeleteShop(item.id);
-				});
 
-				let commandCell = $('<td align="center"></td>');
-				$(commandCell).append($(editShopCmd));
-				$(commandCell).append($(mngShopCmd));
-				$(commandCell).append($(deleteShopCmd));
-				$(itemRow).append($(commandCell));
-				$(shopTable).append($(itemRow));
+			let shopTable = undefined;
+
+			const doControlItemDisplayPage = function() {
+				console.log(shopItems.length <= itemPerPage);
+				if (shopItems.length <= itemPerPage) {
+					shopTable = doCreateShopListTable(shopItems);
+					$('#App').append($(shopTable));
+				} else {
+					let pOp = {from: 0, to: (itemPerPage-1)};
+					shopTable = doCreateShopListTable(shopItems, pOp);
+					$('#App').append($(shopTable));
+					let defaultNavPage = {
+						currentPage: 1,
+						itemperPage: itemPerPage,
+						totalItem: shopItems.length,
+						styleClass : {'padding': '4px', 'margin-top': '60px'},
+					}
+					defaultNavPage.changeToPageCallback = function(page) {
+						$(shopTable).remove();
+						itemPerPage = page.perPage;
+						let newFrom = (itemPerPage * (page.toPage - 1));
+						let newTo = (newFrom + itemPerPage) - 1;
+						if (newTo > shopItems.length) {
+							newTo = shopItems.length - 1;
+						}
+						pOp = {from: newFrom, to: newTo};
+						shopTable = doCreateShopListTable(shopItems, pOp);
+						$(shopTable).insertBefore($(navigBarBox));
+					}
+
+					let navigBarBox = $('<div id="NavigBar"></div>');
+					let navigatoePage = $(navigBarBox).controlpage(defaultNavPage);
+					setTimeout(()=>{
+						$('#App').append($(navigBarBox));
+						navigatoePage.toPage(1);
+					}, 200);
+				}
 			}
-			$('#App').append($(shopTable));
+
+			//$('#App').append($(shopTable));
+			doControlItemDisplayPage();
 			resolve();
     });
   }
