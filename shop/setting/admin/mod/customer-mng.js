@@ -146,7 +146,9 @@ module.exports = function ( jq ) {
 
   const doShowCustomerItem = function(shopData, workAreaBox){
     return new Promise(async function(resolve, reject) {
-			let itemPerPage = 50;
+			let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
+			let itemPerPage = userDefualtSetting.itemperpage;
+			//let itemPerPage = 50;
 
       $(workAreaBox).empty();
 			let customerItems = await doLoadCustomerItem(shopData.id);
@@ -211,6 +213,10 @@ module.exports = function ( jq ) {
 						pOp = {from: newFrom, to: newTo};
 						customerTable = doCreateCustomerListTable(shopData, workAreaBox, customerItems, newCustomerCmdBox, pOp);
 						$(customerTable).insertBefore($(navigBarBox));
+						/*
+						let userDefualtSetting = {itemperpage:page.perPage, currentPage: defaultNavPage.currentPage};
+						localStorage.setItem('defualsettings', JSON.stringify(userDefualtSetting));
+						*/
 					}
 
 					let navigBarBox = $('<div id="NavigBar"></div>');

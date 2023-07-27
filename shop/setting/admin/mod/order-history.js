@@ -140,7 +140,8 @@ module.exports = function ( jq ) {
           $('body').loading('start');
           $('#HistoryTable').remove();
           $('#NavigBar').remove();
-          userDefualtSetting.itemperpage = page.perPage;
+
+					userDefualtSetting = {itemperpage: page.perPage, currentPage: showPage};
           localStorage.setItem('defualsettings', JSON.stringify(userDefualtSetting));
 
           let toPage = Number(page.toPage);
