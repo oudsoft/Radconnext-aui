@@ -32,62 +32,69 @@ module.exports = function ( jq ) {
 		$(headerRow).append($('<td width="*" align="center"><b>คำสั่ง</b></td>'));
 		$(shopTable).append($(headerRow));
 
-		let from = 0;
-		let to = shopItems.length;
-		if (pOptions) {
-			from = pOptions.from;
-			to = pOptions.to + 1;
-		}
+		let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
+		let itemPerPage = userDefualtSetting.itemperpage;
+		let currentPage = userDefualtSetting.currentPage;
+
+		let from = ((currentPage-1) * itemPerPage);
+		let to = Number(from) + (Number(itemPerPage));
+
+		/*
+		console.log(from);
+		console.log(to);
+		*/
+
 		for (let x=from; x < to; x++) {
-		//for (let x=0; x < shopItems.length; x++) {
 			let itemRow = $('<tr></tr>');
 			$(itemRow).append($('<td align="center">' + (x+1) + '</td>'));
 			let item = shopItems[x];
-			for (let i=0; i < shopTableFields.length; i++) {
-				if (shopTableFields[i].showHeader) {
-					let field = $('<td align="' + shopTableFields[i].align + '"></td>');
-					if (shopTableFields[i].fieldName !== 'Shop_LogoFilename') {
-						$(field).text(item[shopTableFields[i].fieldName]);
-						$(itemRow).append($(field));
-					} else {
-						let shopLogoIcon = new Image();
-						shopLogoIcon.id = 'Shop_LogoFilename_' + item.id;
-						if (item['Shop_LogoFilename'] !== ''){
-							shopLogoIcon.src = item['Shop_LogoFilename'];
+			if (item) {
+				for (let i=0; i < shopTableFields.length; i++) {
+					if (shopTableFields[i].showHeader) {
+						let field = $('<td align="' + shopTableFields[i].align + '"></td>');
+						if (shopTableFields[i].fieldName !== 'Shop_LogoFilename') {
+							$(field).text(item[shopTableFields[i].fieldName]);
+							$(itemRow).append($(field));
 						} else {
-							shopLogoIcon.src = '/shop/favicon.ico'
+							let shopLogoIcon = new Image();
+							shopLogoIcon.id = 'Shop_LogoFilename_' + item.id;
+							if (item['Shop_LogoFilename'] !== ''){
+								shopLogoIcon.src = item['Shop_LogoFilename'];
+							} else {
+								shopLogoIcon.src = '/shop/favicon.ico'
+							}
+							$(shopLogoIcon).css({"width": "80px", "height": "auto", "cursor": "pointer", "padding": "2px", "border": "2px solid #ddd"});
+							$(shopLogoIcon).on('click', (evt)=>{
+								window.open(item['Shop_LogoFilename'], '_blank');
+							});
+							$(field).append($(shopLogoIcon));
+							let updateShopLogoCmd = $('<input type="button" value=" เปลี่ยนรูป " class="action-btn"/>');
+							$(updateShopLogoCmd).on('click', (evt)=>{
+								doStartUploadPicture(evt, field, item.id);
+							});
+							$(field).append($('<div style="width: 100%; text-align: center;"></div>').append($(updateShopLogoCmd)));
+							$(itemRow).append($(field));
 						}
-						$(shopLogoIcon).css({"width": "80px", "height": "auto", "cursor": "pointer", "padding": "2px", "border": "2px solid #ddd"});
-						$(shopLogoIcon).on('click', (evt)=>{
-							window.open(item['Shop_LogoFilename'], '_blank');
-						});
-						$(field).append($(shopLogoIcon));
-						let updateShopLogoCmd = $('<input type="button" value=" เปลี่ยนรูป " class="action-btn"/>');
-						$(updateShopLogoCmd).on('click', (evt)=>{
-							doStartUploadPicture(evt, field, item.id);
-						});
-						$(field).append($('<div style="width: 100%; text-align: center;"></div>').append($(updateShopLogoCmd)));
-						$(itemRow).append($(field));
 					}
 				}
-			}
-			let editShopCmd = $('<input type="button" value=" Edit " class="action-btn"/>');
-			$(editShopCmd).on('click', (evt)=>{
-				doOpenEditShopForm(item);
-			});
-			let mngShopCmd = $('<input type="button" value=" Manage " class="action-btn"/>').css({'margin-left': '8px'});
-			$(mngShopCmd).on('click', (evt)=>{
-				doOpenManageShop(item, doStartUploadPicture, doOpenEditShopForm);
-			});
-			let deleteShopCmd = $('<input type="button" value=" Delete " class="action-btn"/>').css({'margin-left': '8px'});
-			$(deleteShopCmd).on('click', (evt)=>{
-				doDeleteShop(item.id);
-			});
+				let editShopCmd = $('<input type="button" value=" Edit " class="action-btn"/>');
+				$(editShopCmd).on('click', (evt)=>{
+					doOpenEditShopForm(item);
+				});
+				let mngShopCmd = $('<input type="button" value=" Manage " class="action-btn"/>').css({'margin-left': '8px'});
+				$(mngShopCmd).on('click', (evt)=>{
+					doOpenManageShop(item, doStartUploadPicture, doOpenEditShopForm);
+				});
+				let deleteShopCmd = $('<input type="button" value=" Delete " class="action-btn"/>').css({'margin-left': '8px'});
+				$(deleteShopCmd).on('click', (evt)=>{
+					doDeleteShop(item.id);
+				});
 
-			let commandCell = $('<td align="center"></td>');
-			$(commandCell).append($(editShopCmd)).append($(mngShopCmd)).append($(deleteShopCmd));
-			$(itemRow).append($(commandCell));
-			$(shopTable).append($(itemRow));
+				let commandCell = $('<td align="center"></td>');
+				$(commandCell).append($(editShopCmd)).append($(mngShopCmd)).append($(deleteShopCmd));
+				$(itemRow).append($(commandCell));
+				$(shopTable).append($(itemRow));
+			}
 		}
 		return $(shopTable);
 	}
@@ -124,7 +131,7 @@ module.exports = function ( jq ) {
 			let shopTable = undefined;
 
 			const doControlItemDisplayPage = function() {
-				console.log(shopItems.length <= itemPerPage);
+				//console.log(shopItems.length <= itemPerPage);
 				if (shopItems.length <= itemPerPage) {
 					shopTable = doCreateShopListTable(shopItems);
 					$('#App').append($(shopTable));
@@ -148,7 +155,7 @@ module.exports = function ( jq ) {
 							newTo = shopItems.length - 1;
 						}
 						pOp = {from: newFrom, to: newTo};
-						console.log(pOp);
+						//console.log(pOp);
 						shopTable = doCreateShopListTable(shopItems, pOp);
 						$(shopTable).insertBefore($(navigBarBox));
 						/*
@@ -253,12 +260,6 @@ module.exports = function ( jq ) {
 					callback(data);
 				} else {
 					setTimeout(async() => {
-						/*
-						$(shopLogoIcon).attr('src', data.link);
-						$(shopLogoIcon).on('click', (evt)=>{
-							window.open(data.link, '_blank');
-						});
-						*/
 						let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
 						let currentPage = userDefualtSetting.currentPage;
 						await doShowShopItem(currentPage);
@@ -289,7 +290,9 @@ module.exports = function ( jq ) {
 						let shopRes = await common.doCallApi('/api/shop/shop/add', newShopFormObj);
 						if (shopRes.status.code == 200) {
 							$.notify("เพิ่มรายการร้านค้าสำเร็จ", "success");
-							await doShowShopItem()
+							let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
+							let currentPage = userDefualtSetting.currentPage;
+							await doShowShopItem(currentPage);
 						} else if (shopRes.status.code == 201) {
 							$.notify("ไม่สามารถเพิ่มรายการร้านค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
 						} else {
@@ -334,7 +337,9 @@ module.exports = function ( jq ) {
 							if (successCallback) {
 								successCallback(editShopFormObj);
 							} else {
-								await doShowShopItem();
+								let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
+								let currentPage = userDefualtSetting.currentPage;
+								await doShowShopItem(currentPage);
 							}
 						} else if (shopRes.status.code == 201) {
 							$.notify("ไม่สามารถแก้ไขรายการร้านค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
@@ -381,7 +386,9 @@ module.exports = function ( jq ) {
 				let shopRes = await common.doCallApi('/api/shop/shop/delete', {id: shopId});
 				if (shopRes.status.code == 200) {
 					$.notify("ลบรายการร้านค้าสำเร็จ", "success");
-					await doShowShopItem()
+					let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
+					let currentPage = userDefualtSetting.currentPage;
+					await doShowShopItem(currentPage);
 				} else if (shopRes.status.code == 201) {
 					$.notify("ไม่สามารถลบรายการร้านค้าได้ในขณะนี้ โปรดลองใหม่ภายหลัง", "warn");
 				} else {

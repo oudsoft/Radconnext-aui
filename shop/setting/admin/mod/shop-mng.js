@@ -236,6 +236,8 @@ module.exports = function ( jq ) {
 							window.open('/shop/share/?id=' + shopRes.result.qrFileName, '_blank');
 						});
 
+						let alertTextBox = $('<p></p>').text('ต้องการรับใบเสร็จ โปรดแจ้งแม่ค้า').css({'text-align': 'center', 'font-size': '40px'});
+
 						let openNewOrderCmd = common.doCreateTextCmd('ออกบิลใหม่', 'green', 'white');
 						$(openNewOrderCmd).addClass('sensitive-word');
 						$(newOrderCmd).attr('id', 'newOrderCmd');
@@ -246,7 +248,7 @@ module.exports = function ( jq ) {
 							order.doOpenOrderForm(shopData, workAreaBox);
 						});
 
-						$(ppQRBox).empty().append($(ppqrImage)).append($(openNewOrderCmd)).css({'text-align': 'center'});
+						$(ppQRBox).empty().append($(ppqrImage)).append($(alertTextBox)).append($(openNewOrderCmd)).css({'display': 'inline-block', 'text-align': 'center', 'margin-top': '20px'});
 						$(dlgHandle.cancelCmd).show();
 						$(dlgHandle.cancelCmd).val(' ตกลง ');
 						$(dlgHandle.okCmd).hide();
