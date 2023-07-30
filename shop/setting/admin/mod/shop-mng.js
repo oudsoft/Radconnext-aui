@@ -236,7 +236,7 @@ module.exports = function ( jq ) {
 							window.open('/shop/share/?id=' + shopRes.result.qrFileName, '_blank');
 						});
 
-						let alertTextBox = $('<p></p>').text('ต้องการรับใบเสร็จ โปรดแจ้งแม่ค้า').css({'text-align': 'center', 'font-size': '40px'});
+						let alertTextBox = $('<p></p>').text('ต้องการรับใบเสร็จ โปรดแจ้งแม่ค้า').css({'text-align': 'center', 'font-size': '30px', 'color': 'blue'});
 
 						let openNewOrderCmd = common.doCreateTextCmd('ออกบิลใหม่', 'green', 'white');
 						$(openNewOrderCmd).addClass('sensitive-word');

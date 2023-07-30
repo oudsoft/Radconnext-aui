@@ -91,8 +91,11 @@ const doTriggerLoading = function(evt) {
 }
 
 
-const doShowShopItems = function(){
-  shopitem.doShowShopItem();
+const doShowShopItems = async function(){
+  //shopitem.doShowShopItem();
+  let userDefualtSetting = JSON.parse(localStorage.getItem('defualsettings'));
+  let currentPage = userDefualtSetting.currentPage;
+  await shopitem.doShowShopItem(currentPage);
 }
 
 const doShowShopMng = async function(shopId) {
