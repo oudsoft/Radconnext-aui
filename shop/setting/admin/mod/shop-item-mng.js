@@ -270,7 +270,8 @@ module.exports = function ( jq ) {
 	}
 
 	const doOpenNewShopForm = function(){
-		let shopNewForm = doCreateShopForm();
+		let initShop = {Shop_BillQuota: '500', Shop_StockingOption: '0'};
+		let shopNewForm = doCreateShopForm(initShop);
 		let radNewShopFormBox = $('<div></div>');
 		$(radNewShopFormBox).append($(shopNewForm));
 		const newshopformoption = {
@@ -313,7 +314,6 @@ module.exports = function ( jq ) {
 	}
 
 	const doOpenEditShopForm = function(shopData, successCallback){
-		console.log(shopData);
 		let shopEditForm = doCreateShopForm(shopData);
 		let radEditShopFormBox = $('<div></div>');
 		$(radEditShopFormBox).append($(shopEditForm));

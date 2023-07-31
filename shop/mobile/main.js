@@ -241,14 +241,18 @@ const doStartTestPPQC = function(evt){
             evt.stopPropagation();
             window.open('/shop/share/?id=' + shopRes.result.qrFileName, '_blank');
           });
+
+          let alertTextBox = $('<p></p>').text('ต้องการรับใบเสร็จ โปรดแจ้งแม่ค้า').css({'text-align': 'center', 'font-size': '27px', 'color': 'blue'});
+
           let openNewOrderCmd = common.doCreateTextCmd('ออกบิลใหม่', 'green', 'white');
           $(openNewOrderCmd).on('click', (evt)=>{
             evt.stopPropagation();
             dlgHandle.closeAlert();
             let workAreaBox = pageHandle.mainContent;
+            orderForm.setupPageHandle(pageHandle);
             orderForm.doOpenOrderForm(shopData.id, workAreaBox, undefined, undefined, orderMng.doShowOrderList);
           });
-          $(ppQRBox).empty().append($(ppqrImage)).append($(openNewOrderCmd)).css({'height': 'auto', 'text-align': 'center'});
+          $(ppQRBox).empty().append($(ppqrImage)).append($(alertTextBox)).append($(openNewOrderCmd)).css({'display': 'inline-block', 'text-align': 'center', 'margin-top': '20px'});
           $(dlgHandle.cancelCmd).show();
           $(dlgHandle.cancelCmd).val(' ปิด ');
           $(dlgHandle.okCmd).hide();
