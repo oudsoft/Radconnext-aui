@@ -110,14 +110,16 @@ module.exports = function ( jq ) {
 		let params = {};
 		common.doCallApi(billUsageUrl, params).then(async(billRes)=>{
 			//console.log(billRes);
-			let shopBillUsage = $('<p>จำนวนบิลที่ใช้เดือนนี้ <span style="font-weight: bold;">' + billRes.count + '</span> บิล</p>').css({'line-height': '11px'});
+			let shopBillUsage = $('<p>จำนวนบิลที่ใช้<span id="BillDateChangeCmd">เดือนนี้</span> <span id="BillAmount" style="font-weight: bold;">' + billRes.count + '</span> บิล</p>').css({'line-height': '11px'});
 			$(middleCell).append($(shopBillUsage))
 			if (shopData['Shop_VatNo'] !== '') {
 				let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/mount/count/' + shopData.id, {});
 				//console.log(taxinvoiceRes);
-				let shopTaxinvoiceUsage = $('<p>จำนวนใบกำกับภาษีที่ใช้เดือนนี้ <span style="font-weight: bold;">' + taxinvoiceRes.count + '</span> ใบ</p>').css({'line-height': '11px'});
-				$(middleCell).append($(shopTaxinvoiceUsage))
+				let shopTaxinvoiceUsage = $('<p>จำนวนใบกำกับภาษีที่ใช้<span id="TaxInvoiceDateChangeCmd">เดือนนี้</span> <span id="TaxInvoiceAmount" style="font-weight: bold;">' + taxinvoiceRes.count + '</span> ใบ</p>').css({'line-height': '11px'});
+				$(middleCell).append($(shopTaxinvoiceUsage));
+				//doControlChangeDateAmount(shopData);
 			}
+			doControlChangeDateAmount(shopData);
 		});
 
     $(layoutRow).append($(letfSideCell)).append($(middleCell)).append($(rightSideCell));
@@ -348,6 +350,103 @@ module.exports = function ( jq ) {
 		earningScript.type = "text/javascript";
 		earningScript.src = "../lib/earning.js";
 		$("head").append($(earningScript));
+	}
+
+	const doCreateMountSelectBox = function() {
+		const mounts = [{display: 'ม.ค.', value: 1}, {display: 'ก.พ.', value: 2}, {display: 'มี.ค.', value: 3}, {display: 'เม.ย.', value: 4}, {display: 'พ.ค.', value: 5}, {display: 'มิ.ย.', value: 6}, {display: 'ก.ค.', value: 7}, {display: 'ส.ค.', value: 8}, {display: 'ก.ย.', value: 9}, {display: 'ต.ค.', value: 10}, {display: 'พ.ย.', value: 11}, {display: 'ธ.ค.', value: 12}];
+		const years = ['2023', '2024', '2025', '2026'];
+		let mainBox = $('<div></div>').css({'position': 'relative'})
+		let d = new Date();
+		let month = d.getMonth();
+		let mountSelect = $('<select id="Mount"></select>');
+		mounts.forEach((item, i) => {
+			if (i == month) {
+				$(mountSelect).append($('<option></option>').text(item.display).val(item.value).prop('selected', true));;
+			} else {
+				$(mountSelect).append($('<option></option>').text(item.display).val(item.value));
+			}
+		});
+
+		let yearSelect = $('<select id="Year"></select>');
+		years.forEach((item, i) => {
+			$(yearSelect).append($('<option></option>').text(item).val(item));
+		});
+
+		$(mainBox).append($('<span>เดือน</span>'));
+		$(mainBox).append($(mountSelect).css({'margin-left': '5px'}));
+		$(mainBox).append($('<span>ปี</span>').css({'margin-left': '5px'}));
+		$(mainBox).append($(yearSelect).css({'margin-left': '5px'}));
+
+		return $(mainBox);
+	}
+
+	const doControlChangeDateAmount = function(shopData) {
+		$('#BillDateChangeCmd').css({'padding': '2px', 'cursor': 'pointer'});
+		$('#TaxInvoiceDateChangeCmd').css({'padding': '2px', 'cursor': 'pointer'});
+		$('#BillDateChangeCmd').hover(()=>{
+			$('#BillDateChangeCmd').css({'background-color': 'white', 'color': 'black', 'border': '1px solid black'});
+		},()=>{
+			$('#BillDateChangeCmd').css({'background-color': 'inherit', 'color': 'inherit', 'border': ''});
+		});
+		$('#BillDateChangeCmd').on('click', (evt)=>{
+			let dlgHandle = undefined;
+			let mountSelect = doCreateMountSelectBox();
+			$(mountSelect).css({'margin-top': '10px'})
+			let mountSelectDlgOption = {
+				title: 'เลือกเดือนที่ต้องการเช็คจำนวนบิล',
+				msg: $(mountSelect),
+				width: '365px',
+				onOk: function(evt) {
+					let mm = $('#Mount').val();
+					let yy = $('#Year').val();
+					let billUsageUrl = '/api/shop/bill/mount/count/' + shopData.id;
+					let billDate = `${yy}-${mm}-01`;
+					let params = {billDate: billDate};
+					common.doCallApi(billUsageUrl, params).then((billRes)=>{
+						console.log(billRes);
+						$('#BillAmount').text(billRes.count);
+						$('#BillDateChangeCmd').text('เดือน ' + $('#Mount option:selected').text());
+						dlgHandle.closeAlert();
+					});
+				},
+				onCancel: function(evt) {
+					dlgHandle.closeAlert();
+				}
+			}
+			dlgHandle = $('body').radalert(mountSelectDlgOption);
+		});
+
+		$('#TaxInvoiceDateChangeCmd').hover(()=>{
+			$('#TaxInvoiceDateChangeCmd').css({'background-color': 'white', 'color': 'black', 'border': '1px solid black'});
+		},()=>{
+			$('#TaxInvoiceDateChangeCmd').css({'background-color': 'inherit', 'color': 'inherit', 'border': ''});
+		});
+		$('#TaxInvoiceDateChangeCmd').on('click', (evt)=>{
+			let mountSelect = doCreateMountSelectBox();
+			$(mountSelect).css({'margin-top': '10px'})
+			let mountSelectDlgOption = {
+				title: 'เลือกเดือนที่ต้องการเช็คจำนวนบิล',
+				msg: $(mountSelect),
+				width: '365px',
+				onOk: function(evt) {
+					let mm = $('#Mount').val();
+					let yy = $('#Year').val();
+					let taxinvoiceUsageUrl = '/api/shop/taxinvoice/mount/count/' + shopData.id;
+					let taxinvoiceDate = `${yy}-${mm}-01`;
+					let params = {taxinvoiceDate: taxinvoiceDate};
+					common.doCallApi(taxinvoiceUsageUrl, params).then((taxinvoiceRes)=>{
+						console.log(taxinvoiceRes);
+						$('#TaxInvoiceAmount').text(taxinvoiceRes.count);
+						$('#TaxInvoiceDateChangeCmd').text('เดือน ' + $('#Mount option:selected').text());
+						dlgHandle.closeAlert();
+					});
+				},
+				onCancel: function(evt) {
+					dlgHandle.closeAlert();
+				}
+			}
+			dlgHandle = $('body').radalert(mountSelectDlgOption);
+		});
 	}
 
   return {
