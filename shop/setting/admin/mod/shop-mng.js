@@ -10,6 +10,7 @@ module.exports = function ( jq ) {
 	const menuitem = require('./menuitem-mng.js')($);
 	const order = require('./order-mng.js')($);
 	const template = require('./template-design.js')($);
+	const message = require('./message-mng.js')($);
 
   const doCreateTitlePage = function(shopData, uploadLogoCallback, editShopCallback){
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
@@ -24,7 +25,7 @@ module.exports = function ( jq ) {
 			evt.stopPropagation();
 			window.open(shopLogoIcon.src, '_blank');
 		});
-		let shopLogoIconBox = $('<div></div>').css({"position": "relative", "border": "2px solid #ddd"});
+		let shopLogoIconBox = $('<div></div>').css({"position": "relative"/*, "border": "2px solid #ddd"*/ });
     $(shopLogoIconBox).append($(shopLogoIcon));
 		let editShopLogoCmd = $('<img src="../../images/tools-icon-wh.png"/>').css({'position': 'absolute', 'width': '25px', 'height': 'auto', 'cursor': 'pointer', 'right': '2px', 'bottom': '2px', 'display': 'none', 'z-index': '21'});
 		$(shopLogoIconBox).append($(editShopLogoCmd));
@@ -36,7 +37,6 @@ module.exports = function ( jq ) {
 		$(editShopLogoCmd).on('click', (evt)=>{
 			evt.stopPropagation();
 			uploadLogoCallback(evt, shopLogoIconBox, shopData.id, (successData)=>{
-				//console.log(successData);
 				shopLogoIcon.src = successData.link;
 			});
 		});
@@ -51,9 +51,9 @@ module.exports = function ( jq ) {
     let titlePageBox = $('<div style="padding: 4px;"></viv>').css({'width': '99.1%', 'text-align': 'center', 'font-size': '18px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
     let layoutPage = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
     let layoutRow = $('<tr></tr>');
-    let letfSideCell = $('<td width="15%" align="center" valign="middle"></td>');
-    let middleCell = $('<td width="70%" align="left" valign="middle" style="padding: 5px"></td>');
-    let rightSideCell = $('<td width="*" align="center" valign="middle"></td>');
+    let letfSideCell = $('<td width="20%" align="center" valign="middle"></td>');
+    let middleCell = $('<td width="65%" align="left" valign="middle" style="padding: 5px"></td>');
+    let rightSideCell = $('<td width="*" align="center" style="position: relative;"></td>');
     $(letfSideCell).append($(shopLogoIconBox));
     $(middleCell).append($(shopName)).append($(shopAddress)).append($(shopTel));
 		if (shopData['Shop_Mail'] !== '') {
@@ -76,6 +76,19 @@ module.exports = function ( jq ) {
 				doStartTestPPQC(evt, shopData);
 			});
 		}
+
+		let billUsageUrl = '/api/shop/bill/mount/count/' + shopData.id
+		let params = {};
+		common.doCallApi(billUsageUrl, params).then(async(billRes)=>{
+			let shopBillUsage = $('<p>จำนวนบิลที่ใช้<span id="BillDateChangeCmd">เดือนนี้</span> <span id="BillAmount" style="font-weight: bold;">' + billRes.count + '</span> บิล</p>').css({'line-height': '11px'});
+			$(middleCell).append($(shopBillUsage))
+			if (shopData['Shop_VatNo'] !== '') {
+				let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/mount/count/' + shopData.id, {});
+				let shopTaxinvoiceUsage = $('<p>จำนวนใบกำกับภาษีที่ใช้<span id="TaxInvoiceDateChangeCmd">เดือนนี้</span> <span id="TaxInvoiceAmount" style="font-weight: bold;">' + taxinvoiceRes.count + '</span> ใบ</p>').css({'line-height': '11px'});
+				$(middleCell).append($(shopTaxinvoiceUsage));
+			}
+			doControlChangeDateAmount(shopData);
+		});
 
 		if (userdata.usertypeId == 1) {
 			let backCmd = $('<input type="button" value=" Back " class="action-btn"/>');
@@ -106,27 +119,28 @@ module.exports = function ( jq ) {
 			});
 		}
 
-		let billUsageUrl = '/api/shop/bill/mount/count/' + shopData.id
-		let params = {};
-		common.doCallApi(billUsageUrl, params).then(async(billRes)=>{
-			//console.log(billRes);
-			let shopBillUsage = $('<p>จำนวนบิลที่ใช้<span id="BillDateChangeCmd">เดือนนี้</span> <span id="BillAmount" style="font-weight: bold;">' + billRes.count + '</span> บิล</p>').css({'line-height': '11px'});
-			$(middleCell).append($(shopBillUsage))
-			if (shopData['Shop_VatNo'] !== '') {
-				let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/mount/count/' + shopData.id, {});
-				//console.log(taxinvoiceRes);
-				let shopTaxinvoiceUsage = $('<p>จำนวนใบกำกับภาษีที่ใช้<span id="TaxInvoiceDateChangeCmd">เดือนนี้</span> <span id="TaxInvoiceAmount" style="font-weight: bold;">' + taxinvoiceRes.count + '</span> ใบ</p>').css({'line-height': '11px'});
-				$(middleCell).append($(shopTaxinvoiceUsage));
-				//doControlChangeDateAmount(shopData);
+		let shopMessageCmd = $('<img src="../../images/shop-message-icon.png"/>').css({'width': '45px', 'height': 'auto', 'cursor': 'pointer', 'position': 'absolute'});
+		$(shopMessageCmd).on('click', (evt)=>{
+			evt.stopPropagation();
+			doOpenMyMessageCallBack(evt, shopData);
+		});
+		$(rightSideCell).append($('<br/>')).append($(shopMessageCmd).css({'bottom': '0px', 'margin-left': '-20px'}));
+
+		let myMessageUrl = '/api/shop/message/month/new/count/' + shopData.id
+		params = {userId: userdata.id};
+		common.doCallApi(myMessageUrl, params).then((msgRes)=>{
+			if (msgRes.count > 0) {
+				const redCircleAmountStyle = {'display': 'inline-block', 'color': '#fff', 'text-align': 'center', 'line-height': '24px', 'border-radius': '50%', 'font-size': '16px', 'min-width': '28px', 'min-height': '28px', 'margin-top': '16%', 'margin-right': '95%', 'background-color': 'red', 'position': 'absolute', 'cursor': 'pointer'};
+				let myMessageAmount = $('<div id="MessageAmount">2</div>').css(redCircleAmountStyle);
+				$(myMessageAmount).text(msgRes.count);
+				$(rightSideCell).append($(myMessageAmount));
 			}
-			doControlChangeDateAmount(shopData);
 		});
 
     $(layoutRow).append($(letfSideCell)).append($(middleCell)).append($(rightSideCell));
     $(layoutPage).append($(layoutRow));
     return $(titlePageBox).append($(layoutPage));
 	}
-
 
   const doCreateContolShopCmds = function(shopData){
     let commandsBox = $('<div style="padding: 4px;"></viv>').css({'width': '99.1%', 'height': '35px', 'text-align': 'left', 'border': '2px solid black', 'border-radius': '4px', 'background-color': 'grey', 'margin-top': '5px'});
@@ -447,6 +461,11 @@ module.exports = function ( jq ) {
 			}
 			dlgHandle = $('body').radalert(mountSelectDlgOption);
 		});
+	}
+
+	const doOpenMyMessageCallBack = async function(evt, shopData){
+		let workingAreaBox = $('#WorkingAreaBox');
+		await message.doShowMyMesaage(shopData, workingAreaBox);
 	}
 
   return {
