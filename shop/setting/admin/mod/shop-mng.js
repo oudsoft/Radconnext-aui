@@ -44,9 +44,6 @@ module.exports = function ( jq ) {
     let shopName = $('<h2>' + shopData['Shop_Name'] + '</h2>').css({'line-height': '20px'});
     let shopAddress = $('<p>' + shopData['Shop_Address'] + '</p>').css({'line-height': '11px'});
     let shopTel = $('<p>โทร. ' + shopData['Shop_Tel'] + '</p>').css({'line-height': '11px'});
-    let shopMail = $('<p>อีเมล์ ' + shopData['Shop_Mail'] + '</p>').css({'line-height': '11px'});
-    let shopVatNo = $('<p>หมายเลขผู้เสียภาษี ' + shopData['Shop_VatNo'] + '</p>').css({'line-height': '11px'});
-		let shopPPQCNo = $('<p>หมายเลขพร้อมเพย์ <span>' + shopData['Shop_PromptPayNo'] + '</span></p>').css({'line-height': '11px'});
 
     let titlePageBox = $('<div style="padding: 4px;"></viv>').css({'width': '99.1%', 'text-align': 'center', 'font-size': '18px', 'border': '2px solid black', 'border-radius': '5px', 'background-color': 'grey', 'color': 'white'});
     let layoutPage = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
@@ -56,39 +53,72 @@ module.exports = function ( jq ) {
     let rightSideCell = $('<td width="*" align="center" style="position: relative;"></td>');
     $(letfSideCell).append($(shopLogoIconBox));
     $(middleCell).append($(shopName)).append($(shopAddress)).append($(shopTel));
+
+
+		let shopMail = $('<p>อีเมล์ ' + shopData['Shop_Mail'] + '</p>').css({'line-height': '11px'});
+    let shopVatNo = $('<p>หมายเลขผู้เสียภาษี ' + shopData['Shop_VatNo'] + '</p>').css({'line-height': '11px'});
+		let shopPPQCNo = $('<p>หมายเลขพร้อมเพย์ <span>' + shopData['Shop_PromptPayNo'] + '</span></p>').css({'line-height': '11px'});
+
 		if (shopData['Shop_Mail'] !== '') {
 			$(middleCell).append($(shopMail));
+			$(shopMail).hide();
 		}
 		if (shopData['Shop_VatNo'] !== '') {
 			$(middleCell).append($(shopVatNo));
+			$(shopVatNo).hide();
 		}
-		if (shopData['Shop_PromptPayNo']) {
+		if ((shopData['Shop_PromptPayNo']) && (shopData['Shop_PromptPayNo'] !== '')) {
 			$(middleCell).append($(shopPPQCNo));
-			let ppqcNo = $(shopPPQCNo).find('span');
-			$(ppqcNo).css({'padding': '2px', 'cursor': 'pointer'});
-			$(ppqcNo).hover(()=>{
-				$(ppqcNo).css({'background-color': 'white', 'color': 'black', 'border': '1px solid black'});
-			},()=>{
-				$(ppqcNo).css({'background-color': 'inherit', 'color': 'inherit', 'border': ''});
-			});
-			$(ppqcNo).on('click', (evt)=>{
-				evt.stopPropagation();
-				doStartTestPPQC(evt, shopData);
-			});
+			$(shopPPQCNo).hide();
 		}
+
+		let shopBillUsage = $('<p>จำนวนบิลที่ใช้<span id="BillDateChangeCmd">เดือนนี้</span> <span id="BillAmount" style="font-weight: bold;">0</span> บิล</p>').css({'line-height': '11px'});
+		$(middleCell).append($(shopBillUsage));
+		$(shopBillUsage).hide();
+
+		let shopTaxinvoiceUsage = $('<p>จำนวนใบกำกับภาษีที่ใช้<span id="TaxInvoiceDateChangeCmd">เดือนนี้</span> <span id="TaxInvoiceAmount" style="font-weight: bold;">0</span> ใบ</p>').css({'line-height': '11px'});
+		$(middleCell).append($(shopTaxinvoiceUsage));
+		$(shopTaxinvoiceUsage).hide();
 
 		let billUsageUrl = '/api/shop/bill/mount/count/' + shopData.id
 		let params = {};
 		common.doCallApi(billUsageUrl, params).then(async(billRes)=>{
-			let shopBillUsage = $('<p>จำนวนบิลที่ใช้<span id="BillDateChangeCmd">เดือนนี้</span> <span id="BillAmount" style="font-weight: bold;">' + billRes.count + '</span> บิล</p>').css({'line-height': '11px'});
-			$(middleCell).append($(shopBillUsage))
+			$('#BillAmount').text(billRes.count);
 			if (shopData['Shop_VatNo'] !== '') {
 				let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/mount/count/' + shopData.id, {});
-				let shopTaxinvoiceUsage = $('<p>จำนวนใบกำกับภาษีที่ใช้<span id="TaxInvoiceDateChangeCmd">เดือนนี้</span> <span id="TaxInvoiceAmount" style="font-weight: bold;">' + taxinvoiceRes.count + '</span> ใบ</p>').css({'line-height': '11px'});
-				$(middleCell).append($(shopTaxinvoiceUsage));
+				$('#TaxInvoiceAmount').text(taxinvoiceRes.count);
 			}
 			doControlChangeDateAmount(shopData);
 		});
+
+		if ((shopData['Shop_PromptPayNo']) && (shopData['Shop_PromptPayNo'] !== '')) {
+			let doCreatePPQRCmd = common.doCreateTextCmd('สร้างพร้อมเพย์คิวอาร์โค้ด', 'grey', 'white');
+			$(doCreatePPQRCmd).on('click', (evt)=>{
+				evt.stopPropagation();
+				doStartTestPPQC(evt, shopData);
+			});
+			$(middleCell).append($(doCreatePPQRCmd).css({'display': 'line-block', 'margin-top': '15px'}));
+		}
+
+		let doCreateOtherDetailCmd = common.doCreateTextCmd('ข้อมูลอื่นๆ', 'grey', 'white');
+		$(doCreateOtherDetailCmd).on('click', (evt)=>{
+			if ($(doCreateOtherDetailCmd).text() === 'ข้อมูลอื่นๆ') {
+				$(doCreateOtherDetailCmd).text('ซ่อนข้อมูล');
+				$(shopMail).show();
+				$(shopVatNo).show();
+				$(shopPPQCNo).show();
+				$(shopBillUsage).show();
+				$(shopTaxinvoiceUsage).show();
+			} else {
+				$(doCreateOtherDetailCmd).text('ข้อมูลอื่นๆ');
+				$(shopMail).hide();
+				$(shopVatNo).hide();
+				$(shopPPQCNo).hide();
+				$(shopBillUsage).hide();
+				$(shopTaxinvoiceUsage).hide();
+			}
+		});
+		$(middleCell).append($(doCreateOtherDetailCmd).css({'display': 'line-block', 'margin-top': '15px', 'margin-left': '5px'}));
 
 		if (userdata.usertypeId == 1) {
 			let backCmd = $('<input type="button" value=" Back " class="action-btn"/>');
@@ -256,7 +286,7 @@ module.exports = function ( jq ) {
 
 						let openNewOrderCmd = common.doCreateTextCmd('ออกบิลใหม่', 'green', 'white');
 						$(openNewOrderCmd).addClass('sensitive-word');
-						$(newOrderCmd).attr('id', 'newOrderCmd');
+						$(openNewOrderCmd).attr('id', 'newOrderCmd');
 						$(openNewOrderCmd).on('click', (evt)=>{
 							evt.stopPropagation();
 							dlgHandle.closeAlert();
