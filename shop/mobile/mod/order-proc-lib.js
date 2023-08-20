@@ -1,4 +1,5 @@
 /* order-proc-lib.js */
+/* หน้าห้องครัว */
 module.exports = function ( jq ) {
 	const $ = jq;
 
@@ -13,11 +14,32 @@ module.exports = function ( jq ) {
     pageHandle = value;
   }
 
+	const doCheckQtyBeforeItems = function(beforeItems, currentItem) {
+		return new Promise(async function(resolve, reject) {
+			let foundItems = await beforeItems.find((item)=>{
+				if (item.id == currentItem.id) {
+					return item;
+				}
+			});
+			//console.log(currentItem);
+			//console.log(foundItems);
+			if (foundItems) {
+				if (foundItems.Qty == currentItem.Qty) {
+					resolve()
+				} else {
+					resolve({diff: (Number(currentItem.Qty) - Number(foundItems.Qty)), before: foundItems.Qty, current: currentItem.Qty});
+				}
+			} else {
+				resolve();
+			}
+		});
+	}
+
   const doCreatePageTabsheet = function(shopId, workAreaBox, orderDate, newOrderShowEvt, accOrderShowEvt, sucOrderShowEvt) {
     let mainBox = $('<div></div>');
     let newOrderTab = $('<button class="tablink" id="NewOrderTab"></button>').text('รายการใหม่').css(styleCommon.tablinkStyle);
     let accOrderTab = $('<button class="tablink" id="AccOrderTab"></button>').text('รายการรับ').css(styleCommon.tablinkStyle);
-    let sucOrderTab = $('<button class="tablink" id="SucOrderTab"></button>').text('รายการส่ง').css(styleCommon.tablinkStyle);
+    let sucOrderTab = $('<button class="tablink" id="SucOrderTab"></button>').text('รายการส่งมอบ').css(styleCommon.tablinkStyle);
     let newOrderSheet = $('<div class="tabcontent" id="NewOrderSheet"></div>').css(styleCommon.tabsheetStyle);
     let accOrderSheet = $('<div class="tabcontent" id="AccOrderSheet"></div>').css(styleCommon.tabsheetStyle);
     let sucOrderSheet = $('<div class="tabcontent" id="SucOrderSheet"></div>').css(styleCommon.tabsheetStyle);
@@ -68,7 +90,7 @@ module.exports = function ( jq ) {
   }
 
   const onSucOrderShowEvt = async function(evt, sucOrderSheetBox, shopId, workAreaBox, orderDate,) {
-    $(sucOrderSheetBox).empty().append($('<h2>รายการส่ง</h2>'));
+    $(sucOrderSheetBox).empty().append($('<h2>รายการส่งมอบ</h2>'));
 		$('#OrderListBox').remove();
 		let selectDate = orderDate;
 		let newStatuses = [1, 2, 3, 4];
@@ -148,8 +170,6 @@ module.exports = function ( jq ) {
 
 	const doCreateOrderList = function(shopId, workAreaBox, orderDate, orderStatuses, itemStatuses) {
     return new Promise(async function(resolve, reject) {
-			console.log(orderStatuses);
-			console.log(itemStatuses);
       let orderReqParams = {};
       if (orderDate) {
         orderReqParams = {orderDate: orderDate};
@@ -157,7 +177,9 @@ module.exports = function ( jq ) {
       let orderRes = await common.doCallApi('/api/shop/order/list/by/shop/' + shopId, orderReqParams);
       let orders = orderRes.Records;
 
-      console.log(orders);
+			console.log(orderStatuses); // [1,2]
+			console.log(itemStatuses); // ['Acc']
+      console.log(orders); // [ ... ]
 
 			let orderListBox = $('<div id="OrderListBox"></div>').css({'position': 'relative', 'width': '100%', 'margin-top': '25px'});
 
@@ -165,10 +187,26 @@ module.exports = function ( jq ) {
 				let cookItems = [];
 				for (let i=0; i < orders.length; i++) {
 					for (let j=0; j < orders[i].Items.length; j ++) {
-						console.log((orderStatuses.includes(Number(orders[i].Status))));
-						console.log((itemStatuses.includes(orders[i].Items[j].ItemStatus)));
+						//console.log(orders[i].Status); // 1
+						//console.log(orders[i].Items[j].ItemStatus); // Acc
 						if ((orderStatuses.includes(Number(orders[i].Status))) && (itemStatuses.includes(orders[i].Items[j].ItemStatus))) {
 							let cookItem = {item: {index: j, goodId: orders[i].Items[j].id, name: orders[i].Items[j].MenuName, desc: orders[i].Items[j].Desc, qty: orders[i].Items[j].Qty, price: orders[i].Items[j].Price, unit: orders[i].Items[j].Unit, picture: orders[i].Items[j].MenuPicture, status: orders[i].Items[j].ItemStatus}};
+							/*
+								กรณ๊ ลด Qty ให้เท่ากับ Before
+							*/
+							if (orders[i].BeforeItems) {
+								let diffQty = await doCheckQtyBeforeItems(orders[i].BeforeItems, orders[i].Items[j]);
+								//console.log(diffQty); // {diff, before, current}
+								if ((diffQty) && (diffQty.diff != 0)) {
+									cookItem.item.qty = diffQty.before;
+									cookItem.item.status = orders[i].Items[j].ItemStatus;
+								} else {
+									cookItem.item.status = orders[i].Items[j].ItemStatus;
+								}
+							} else {
+								cookItem.item.status = orders[i].Items[j].ItemStatus;
+							}
+
 							cookItem.orderId = orders[i].id;
 							cookItem.index = i;
 							cookItem.status = orders[i].Status;
@@ -177,6 +215,25 @@ module.exports = function ( jq ) {
 							cookItem.createdAt = orders[i].createdAt;
 							cookItem.updatedAt = orders[i].updatedAt;
 							cookItems.push(cookItem);
+
+						} else {
+							/*
+								กรณ๊ สร้างรายการใหม่ เข้าครัว เป็นรายการใหม่่
+							*/
+							if (orders[i].BeforeItems) {
+								let diffQty = await doCheckQtyBeforeItems(orders[i].BeforeItems, orders[i].Items[j]);
+								if (diffQty) {
+									let newCookItem = {item: {index: j, goodId: orders[i].Items[j].id, name: orders[i].Items[j].MenuName, desc: orders[i].Items[j].Desc, qty: diffQty.diff, price: orders[i].Items[j].Price, unit: orders[i].Items[j].Unit, picture: orders[i].Items[j].MenuPicture, status: 'New'}};
+									newCookItem.orderId = orders[i].id;
+									newCookItem.index = i;
+									newCookItem.status = orders[i].Status;
+									newCookItem.customer = orders[i].customer;
+									newCookItem.owner = orders[i].userinfo;
+									newCookItem.createdAt = orders[i].createdAt;
+									newCookItem.updatedAt = orders[i].updatedAt;
+									cookItems.push(newCookItem);
+								}
+							}
 						}
 					}
 				}
@@ -186,7 +243,7 @@ module.exports = function ( jq ) {
       });
       Promise.all([promiseList]).then((ob)=>{
 				let orderFilters = ob[0];
-				console.log(orderFilters);
+				//console.log(orderFilters);
 				if ((orderFilters) && (orderFilters.length > 0)) {
 					for (let k=0; k < orderFilters.length; k++) {
 						let cookItemBox = doRenderOrderListItem(orderFilters[k], onCookItemClickEvt);
@@ -207,19 +264,21 @@ module.exports = function ( jq ) {
 	}
 
 	const doRenderOrderListItem = function(cookData, clickCallback){
-		let cookBox = $('<div></div>').css({'width': '98%', 'padding': '2px', 'margin': '5px', 'display': 'table', 'border-collapse': 'collapse', 'border': '1px solid black', 'cursor': 'pointer'});
+		let cookBox = $('<div class="order-box"></div>').css({'width': '98%', 'padding': '2px', 'margin': '5px', 'display': 'table', 'border-collapse': 'collapse', 'border': '1px solid black', 'cursor': 'pointer'});
+		$(cookBox).data('orderData', cookData);
 		let cookRow = $('<div></div>').css({'width': '100%', 'display': 'table-row'});
 		let nameCell = $('<div></div>').css({'width': '50%', 'display': 'table-cell'});
 		let customerCell = $('<div></div>').css({'width': '40%', 'display': 'table-cell'});
 		let qtyCell = $('<div></div>').css({'width': '10%', 'display': 'table-cell'});
 		let itemNameBox = $('<div></div>').text(cookData.item.name).css({'position': 'relative', 'width': '100%', 'border-bottom': '2px solid black'});
 		let itemDescBox = $('<div></div>').text(cookData.item.desc).css({'position': 'relative', 'width': '100%'});
-		let itemCustomerBox = $('<div></div>').text(cookData.customer.Name).css({'margin-left': '4px'});
+		let itemCustomerNameBox = $('<div></div>').text(cookData.customer.Name).css({'margin-left': '4px'});
+		let itemCustomerAddressBox = $('<div></div>').text(cookData.customer.Address).css({'margin-left': '4px'});
 		let itemQtyBox = $('<div id="QtyBox"></div>').css({'margin-left': '4px', 'padding': '5px', 'border': '1px solid red'});
 		$(itemQtyBox).append($('<p></p>').text(cookData.item.qty).css({'text-align': 'center', 'font-size': '30px', 'font-weight': 'bold'}));
 		$(itemQtyBox).append($('<p></p>').text(cookData.item.unit).css({'text-align': 'center', 'font-size': '24px', 'font-weight': 'bold'}));
 		$(nameCell).append($(itemNameBox)).append($(itemDescBox));
-		$(customerCell).append($(itemCustomerBox));
+		$(customerCell).append($(itemCustomerNameBox)).append($(itemCustomerAddressBox));
 		$(qtyCell).append($(itemQtyBox));
 		$(cookRow).append($(nameCell)).append($(customerCell)).append($(qtyCell));
 		if (cookData.status == 1) {
@@ -284,8 +343,16 @@ module.exports = function ( jq ) {
 	const onAccCmdClickEvt = async function(evt, cookData) {
 		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'Acc'};
     let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
-		console.log(menuitemRes);
-		$(tabSheetBoxHandle).find('#NewOrderTab').click();
+		let newRest = await menuitemRes.result[0].Items.find((item, i) => {
+			if (item.ItemStatus === 'New') {
+				return item;
+			}
+		});
+		if ((newRest) && (newRest.length == 0)) {
+			$(tabSheetBoxHandle).find('#AccOrderTab').click();
+		} else {
+			$(tabSheetBoxHandle).find('#NewOrderTab').click();
+		}
 	}
 
 	const onRejCmdClickEvt = async function(evt, cookData) {
@@ -305,8 +372,18 @@ module.exports = function ( jq ) {
 	const onDeliCmdClickEvt = async function(evt, cookData) {
 		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'Suc'};
     let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
-		console.log(menuitemRes);
 		$(tabSheetBoxHandle).find('#SucOrderTab').click();
+
+		let accRest = await menuitemRes.result[0].Items.find((item, i) => {
+			if (item.ItemStatus === 'Acc') {
+				return item;
+			}
+		});
+		if ((accRest) && (accRest.length == 0)) {
+			$(tabSheetBoxHandle).find('#SucOrderTab').click();
+		} else {
+			$(tabSheetBoxHandle).find('#AccOrderTab').click();
+		}
 	}
 
 	const onRetCmdClickEvt = async function(evt, cookData) {

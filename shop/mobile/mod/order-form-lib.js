@@ -236,7 +236,21 @@ module.exports = function ( jq ) {
         let params = undefined;
         let orderRes = undefined;
         if (orderData) {
-          params = {data: {Items: orderObj.gooditems, Status: 1, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, id: orderData.id};
+					orderRes = await common.doCallApi('/api/shop/order/select/' + orderData.id, {});
+					await orderObj.gooditems.forEach(async (item, i) => {
+						let findInd = undefined;
+						let findLastItem = await orderRes.Record.Items.find((it, j) => {
+							if (item.id == it.id) {
+								findInd = j;
+								return it;
+							}
+						});
+						if (findLastItem) {
+							orderObj.gooditems[i].ItemStatus = orderRes.Record.Items[findInd].ItemStatus;
+						}
+					});
+
+					params = {data: {Items: orderObj.gooditems, Status: 1, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, id: orderData.id};
           orderRes = await common.doCallApi('/api/shop/order/update', params);
           if (orderRes.status.code == 200) {
             $.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");

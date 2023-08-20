@@ -199,9 +199,13 @@ const doCreateUserInfoBox = function(){
   $(userPictureBox).on('click', (evt)=>{
     $(userPPQRTestCmd).toggle('fast', 'linear');
     $(calculatorCmd).toggle('fast', 'linear');
-    $(uploadBillLogoCmd).toggle('fast', 'linear');
+    if (uploadBillLogoCmd) {
+      $(uploadBillLogoCmd).toggle('fast', 'linear');
+    }
     $(userLogoutCmd).toggle('fast', 'linear');
-    $(messageBox).toggle('fast', 'linear');
+    if (messageBox) {
+      $(messageBox).toggle('fast', 'linear');
+    }
   });
   let userPicture = $('<img src="../../images/avatar-icon.png"/>').css({'position': 'relative', 'width': '50px', 'height': 'auto', 'cursor': 'pointer', 'margin-top': '-2px'});
   $(userPictureBox).append($(userPicture));
@@ -219,26 +223,33 @@ const doCreateUserInfoBox = function(){
     doOpenCalculatorCallBack(evt, userdata.shop);
   });
 
-  let uploadBillLogoCmd = $('<div>แก้ไขรูปสัญลักษณ์ในบิล</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
-  $(uploadBillLogoCmd).on('click', (evt)=>{
-    evt.stopPropagation();
-    $(pageHandle.toggleMenuCmd).click();
-    doOpenUploadBillLogo(evt, userdata.shop);
-  });
+  $(userInfoBox).append($(userPictureBox)).append($(userInfo)).append($(userPPQRTestCmd)).append($(calculatorCmd));
 
-  $(userInfoBox).append($(userPictureBox)).append($(userInfo)).append($(userPPQRTestCmd)).append($(calculatorCmd)).append($(uploadBillLogoCmd));
-
-  let isMobile = isMobileDeviceCheck();
-  if (!isMobile) {
-    let switchDesktopCmd = $('<div>สวิชต์ไปเวอร์ชั่นเดสก์ท็อป</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
-    $(switchDesktopCmd).on('click', (evt)=>{
+  let uploadBillLogoCmd = undefined;
+  if ([1, 2, 3].includes(userdata.usertypeId)) {
+    uploadBillLogoCmd = $('<div>แก้ไขรูปสัญลักษณ์ในบิล</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
+    $(uploadBillLogoCmd).on('click', (evt)=>{
       evt.stopPropagation();
       $(pageHandle.toggleMenuCmd).click();
-      let protocol = window.location.protocol;
-      let domain = window.location.host;
-      window.location.replace(protocol + '//' + domain + '/shop/setting/admin.html');
+      doOpenUploadBillLogo(evt, userdata.shop);
     });
-    $(userInfoBox).append($(switchDesktopCmd));
+    $(userInfoBox).append($(uploadBillLogoCmd));
+  }
+
+  let switchDesktopCmd = undefined;
+  if ([1, 2, 3].includes(userdata.usertypeId)) {
+    let isMobile = isMobileDeviceCheck();
+    if (!isMobile) {
+      switchDesktopCmd = $('<div>สวิชต์ไปเวอร์ชั่นเดสก์ท็อป</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
+      $(switchDesktopCmd).on('click', (evt)=>{
+        evt.stopPropagation();
+        $(pageHandle.toggleMenuCmd).click();
+        let protocol = window.location.protocol;
+        let domain = window.location.host;
+        window.location.replace(protocol + '//' + domain + '/shop/setting/admin.html');
+      });
+      $(userInfoBox).append($(switchDesktopCmd));
+    }
   }
 
   let userLogoutCmd = $('<div>ออกจากระบบ</div>').css({'background-color': 'white', 'color': 'black', 'cursor': 'pointer', 'position': 'relative', 'width': '50%', 'margin-top': '10px', 'padding': '2px', 'font-size': '14px', 'margin-left': '25%', 'border': '2px solid black'});
@@ -248,22 +259,23 @@ const doCreateUserInfoBox = function(){
 
   $(userInfoBox).append($(userLogoutCmd));
 
-  const redCircleAmountStyle = {'display': 'inline-block', 'color': '#fff', 'text-align': 'center', 'line-height': '24px', 'border-radius': '50%', 'font-size': '16px', 'min-width': '28px', 'min-height': '28px', 'margin-top': '10px', 'margin-left': '-10px', 'background-color': 'red', 'position': 'absolute', 'cursor': 'pointer'};
-  let myMessageAmount = $('<div id="MessageAmount">2</div>').css(redCircleAmountStyle);
-  $(userPictureBox).append($(myMessageAmount));
-  let myMessageUrl = '/api/shop/message/month/new/count/' + userdata.shop.id
-  let params = {userId: userdata.id};
-  common.doCallApi(myMessageUrl, params).then((msgRes)=>{
-    if (msgRes.count > 0) {
-      $(myMessageAmount).show().text(msgRes.count);
-    } else {
-      $(myMessageAmount).hide();
-    }
-  });
-
-  let messageBox = doCreateShopMessageBox();
-
-  return $(userInfoBox).append($(messageBox))
+  if ([1, 2, 3].includes(userdata.usertypeId)) {
+    const redCircleAmountStyle = {'display': 'inline-block', 'color': '#fff', 'text-align': 'center', 'line-height': '24px', 'border-radius': '50%', 'font-size': '16px', 'min-width': '28px', 'min-height': '28px', 'margin-top': '10px', 'margin-left': '-10px', 'background-color': 'red', 'position': 'absolute', 'cursor': 'pointer'};
+    let myMessageAmount = $('<div id="MessageAmount">2</div>').css(redCircleAmountStyle);
+    $(userPictureBox).append($(myMessageAmount));
+    let myMessageUrl = '/api/shop/message/month/new/count/' + userdata.shop.id
+    let params = {userId: userdata.id};
+    common.doCallApi(myMessageUrl, params).then((msgRes)=>{
+      if (msgRes.count > 0) {
+        $(myMessageAmount).show().text(msgRes.count);
+      } else {
+        $(myMessageAmount).hide();
+      }
+    });
+    let messageBox = doCreateShopMessageBox();
+    $(userInfoBox).append($(messageBox));
+  }
+  return $(userInfoBox);
 }
 
 const doCreatePPInfoBox = function(shopData) {

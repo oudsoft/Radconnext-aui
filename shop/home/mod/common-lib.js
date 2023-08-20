@@ -208,8 +208,9 @@ module.exports = function ( jq ) {
 	  const paths = window.location.pathname.split('/');
 	  const rootname = paths[1];
 
-		let wsUrl = 'wss://radconnext.tech/' + username + '/' + shopId + '?type=' + connecttype;
-		//let wsUrl = 'wss://localhost:4443/' + username + '/' + shopId + '?type=' + connecttype;
+		let wsUrl = 'wss://' + hostname + ':' + port + '/' + username + '/' + shopId + '?type=' + connecttype;
+		//let wsUrl = 'wss://radconnext.tech/' + username + '/' + shopId + '?type=' + connecttype;
+
 	  const wsm = new WebSocket(wsUrl);
 		wsm.onopen = function () {
 			//console.log('Master Websocket is connected to the signaling server')
