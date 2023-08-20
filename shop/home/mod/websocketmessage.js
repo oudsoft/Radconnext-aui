@@ -32,7 +32,7 @@ module.exports = function ( jq, wsm ) {
 				if (data.msg) {
 					$.notify(data.msg, "success");
 				}
-				//onOrderUpdate(wsm, data.orderId, data.status, data.updataData);
+				onOrderUpdate(wsm, data.orderId, data.status, data.updataData);
 				$('#NewOrderTab').click();
 				break;
 			}
