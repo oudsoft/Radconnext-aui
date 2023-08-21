@@ -44,14 +44,12 @@ module.exports = function ( jq, wsm ) {
 
   const onOrderUpdate = async function(wsm, orderId, status, changeOrder){
 		console.log(changeOrder);
+		
 		let changelogs = JSON.parse(localStorage.getItem('changelogs'));
 		if (!changelogs) {
 			changelogs = [];
-			changelogs.push(changelogs);
 		}
-		if (changeOrder) {
-			changelogs.push({orderId: orderId, status: status, diffItems: changeOrder.diffItems, date: new Date()});
-		}
+		console.log(changelogs);
 
 		localStorage.setItem('changelogs', JSON.stringify(changelogs));
 		let newMsgCounts = undefined;

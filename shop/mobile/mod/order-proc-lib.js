@@ -341,7 +341,8 @@ module.exports = function ( jq ) {
 	}
 
 	const onAccCmdClickEvt = async function(evt, cookData) {
-		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'Acc'};
+		let userdata = JSON.parse(localStorage.getItem('userdata'));
+		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'Acc', shop: userdata.shop};
     let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
 		let newRest = await menuitemRes.result[0].Items.find((item, i) => {
 			if (item.ItemStatus === 'New') {
@@ -356,21 +357,24 @@ module.exports = function ( jq ) {
 	}
 
 	const onRejCmdClickEvt = async function(evt, cookData) {
-		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'Rej'};
+		let userdata = JSON.parse(localStorage.getItem('userdata'));
+		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'Rej', shop: userdata.shop};
     let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
 		console.log(menuitemRes);
 		$(tabSheetBoxHandle).find('#NewOrderTab').click();
 	}
 
 	const onResetCmdClickEvt = async function(evt, cookData) {
-		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'New'};
+		let userdata = JSON.parse(localStorage.getItem('userdata'));
+		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'New', shop: userdata.shop};
     let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
 		console.log(menuitemRes);
 		$(tabSheetBoxHandle).find('#NewOrderTab').click();
 	}
 
 	const onDeliCmdClickEvt = async function(evt, cookData) {
-		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'Suc'};
+		let userdata = JSON.parse(localStorage.getItem('userdata'));
+		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'Suc', shop: userdata.shop};
     let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
 		$(tabSheetBoxHandle).find('#SucOrderTab').click();
 
@@ -387,7 +391,8 @@ module.exports = function ( jq ) {
 	}
 
 	const onRetCmdClickEvt = async function(evt, cookData) {
-		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'New'};
+		let userdata = JSON.parse(localStorage.getItem('userdata'));
+		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'New', shop: userdata.shop};
     let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
 		console.log(menuitemRes);
 		$(tabSheetBoxHandle).find('#NewOrderTab').click();

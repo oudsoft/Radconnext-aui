@@ -159,7 +159,7 @@ module.exports = function ( jq ) {
 						let params = undefined;
 						let orderRes = undefined;
 						if ((orderData) && (orderData.id)) {
-							params = {data: {Items: orderObj.gooditems, Status: orderObj.Status, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, id: orderData.id};
+							params = {data: {Items: orderObj.gooditems, Status: orderObj.Status, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, shop: userdata.shop, id: orderData.id};
 							orderRes = await common.doCallApi('/api/shop/order/update', params);
 							if (orderRes.status.code == 200) {
 								$.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
@@ -250,7 +250,7 @@ module.exports = function ( jq ) {
 						}
 					});
 
-					params = {data: {Items: orderObj.gooditems, Status: 1, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, id: orderData.id};
+					params = {data: {Items: orderObj.gooditems, Status: 1, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, shop: userdata.shop, id: orderData.id};
           orderRes = await common.doCallApi('/api/shop/order/update', params);
           if (orderRes.status.code == 200) {
             $.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
@@ -275,7 +275,7 @@ module.exports = function ( jq ) {
     $(saveNewOrderCmdBox).append($(saveNewOrderCmd));
 		if (orderObj.id) {
 			let changelogs = JSON.parse(localStorage.getItem('changelogs'));
-			//console.log(changelogs);
+			console.log(changelogs);
 			if (changelogs) {
 				let newMsgCounts = await changelogs.filter((item, i) =>{
 					if ((item.orderId == orderObj.id) && (item.status === 'New')) {
