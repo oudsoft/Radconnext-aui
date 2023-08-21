@@ -207,7 +207,7 @@ module.exports = function ( jq ) {
 					let params = undefined;
 					let orderRes = undefined;
 					if ((orderData) && (orderData.id)) {
-						params = {data: {Items: orderObj.gooditems, Status: orderObj.Status, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, id: orderData.id};
+						params = {data: {Items: orderObj.gooditems, Status: orderObj.Status, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, shop: shopData, id: orderData.id};
 						orderRes = await common.doCallApi('/api/shop/order/update', params);
 						if (orderRes.status.code == 200) {
 							$.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
@@ -273,7 +273,7 @@ module.exports = function ( jq ) {
         let params = undefined;
         let orderRes = undefined;
         if (orderData) {
-          params = {data: {Items: orderObj.gooditems, Status: 1, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, id: orderData.id};
+          params = {data: {Items: orderObj.gooditems, Status: 1, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, shop: shopData, id: orderData.id};
           orderRes = await common.doCallApi('/api/shop/order/update', params);
           if (orderRes.status.code == 200) {
             $.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
@@ -677,12 +677,12 @@ module.exports = function ( jq ) {
 							if (orderData.id) {
 								let params = undefined;
 								if (newGoodItems.length > 0) {
-									params = {data: {Items: newGoodItems}, id: orderData.id};
+									params = {data: {Items: newGoodItems}, shop: shopData, id: orderData.id};
 								} else {
 									/*
 									ปัญหาเกิดจากการอัพเดท Items ซึงเป็น jsonb ด้วย [] empty array
 									*/
-									params = {data: {Status: 1}, id: orderData.id};
+									params = {data: {Status: 1}, shop: shopData, id: orderData.id};
 								}
 								let orderRes = await common.doCallApi('/api/shop/order/update', params);
 							}
@@ -814,11 +814,11 @@ module.exports = function ( jq ) {
 							$(mergeOrderCmdBox).on('click', async (evt)=>{
 								evt.stopPropagation();
 								mergeorderdlg.doMergeOrder(orders, i, async (newOrders, destIndex)=>{
-									let params = {data: {Status: 0, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, id: orders[i].id};
+									let params = {data: {Status: 0, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, shop: shopData, id: orders[i].id};
 									let orderRes = await common.doCallApi('/api/shop/order/update', params);
 									if (orderRes.status.code == 200) {
 										$.notify("ยกเลิกรายการออร์เดอร์สำเร็จ", "success");
-										params = {data: {Items: orders[destIndex].Items, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, id: orders[destIndex].id};
+										params = {data: {Items: orders[destIndex].Items, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, shop: shopData, id: orders[destIndex].id};
 					          orderRes = await common.doCallApi('/api/shop/order/update', params);
 					          if (orderRes.status.code == 200) {
 					            $.notify("ยุบรวมรายการออร์เดอร์สำเร็จ", "success");
@@ -840,7 +840,7 @@ module.exports = function ( jq ) {
 							$(cancelOrderCmdBox).append($('<span id ="cancelOrderCmd" class="sensitive-word">ยกเลิกออร์เดอร์</span>').css({'font-weight': 'bold'}));
 							$(cancelOrderCmdBox).on('click', async (evt)=>{
 								evt.stopPropagation();
-								let params = {data: {Status: 0, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, id: orders[i].id};
+								let params = {data: {Status: 0, userId: orders[i].userId, userinfoId: orders[i].userinfoId}, shop: shopData, id: orders[i].id};
 								let orderRes = await common.doCallApi('/api/shop/order/update', params);
 								if (orderRes.status.code == 200) {
 									$.notify("ยกเลิกรายการออร์เดอร์สำเร็จ", "success");
