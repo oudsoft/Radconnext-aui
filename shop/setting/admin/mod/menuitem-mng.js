@@ -399,8 +399,12 @@ module.exports = function ( jq ) {
 		let inputField = $('<td width="*" align="left"></td>').css({'padding': '5px'});
 		let inputValue = $('<select id="GroupId"></select>');
 		let menugroups = JSON.parse(localStorage.getItem('menugroups'));
+		let firstGroupId = undefined;
 		menugroups.forEach((item, i) => {
-			$(inputValue).append($('<option value="' + item.Value + '">' + item.DisplayText + '</option>'))
+			$(inputValue).append($('<option value="' + item.Value + '">' + item.DisplayText + '</option>'));
+			if (i == 0) {
+				firstGroupId = item.Value;
+			}
 		});
 		$(inputField).append($(inputValue));
 		$(fieldRow).append($(labelField));
@@ -409,8 +413,10 @@ module.exports = function ( jq ) {
 
 		if (groupId) {
 			$(inputValue).val(groupId);
-		} else {
+		} else if ((menuitemData) && (menuitemData.menugroupId)){
 			$(inputValue).val(menuitemData.menugroupId);
+		} else {
+			$(inputValue).val(firstGroupId);
 		}
 
 		return $(menuitemFormTable);

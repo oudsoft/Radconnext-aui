@@ -178,11 +178,19 @@ module.exports = function ( jq ) {
 								doShowGooditemPopup(results[i]);
 							});
 	          }
+
+						// console.log(results[i]);
+
 	          let nameCell = $('<td width="30%" align="left">' + results[i].MenuName + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
 	          let qtyCell = $('<td width="10%" align="left"></td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
 	          let priceCell = $('<td width="10%" align="left">' + common.doFormatNumber(results[i].Price) + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
 	          let unitCell = $('<td width="15%" align="left">' + results[i].Unit + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
-	          let groupCell = $('<td width="*" align="left">' + results[i].menugroup.GroupName + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
+						let groupCell = undefined;
+						if (results[i].menugroup) {
+	          	groupCell = $('<td width="*" align="left">' + results[i].menugroup.GroupName + '</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
+						} else {
+							groupCell = $('<td width="*" align="left">ไม่พบกลุ่มสินค้า</td>').css({'padding-top': '10px', 'padding-bottom': '10px'});
+						}
 	          $(qtyCell).append($(qtyInput)).append($('<span>*</spam>').css({'color': 'red'}));
 	          $(resultRow).append($(pictureCell)).append($(nameCell)).append($(qtyCell)).append($(priceCell)).append($(unitCell)).append($(groupCell));
 	          $(gooditemTable).append($(resultRow));

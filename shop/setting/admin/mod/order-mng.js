@@ -1024,7 +1024,7 @@ module.exports = function ( jq ) {
 	}
 
 	const doEditMenuNameOnTheFly = function(event, gooditems, index, successCallback){
-		let editInput = $('<input type="text"/>').val(gooditems[index].MenuName).css({'width': '200px', 'margin-left': '20px'});
+		let editInput = $('<input type="text"/>').val(gooditems[index].MenuName).css({'width': '340px', 'margin-left': '20px'});
 		$(editInput).on('keyup', (evt)=>{
 			if (evt.keyCode == 13) {
 				$(dlgHandle.okCmd).click();
@@ -1039,7 +1039,7 @@ module.exports = function ( jq ) {
 		let editDlgOption = {
 			title: 'แก้ไขชื่อสินค้า',
 			msg: editBox,
-			width: '350px',
+			width: '450px',
 			onOk: async function(evt) {
 				let newValue = $(editInput).val();
 				if(newValue !== '') {

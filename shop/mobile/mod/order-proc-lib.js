@@ -177,14 +177,14 @@ module.exports = function ( jq ) {
       let orderRes = await common.doCallApi('/api/shop/order/list/by/shop/' + shopId, orderReqParams);
       let orders = orderRes.Records;
 
-			console.log(orderStatuses); // [1,2]
-			console.log(itemStatuses); // ['Acc']
-      console.log(orders); // [ ... ]
+			//console.log(orderStatuses); // [1,2]
+			//console.log(itemStatuses); // ['Acc']
+      //console.log(orders); // [ ... ]
 
 			let orderListBox = $('<div id="OrderListBox"></div>').css({'position': 'relative', 'width': '100%', 'margin-top': '25px'});
 
+			let cookItems = [];
 			let	promiseList = new Promise(async function(resolve2, reject2){
-				let cookItems = [];
 				for (let i=0; i < orders.length; i++) {
 					for (let j=0; j < orders[i].Items.length; j ++) {
 						//console.log(orders[i].Status); // 1
@@ -192,7 +192,7 @@ module.exports = function ( jq ) {
 						if ((orderStatuses.includes(Number(orders[i].Status))) && (itemStatuses.includes(orders[i].Items[j].ItemStatus))) {
 							let cookItem = {item: {index: j, goodId: orders[i].Items[j].id, name: orders[i].Items[j].MenuName, desc: orders[i].Items[j].Desc, qty: orders[i].Items[j].Qty, price: orders[i].Items[j].Price, unit: orders[i].Items[j].Unit, picture: orders[i].Items[j].MenuPicture, status: orders[i].Items[j].ItemStatus}};
 							/*
-								กรณ๊ ลด Qty ให้เท่ากับ Before
+								กรณ๊ รายการครั้งก่อน Qty ให้เท่ากับ Before
 							*/
 							if (orders[i].BeforeItems) {
 								let diffQty = await doCheckQtyBeforeItems(orders[i].BeforeItems, orders[i].Items[j]);
@@ -221,35 +221,44 @@ module.exports = function ( jq ) {
 								กรณ๊ สร้างรายการใหม่ เข้าครัว เป็นรายการใหม่่
 							*/
 							if (orders[i].BeforeItems) {
-								let diffQty = await doCheckQtyBeforeItems(orders[i].BeforeItems, orders[i].Items[j]);
-								if (diffQty) {
-									let newCookItem = {item: {index: j, goodId: orders[i].Items[j].id, name: orders[i].Items[j].MenuName, desc: orders[i].Items[j].Desc, qty: diffQty.diff, price: orders[i].Items[j].Price, unit: orders[i].Items[j].Unit, picture: orders[i].Items[j].MenuPicture, status: 'New'}};
-									newCookItem.orderId = orders[i].id;
-									newCookItem.index = i;
-									newCookItem.status = orders[i].Status;
-									newCookItem.customer = orders[i].customer;
-									newCookItem.owner = orders[i].userinfo;
-									newCookItem.createdAt = orders[i].createdAt;
-									newCookItem.updatedAt = orders[i].updatedAt;
-									cookItems.push(newCookItem);
-								}
+								console.log(itemStatuses); // ['Acc']
+								console.log(orders[i].Items[j].ItemStatus); // Suc
+								console.log(orders[i].Items[j]);
+								console.log(itemStatuses.includes(orders[i].Items[j].ItemStatus)); //false
+								//if (itemStatuses.includes(orders[i].Items[j].ItemStatus)) {
+									let diffQty = await doCheckQtyBeforeItems(orders[i].BeforeItems, orders[i].Items[j]);
+									console.log(diffQty);
+									if ((diffQty) && (diffQty.diff > 0)) {
+										let newCookItem = {item: {index: j, goodId: orders[i].Items[j].id, name: orders[i].Items[j].MenuName, desc: orders[i].Items[j].Desc, qty: diffQty.diff, price: orders[i].Items[j].Price, unit: orders[i].Items[j].Unit, picture: orders[i].Items[j].MenuPicture, status: 'New'}};
+										newCookItem.orderId = orders[i].id;
+										newCookItem.index = i;
+										newCookItem.status = orders[i].Status;
+										newCookItem.customer = orders[i].customer;
+										newCookItem.owner = orders[i].userinfo;
+										newCookItem.createdAt = orders[i].createdAt;
+										newCookItem.updatedAt = orders[i].updatedAt;
+										cookItems.push(newCookItem);
+									}
+								//}
+
 							}
 						}
 					}
 				}
         setTimeout(()=>{
-          resolve2($(cookItems));
+          resolve2(cookItems);
         }, 500);
       });
       Promise.all([promiseList]).then((ob)=>{
 				let orderFilters = ob[0];
-				//console.log(orderFilters);
+				console.log(orderFilters);
+				$(orderListBox).empty();
 				if ((orderFilters) && (orderFilters.length > 0)) {
 					for (let k=0; k < orderFilters.length; k++) {
 						let cookItemBox = doRenderOrderListItem(orderFilters[k], onCookItemClickEvt);
 						$(orderListBox).append($(cookItemBox));
-						resolve($(orderListBox));
 					}
+					resolve($(orderListBox));
 				} else {
 					let notFoundOrderDatbox = $('<div>ไม่พบรายการ<span id="notFoundOrderDatbox" class="sensitive-word">ออร์เดอร์</span>ของวันที่ ' + orderDate + '</div>');
 					if (common.shopSensitives.includes(shopId)) {
@@ -344,6 +353,7 @@ module.exports = function ( jq ) {
 		let userdata = JSON.parse(localStorage.getItem('userdata'));
 		let params = {orderId: cookData.orderId, goodId: cookData.item.goodId, newStatus: 'Acc', shop: userdata.shop};
     let menuitemRes = await common.doCallApi('/api/shop/order/item/status/update', params);
+		console.log(menuitemRes);
 		let newRest = await menuitemRes.result[0].Items.find((item, i) => {
 			if (item.ItemStatus === 'New') {
 				return item;
