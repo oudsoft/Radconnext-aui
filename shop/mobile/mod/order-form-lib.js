@@ -235,8 +235,12 @@ module.exports = function ( jq ) {
       if (orderObj.customer) {
         let params = undefined;
         let orderRes = undefined;
+				let newStatus = 1;
         if (orderData) {
 					orderRes = await common.doCallApi('/api/shop/order/select/' + orderData.id, {});
+					if (orderRes.Record.Status > 1) {
+						newStatus = orderRes.Record.Status;
+					}
 					await orderObj.gooditems.forEach(async (item, i) => {
 						let findInd = undefined;
 						let findLastItem = await orderRes.Record.Items.find((it, j) => {
@@ -250,7 +254,7 @@ module.exports = function ( jq ) {
 						}
 					});
 
-					params = {data: {Items: orderObj.gooditems, Status: 1, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, shop: userdata.shop, id: orderData.id};
+					params = {data: {Items: orderObj.gooditems, Status: newStatus, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, shop: userdata.shop, id: orderData.id};
           orderRes = await common.doCallApi('/api/shop/order/update', params);
           if (orderRes.status.code == 200) {
             $.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
@@ -706,6 +710,7 @@ module.exports = function ( jq ) {
 			*/
 			openNewWin(pngReportLink);
 		}).css({'display': 'inline-block', 'width': '120px', 'float': 'right', 'margin-right': '5px'});
+
 		let toggleReportBoxCmd = common.doCreateTextCmd(' เสร็จ ', 'green', 'white', 'green', 'black');
 		$(toggleReportBoxCmd).on('click', (evt)=>{
 			let hasHiddenReportBox = ($(mainBox).css('display') == 'none');
@@ -760,7 +765,8 @@ module.exports = function ( jq ) {
 		let cancelCmd = $('<input type="button" value=" กลับ "/>').css({'margin-left': '10px'});
 		$(cancelCmd).on('click', async(evt)=>{
 			$(pageHandle.toggleMenuCmd).click();
-			$(pageHandle.userInfoBox).hide();
+			//$(pageHandle.userInfoBox).hide();
+			$(pageHandle.userInfoBox).show();
 			$(pageHandle.menuContent).empty();
 		});
 		let gooitemCmdCell = $('<td colspan="2" align="center"></td>').append($(saveCmd)).append($(cancelCmd));

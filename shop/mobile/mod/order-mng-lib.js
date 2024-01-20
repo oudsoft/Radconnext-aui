@@ -107,6 +107,9 @@ module.exports = function ( jq ) {
 				$(canceledOrderHiddenToggleCmd).hide();
 			}
 
+			$(pageHandle.menuContent).empty();
+			$(pageHandle.userInfoBox).show();
+
       resolve();
 
     });
