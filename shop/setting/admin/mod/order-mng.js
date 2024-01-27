@@ -967,6 +967,7 @@ module.exports = function ( jq ) {
 					$(notFoundOrderDatbox).find("#notFoundOrderDatbox").text(sensitiveWordJSON.find((item)=>{if(item.elementId === 'notFoundOrderDatbox') return item}).customWord) ;
 				}
 				$(orderListBox).append($(notFoundOrderDatbox));
+				$('#App').find('#SummaryBox').remove();
         resolve($(orderListBox));
       }
     });
