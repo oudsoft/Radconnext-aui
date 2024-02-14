@@ -497,7 +497,8 @@ module.exports = function ( jq ) {
 						let subTotal = Number(goodItems[i].Price) * Number(goodItems[i].Qty);
 						let goodItemBox = $('<div></div>').css({'width': '125px', 'position': 'relative', 'min-height': '150px', 'border': '2px solid black', 'border-radius': '5px', 'display': 'inline-block', /*'float': 'left',*/ 'cursor': 'pointer', 'padding': '5px', 'margin-left': '8px', 'margin-top': '10px'});;
 						let goodItemImg = $('<img/>').attr('src', goodItems[i].MenuPicture).css({'width': '120px', 'height': 'auto'});
-						let goodItemNameBox = $('<div></div>').text(goodItems[i].MenuName).css({'position': 'relative', 'width': '100%', 'padding': '2px', 'font-size': '16px'});
+						let goodItemNameBox = $('<div></div>')/*.text(goodItems[i].MenuName)*/ .css({'position': 'relative', 'width': '100%', 'padding': '2px', 'font-size': '16px'});
+						let goodItemNameText = $('<span></span>').text(goodItems[i].MenuName).css({'position': 'relative', 'width': '100%', 'padding': '2px', 'font-size': '20px', 'font-weight': 'bold'});
 						let goodItemQtyUnitBox = $('<div></div>').css({'position': 'relative', 'width': '100%', 'padding': '2px', 'cursor': 'pointer', 'background-color': 'gray', 'color': 'white'});
 						let goodItemQtyBox = $('<span></span>').text(common.doFormatQtyNumber(goodItems[i].Qty)).css({'padding': '2px', 'font-size': '20px'});
 						let goodItemUnitBox = $('<span></span>').text(goodItems[i].Unit).css({'padding': '2px', 'font-size': '16px'});
@@ -581,6 +582,21 @@ module.exports = function ( jq ) {
 						if ([1, 2].includes(orderData.Status)) {
 							$(goodItemSubTotalBox).append($(deleteGoodItemCmd));
 						}
+						/* การแก้ไขชื่อสินค้า เฉพาะออเดอร์ใดๆ ไม่บันทึกลงในตาราง GoodItem ของ DB */
+						$(goodItemNameBox).append($(goodItemNameText));
+						$(goodItemNameBox).hover(()=>{
+							$(goodItemNameBox).css({'background-color': '#dddd', 'color': 'black'});
+						},()=>{
+							$(goodItemNameBox).css({'background-color': 'gray', 'color': 'white'});
+						});
+						$(goodItemNameBox).on('click', (evt)=>{
+							evt.stopPropagation();
+							doEditNameOnTheFly(evt, orderData.gooditems, i, async(newName)=>{
+								orderData.gooditems[i].MenuName = newName;
+								$(goodItemNameText).text(orderData.gooditems[i].MenuName);
+							});
+						});
+
 						$(goodItemBox).append($(goodItemImg)).append($(goodItemNameBox)).append($(goodItemQtyUnitBox)).append($(goodItemSubTotalBox));
 						$(itemListBox).append($(goodItemBox));
 						$(goodItemBox).on('click', async(evt)=>{
@@ -805,6 +821,37 @@ module.exports = function ( jq ) {
 		return dlgHandle;
 	}
 
+	const doEditNameOnTheFly = function(event, gooditems, index, successCallback){
+		let editInput = $('<input type="text"/>').val(gooditems[index].MenuName).css({'width': '250px', 'margin-left': '20px'});
+		$(editInput).on('keyup', (evt)=>{
+			if (evt.keyCode == 13) {
+				$(dlgHandle.okCmd).click();
+			}
+		});
+		let editLabel = $('<label>ชื่อสินค้า:</label>').attr('for', $(editInput)).css({'width': '100%'})
+		let editDlgOption = {
+			title: 'แก้ไขชื่อสินค้า',
+			msg: $('<div></div>').css({'width': '100%', 'height': '70px', 'margin-top': '20px'}).append($(editLabel)).append($(editInput)),
+			width: '360px',
+			onOk: async function(evt) {
+				let newValue = $(editInput).val();
+				if(newValue !== '') {
+					$(editInput).css({'border': ''});
+					dlgHandle.closeAlert();
+					successCallback(newValue);
+				} else {
+					$.notify('ชื่อสินค้าต้องไม่ว่าง', 'error');
+					$(editInput).css({'border': '1px solid red'});
+				}
+			},
+			onCancel: function(evt){
+				dlgHandle.closeAlert();
+			}
+		}
+		let dlgHandle = $('body').radalert(editDlgOption);
+		return dlgHandle;
+
+	}
 
 	const openNewWin = function(imgUrl){
 		let win = window.open('','_blank','menubar=0,location=0,toolbar=0,personalbar=0,status=0,scrollbars=1,resizable=1,width=200,height=200');
