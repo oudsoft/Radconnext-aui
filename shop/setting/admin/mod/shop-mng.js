@@ -313,7 +313,7 @@ module.exports = function ( jq ) {
 			}
 		}
 		let dlgHandle = $('body').radalert(editDlgOption);
-		$(dlgHandle.cancelCmd).hide();
+		//$(dlgHandle.cancelCmd).hide();
 		return dlgHandle;
 	}
 

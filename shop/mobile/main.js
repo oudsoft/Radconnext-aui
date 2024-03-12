@@ -70,7 +70,7 @@ $( document ).ready(function() {
 
   let userdata = JSON.parse(localStorage.getItem('userdata'));
   console.log(userdata);
-  
+
   if ((!userdata) || (userdata == null)) {
     common.doUserLogout();
   } else {
@@ -302,7 +302,7 @@ const doCreatePPInfoBox = function(shopData) {
 const doStartTestPPQC = function(evt){
   let userdata = JSON.parse(localStorage.getItem('userdata'));
   let shopData = userdata.shop;
-  let editInput = $('<input type="number"/>').val(common.doFormatNumber(100)).css({'width': '100px', 'margin-left': '20px'});
+  let editInput = $('<input type="number"/>').val(100 /*common.doFormatNumber(100)*/).css({'width': '100px', 'margin-left': '20px'});
   $(editInput).on('keyup', (evt)=>{
     if (evt.keyCode == 13) {
       $(dlgHandle.okCmd).click();
@@ -396,7 +396,8 @@ const doStartTestPPQC = function(evt){
   }
   let dlgHandle = $('body').radalert(editDlgOption);
   if (((shopData.Shop_PromptPayNo) && (shopData.Shop_PromptPayNo !== '')) && ((shopData.Shop_PromptPayName) && (shopData.Shop_PromptPayName !== ''))) {
-    $(dlgHandle.cancelCmd).hide();
+    //$(dlgHandle.cancelCmd).hide();
+    $(dlgHandle.cancelCmd).show();
     $(dlgHandle.okCmd).show();
   } else {
     $(dlgHandle.okCmd).hide();
