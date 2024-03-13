@@ -316,18 +316,46 @@ const doStartTestPPQC = function(evt){
   //console.log(shopData);
 
   if (((shopData.Shop_PromptPayNo) && (shopData.Shop_PromptPayNo !== '')) && ((shopData.Shop_PromptPayName) && (shopData.Shop_PromptPayName !== ''))) {
-    let ppInfoBox = doCreatePPInfoBox(shopData);
-    if ([1, 2, 3].includes(userdata.usertypeId)) {
-      settingPPDataCmd = common.doCreateTextCmd('แก้ไขข้อมูลพร้อมเพย์', 'green', 'white');
-      $(ppInfoBox).append($('<div style="width: 100%; text-align: center; margin-bottom: 20px;"></div>').append($(settingPPDataCmd)));
-    }
+    let ppBox = $('<div style="width: 97%; text-align: center; padding: 5px; border: 2px solid grey;"></div>');
+    let openPPDataCmd = common.doCreateTextCmd('ข้อมูลพร้อมเพย์', 'green', 'white');
+    $(ppBox).append($(openPPDataCmd));
+
     ppQRBox = $('<div></div>').css({'width': '100%', 'height': '480px', 'margin-top': '20px'});
-    $(ppQRBox).append($(ppInfoBox));
+    $(openPPDataCmd).on('click', (evt)=>{
+      evt.stopPropagation();
+      $(ppBox).hide();
+      let ppInfoBox = doCreatePPInfoBox(shopData);
+      if ([1, 2, 3].includes(userdata.usertypeId)) {
+        settingPPDataCmd = common.doCreateTextCmd('แก้ไขข้อมูลพร้อมเพย์', 'green', 'white');
+        $(settingPPDataCmd).on('click', (evt)=>{
+          evt.stopPropagation();
+          dlgHandle.closeAlert();
+          doOpenPPDataForm(evt, shopData);
+        });
+
+        let ppCancelCmd = $('<input type="button" value=" ยกเลิก "/>').css({'margin-left': '10px'});
+        $(ppCancelCmd).on('click', (evt)=>{
+          evt.stopPropagation();
+          $(ppInfoBox).hide();
+          $(ppBox).show();
+        });
+        $(ppInfoBox).append($('<div style="width: 100%; text-align: center; margin-bottom: 20px;"></div>').append($(settingPPDataCmd)).append($(ppCancelCmd)));
+      }
+      $(ppQRBox).prepend($(ppInfoBox));
+    });
+
+    $(ppQRBox).append($(ppBox));
     $(ppQRBox).append($('<div style="width: 100%; margin-top: 40px;"></div>').append('<p>แก้ไขจำนวนเงินที่ต้องการแล้วคลิกปุ่ม <b style="font-size: 22px;">ตกลง</b></p>'));
     $(ppQRBox).append($(editLabel)).append($(editInput));
+
   } else {
     if ([1, 2, 3].includes(userdata.usertypeId)) {
       settingPPDataCmd = common.doCreateTextCmd('ตั้งค่าข้อมูลพร้อมเพย์', 'orange', 'white');
+      $(settingPPDataCmd).on('click', (evt)=>{
+        evt.stopPropagation();
+        dlgHandle.closeAlert();
+        doOpenPPDataForm(evt, shopData);
+      });
       ppQRBox = $('<div></div>').css({'width': '100%', 'height': '480px', 'margin-top': '20px'});
       $(ppQRBox).append($('<span>คุณยังไม่ได้ตั้งค่าข้อมูลพร้อมเพย์ของร้าน</span>'));
       $(ppQRBox).append($('<br/>')).append($('<span>คลิกที่ปุ่ม <b>ตั้งค่าข้อมูลพร้อมเพย์</b> เพื่อตั้งค่าก่อนออกคิวอาร์โค้ด</span>'));
@@ -337,11 +365,6 @@ const doStartTestPPQC = function(evt){
       $(ppQRBox).append($('<span>คุณยังไม่ได้ตั้งค่าข้อมูลพร้อมเพย์ของร้าน</span>'));
     }
   }
-  $(settingPPDataCmd).on('click', (evt)=>{
-    evt.stopPropagation();
-    dlgHandle.closeAlert();
-    doOpenPPDataForm(evt, shopData);
-  });
 
   let editDlgOption = {
     title: 'สร้างพร้อมเพย์คิวอาร์โค้ด',
