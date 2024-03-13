@@ -123,6 +123,7 @@ module.exports = function ( jq ) {
 			}
 			let msgTable = await doCreateMessagesTable(shopData);
 			$(workAreaBox).append($(msgTable).css({'margin-top': '5px'}));
+			$('#App').find('#SummaryBox').remove();
       resolve();
     });
   }
