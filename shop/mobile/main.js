@@ -473,7 +473,8 @@ const doOpenPPDataForm = function(evt, shopData) {
           userdata = JSON.parse(localStorage.getItem('userdata'));
           console.log(userdata);
 
-          $(pageHandle.mainContent).empty();
+          //$(pageHandle.mainContent).empty();
+
           doStartTestPPQC(evt);
         } else {
           $.notify("ไม่สามารถบันทึกข้อมูลพร้อมเพย์ได้ในขณะนี้", "error");
