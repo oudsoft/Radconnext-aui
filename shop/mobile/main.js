@@ -333,7 +333,7 @@ const doStartTestPPQC = function(evt){
           doOpenPPDataForm(evt, shopData);
         });
 
-        let ppCancelCmd = $('<input type="button" value=" ยกเลิก "/>').css({'margin-left': '10px'});
+        let ppCancelCmd = $('<input type="button" value=" ซ่อน "/>').css({'margin-left': '10px'});
         $(ppCancelCmd).on('click', (evt)=>{
           evt.stopPropagation();
           $(ppInfoBox).hide();
