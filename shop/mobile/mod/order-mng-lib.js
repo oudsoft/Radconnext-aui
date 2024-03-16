@@ -36,7 +36,7 @@ module.exports = function ( jq ) {
 			} else {
 				selectDate = common.doFormatDateStr(new Date());
 			}
-      let titlePageBox = $('<div></viv>').css(styleCommon.titlePageBoxStyle);
+      let titlePageBox = $('<div id="TitlePageBox"></viv>').css(styleCommon.titlePageBoxStyle);
 			//let titleTextBox = $('<div></div>').text('รายการออร์เดอร์ของร้าน');
 			let titleTextBox = $('<div class="sensitive-word" id="titleTextBox"></div>').text('รายการออร์เดอร์ของร้าน');
 			let orderDateBox = $('<div></div>').text(selectDate).css(styleCommon.orderDateBoxStyle);
@@ -57,7 +57,7 @@ module.exports = function ( jq ) {
       $(titlePageBox).append($(titleTextBox)).append($(orderDateBox));
 			$(workAreaBox).append($(titlePageBox));
 
-      let newOrderCmdBox = $('<div style="padding: 4px;"></div>').css({'width': '99.5%', 'text-align': 'right'});
+      let newOrderCmdBox = $('<div id="NewOrderCmdBox" style="padding: 4px;"></div>').css({'width': '99.5%', 'text-align': 'right'});
 			let newOrderCmd = common.doCreateTextCmd('เปิดออร์เดอร์ใหม', 'green', 'white');
 			$(newOrderCmd).addClass('sensitive-word');
 			$(newOrderCmd).attr('id', 'newOrderCmd');

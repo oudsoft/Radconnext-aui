@@ -331,6 +331,9 @@ const doStartTestPPQC = function(evt){
           evt.stopPropagation();
           dlgHandle.closeAlert();
           doOpenPPDataForm(evt, shopData);
+          $('#TitlePageBox').hide();
+          $('#NewOrderCmdBox').hide();
+          $('#OrderListBox').hide();
         });
 
         let ppCancelCmd = $('<input type="button" value=" ซ่อน "/>').css({'margin-left': '10px'});
@@ -473,9 +476,16 @@ const doOpenPPDataForm = function(evt, shopData) {
           userdata = JSON.parse(localStorage.getItem('userdata'));
           console.log(userdata);
 
-          //$(pageHandle.mainContent).empty();
+          // $(pageHandle.mainContent).empty();
 
-          doStartTestPPQC(evt);
+          // doStartTestPPQC(evt);
+
+          orderMng.doShowOrderList(shopData.id, pageHandle.mainContent);
+
+          $('#TitlePageBox').show();
+          $('#NewOrderCmdBox').show();
+          $('#OrderListBox').show();
+
         } else {
           $.notify("ไม่สามารถบันทึกข้อมูลพร้อมเพย์ได้ในขณะนี้", "error");
         }
