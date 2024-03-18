@@ -122,6 +122,8 @@ module.exports = function ( jq ) {
 
   const doCreateOrderList = function(shopId, workAreaBox, orderDate) {
     return new Promise(async function(resolve, reject) {
+			const displaySuccessBill = 10; //new command line
+
       let orderReqParams = {};
       if (orderDate) {
         orderReqParams = {orderDate: orderDate};
@@ -259,6 +261,13 @@ module.exports = function ( jq ) {
 								let taxinvoiceBox = common.doCreateReportDocButtonCmd(orders[i].taxinvoice.No, textCmdCallback, qrCmdCallback);
 								$(orderBox).append($(taxinvoiceBox));
 							}
+
+							//new command block
+							if (greenOrders.length >= displaySuccessBill) {
+								$(orderBox).addClass('success-order-hide');
+							}
+							//new command block
+
 							greenOrders.push(orders[i]);
 						} else if (orders[i].Status == 0) {
 							$(orderBox).css({'background-color': 'grey'});
@@ -296,12 +305,37 @@ module.exports = function ( jq ) {
 						$(orderListBox).data('summaryData', summaryData);
             $(orderListBox).append($(orderBox));
           }
+
+					// <-- ควรเพิ่มคำสั่งการสวิชต์ ซ่อน/แสดง orderBox ส่วนเกินจาก displaySuccessBill ที่บริเวณนี้
+					// พื้นหน้าจอ เอาคำสั่ง Toggle คลาส success-order-hide ไว้ที่พื้นที่ id=NewOrderCmdBox
+
+					if (greenOrders.length > displaySuccessBill) {
+						let toggleDisplaySuccessBillBtn = common.doCreateTextCmd('แสดงทั้งหมด', 'grey', 'white');
+						$(toggleDisplaySuccessBillBtn).css({'margin-right': '4px'});
+					 	$('#NewOrderCmdBox').prepend($(toggleDisplaySuccessBillBtn));
+					 	$(toggleDisplaySuccessBillBtn).on('click', (evt)=>{
+						 let displayStatus = $('.success-order-hide').css('display');
+						 //console.log(displayStatus);
+						 if (displayStatus === 'none') {
+							 $('.success-order-hide').css('display', 'inline-block');
+							 $(toggleDisplaySuccessBillBtn).text('ซ่อนส่วนเกิน');
+						 } else {
+							 $('.success-order-hide').css('display', 'none');
+							 $(toggleDisplaySuccessBillBtn).text('แสดงทั้งหมด');
+						 }
+					 });
+					}
+
           setTimeout(()=>{
             resolve2($(orderListBox));
           }, 500);
         });
         Promise.all([promiseList]).then((ob)=>{
           $(workAreaBox).append($(ob[0]));
+
+					//success-order-hide clase Initial hide
+					$('.success-order-hide').hide();
+					
           resolve(ob[0]);
         });
       } else {

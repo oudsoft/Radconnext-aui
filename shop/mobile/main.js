@@ -358,6 +358,9 @@ const doStartTestPPQC = function(evt){
         evt.stopPropagation();
         dlgHandle.closeAlert();
         doOpenPPDataForm(evt, shopData);
+        $('#TitlePageBox').hide();
+        $('#NewOrderCmdBox').hide();
+        $('#OrderListBox').hide();
       });
       ppQRBox = $('<div></div>').css({'width': '100%', 'height': '480px', 'margin-top': '20px'});
       $(ppQRBox).append($('<span>คุณยังไม่ได้ตั้งค่าข้อมูลพร้อมเพย์ของร้าน</span>'));
