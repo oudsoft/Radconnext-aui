@@ -311,6 +311,7 @@ module.exports = function ( jq ) {
 
 					if (greenOrders.length > displaySuccessBill) {
 						let toggleDisplaySuccessBillBtn = common.doCreateTextCmd('แสดงทั้งหมด', 'grey', 'white');
+						$(toggleDisplaySuccessBillBtn).attr('id', 'ToggleDisplaySuccessBillBtn')
 						$(toggleDisplaySuccessBillBtn).css({'margin-right': '4px'});
 					 	$('#NewOrderCmdBox').prepend($(toggleDisplaySuccessBillBtn));
 					 	$(toggleDisplaySuccessBillBtn).on('click', (evt)=>{
@@ -324,7 +325,9 @@ module.exports = function ( jq ) {
 							 $(toggleDisplaySuccessBillBtn).text('แสดงทั้งหมด');
 						 }
 					 });
-					}
+				 } else {
+					 $('#ToggleDisplaySuccessBillBtn').remove();
+				 }
 
           setTimeout(()=>{
             resolve2($(orderListBox));
@@ -335,7 +338,7 @@ module.exports = function ( jq ) {
 
 					//success-order-hide clase Initial hide
 					$('.success-order-hide').hide();
-					
+
           resolve(ob[0]);
         });
       } else {
