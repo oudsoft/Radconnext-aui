@@ -138,7 +138,11 @@ module.exports = function ( jq ) {
 			let greyOrders = [];
 
       let orderListBox = $('<div id="OrderListBox"></div>').css({'position': 'relative', 'width': '100%', 'margin-top': '25px'});
-      if ((orders) && (orders.length > 0)) {
+
+			let toggleDisplaySuccessBillBtn = common.doCreateTextCmd('แสดงทั้งหมด', 'grey', 'white');
+			$(toggleDisplaySuccessBillBtn).attr('id', 'ToggleDisplaySuccessBillBtn');
+			
+			if ((orders) && (orders.length > 0)) {
         let	promiseList = new Promise(async function(resolve2, reject2){
           for (let i=0; i < orders.length; i++) {
             let total = await doCalOrderTotal(orders[i].Items);
@@ -310,8 +314,6 @@ module.exports = function ( jq ) {
 					// พื้นหน้าจอ เอาคำสั่ง Toggle คลาส success-order-hide ไว้ที่พื้นที่ id=NewOrderCmdBox
 
 					if (greenOrders.length > displaySuccessBill) {
-						let toggleDisplaySuccessBillBtn = common.doCreateTextCmd('แสดงทั้งหมด', 'grey', 'white');
-						$(toggleDisplaySuccessBillBtn).attr('id', 'ToggleDisplaySuccessBillBtn')
 						$(toggleDisplaySuccessBillBtn).css({'margin-right': '4px'});
 					 	$('#NewOrderCmdBox').prepend($(toggleDisplaySuccessBillBtn));
 					 	$(toggleDisplaySuccessBillBtn).on('click', (evt)=>{
@@ -326,7 +328,7 @@ module.exports = function ( jq ) {
 						 }
 					 });
 				 } else {
-					 $('#ToggleDisplaySuccessBillBtn').remove();
+					 $(toggleDisplaySuccessBillBtn).remove();
 				 }
 
           setTimeout(()=>{
@@ -342,6 +344,7 @@ module.exports = function ( jq ) {
           resolve(ob[0]);
         });
       } else {
+				$('#ToggleDisplaySuccessBillBtn').remove();
 				let notFoundOrderDatbox = $('<div>ไม่พบรายการ<span id="notFoundOrderDatbox" class="sensitive-word">ออร์เดอร์</span>ของวันที่ ' + orderDate + '</div>');
 				if (common.shopSensitives.includes(shopId)) {
 					let sensitiveWordJSON = JSON.parse(localStorage.getItem('sensitiveWordJSON'));
