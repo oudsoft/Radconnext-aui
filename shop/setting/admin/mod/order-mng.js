@@ -85,8 +85,10 @@ module.exports = function ( jq ) {
 			$('#OrderListBox').remove();
 			let orderListBox = await doCreateOrderList(shopData, workAreaBox, selectDate);
 			$(workAreaBox).append($(orderListBox));
-			//console.log($(orderListBox).find('.canceled-order').length);
-			if ($(orderListBox).find('.canceled-order')){
+
+			// console.log('try + ', $(orderListBox).find('.canceled-order').length);
+
+			if ($(orderListBox).find('.canceled-order').length > 0){
 				$(canceledOrderHiddenToggleCmd).show();
 			} else {
 				$(canceledOrderHiddenToggleCmd).hide();
