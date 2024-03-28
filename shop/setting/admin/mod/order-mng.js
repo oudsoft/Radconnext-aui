@@ -506,7 +506,7 @@ module.exports = function ( jq ) {
   		}
   		let closeOrderFormBoxHandle = $('body').radalert(closeOrderformoption);
       $(closeOrderFormBoxHandle.okCmd).hide();
-      resolve(closeOrderFormBoxHandle)
+      resolve(closeOrderFormBoxHandle);
     });
 	}
 
