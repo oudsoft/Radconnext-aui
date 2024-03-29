@@ -86,7 +86,7 @@ module.exports = function ( jq ) {
 			let orderListBox = await doCreateOrderList(shopData, workAreaBox, selectDate);
 			$(workAreaBox).append($(orderListBox));
 
-			// console.log('try + ', $(orderListBox).find('.canceled-order').length);
+			console.log('try + ', $(orderListBox).find('.canceled-order').length);
 
 			if ($(orderListBox).find('.canceled-order').length > 0){
 				$(canceledOrderHiddenToggleCmd).show();
@@ -210,6 +210,7 @@ module.exports = function ( jq ) {
 					let orderRes = undefined;
 					if ((orderData) && (orderData.id)) {
 						params = {data: {Items: orderObj.gooditems, Status: orderObj.Status, customerId: orderObj.customer.id, userId: userId, userinfoId: userinfoId}, shop: shopData, id: orderData.id};
+						console.log(params);
 						orderRes = await common.doCallApi('/api/shop/order/update', params);
 						if (orderRes.status.code == 200) {
 							$.notify("บันทึกรายการออร์เดอร์สำเร็จ", "success");
@@ -245,7 +246,15 @@ module.exports = function ( jq ) {
 			if (addNewGoodItemCmd) {
 				$(lastCell).append($(addNewGoodItemCmd));
 			}
-			if ([1, 2].includes(orderObj.Status)) {
+
+			/*
+			let userdata = JSON.parse(localStorage.getItem('userdata'));
+			let userId = userdata.id;
+			let userinfoId = userdata.userinfoId;
+			*/
+
+			/** add admin for edit order and re-create bill/tax-invoice **/
+			if (([1, 2].includes(orderObj.Status)) || (userId == 1)) {
 				lastCell = $(goodItemTable).children(":last").children(":last");
 				$(lastCell).append($(callCreateCloseOrderCmd));
 			}
@@ -419,6 +428,10 @@ module.exports = function ( jq ) {
       }
 			let taxinvoiceParams = {data: newTaxInvoiceData, shopId: shopData.id, orderId: orderObj.id, userId: userId, userinfoId: userinfoId, shopData: shopData};
 			let taxinvoiceRes = await common.doCallApi('/api/shop/taxinvoice/add', taxinvoiceParams);
+
+			/*
+				พื้นที่ที่ควรสั่งให้ TaxInvoice มีการอัพเดทและสร้าง เอกสารกระดาษใหม่
+			*/
 
 			if (taxinvoiceRes.status.code == 200) {
 				let taxinvoiceId = taxinvoiceRes.Record.id;

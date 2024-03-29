@@ -12,7 +12,9 @@ module.exports = function ( jq ) {
 
   const doCreateFormDlg = function(shopData, orderTotal, orderObj, invoiceSuccessCallback, billSuccessCallback, taxinvoiceSuccessCallback) {
     return new Promise(async function(resolve, reject) {
-			const orderId = orderObj.id;
+			let userdata = JSON.parse(localStorage.getItem('userdata'));
+			let userId = userdata.id;
+			let orderId = orderObj.id;
       let payAmountInput = undefined;
       let createTaxInvoiceCmd = undefined;
 
@@ -36,7 +38,8 @@ module.exports = function ( jq ) {
 			const checkboxVatClick = function(evt) {
 				let check = $(checkboxVat).prop('checked');
 				if (check == true){
-					$(vatInput).val(common.doFormatNumber(0.07*orderTotal));
+					let vatVal = (0.07*orderTotal).toFixed(2);
+					$(vatInput).val(vatVal);
 				} else {
 					$(vatInput).val('0');
 				}
@@ -66,7 +69,9 @@ module.exports = function ( jq ) {
         $(vatInput).on('keyup', keyChangeValue);
         dataRow = $('<tr class="first-step"></tr>').css({'height': '40px'});
         $(dataRow).append($('<td align="left">ภาษีมูลค่าเพิ่ม (7%)</td>'));
-        $(vatInput).val(common.doFormatNumber(0.07*orderTotal));
+        //$(vatInput).val(common.doFormatNumber(0.07*orderTotal));
+				let vatVal = (0.07*orderTotal).toFixed(2);
+				$(vatInput).val(vatVal);
         $(dataRow).append($('<td align="right"></td>').append($(checkboxVat)).append($(vatInput)));
         $(closeOrderTable).append($(dataRow));
       } else {
@@ -87,7 +92,8 @@ module.exports = function ( jq ) {
       $(middleActionCmdRow).append($(commandCell));
       $(closeOrderTable).append($(middleActionCmdRow));
 
-			if (orderObj.Status == 1) {
+			/** add admin for edit order and re-create bill/tax-invoice **/
+			if ((orderObj.Status == 1) || (userId == 1)) {
 	      let createInvoiceCmd = common.doCreateTextCmd('พิมพ์ใบแจ้งหนี้', '#F5500E', 'white', '#5D6D7E', '#FF5733');
 				$(createInvoiceCmd).attr('id', 'CreateInvoiceCmd');
 				$(createInvoiceCmd).on('click', async(evt)=>{
@@ -114,7 +120,7 @@ module.exports = function ( jq ) {
 				});
 				$(commandCell).append($(createInvoiceCmd));
 			}
-			if ((orderObj.Status == 1) || (orderObj.Status == 2)) {
+			if ((orderObj.Status == 1) || (orderObj.Status == 2) || (userId == 1)) {
 	      let closeOrderCmd = common.doCreateTextCmd('เก็บเงิน', 'green', 'white');
 	      $(closeOrderCmd).css({'margin-left': '10px'});
 	      $(closeOrderCmd).on('click', async(evt)=>{
