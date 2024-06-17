@@ -126,9 +126,17 @@ const doCreatePageLayout = function(){
     if ($(toggleMenuCmd).css('left') == '10px') {
       $(toggleMenuCmd).animate({left: '90%'}, timeAnimate);
       $(toggleMenuCmd).attr('src', '../../images/cross-mark-icon.png');
+      /*
+      $('#UserInfoBox').hide();
+      $('#MenuContent').show();
+      */
     } else {
       $(toggleMenuCmd).animate({left: '10px'}, timeAnimate);
       $(toggleMenuCmd).attr('src', '../../images/bill-icon.png');
+      /*
+      $('#UserInfoBox').show();
+      $('#MenuContent').hide();
+      */
     }
   });
   let handle = {mainBox, menuBox, toggleMenuCmd, mainContent, menuContent, userInfoBox};
@@ -194,7 +202,7 @@ const doCreateShopMessageBox = function() {
 
 const doCreateUserInfoBox = function(){
   let userdata = JSON.parse(localStorage.getItem('userdata'));
-  let userInfoBox = $('<div></div>').css({'position': 'relative', 'width': '100%', 'text-align': 'center'});
+  let userInfoBox = $('<div id="UserInfoBox"></div>').css({'position': 'relative', 'width': '100%', 'text-align': 'center'});
   //let userPictureBox = $('<img src="../../images/avatar-icon.png"/>').css({'position': 'relative', 'width': '50px', 'height': 'auto', 'cursor': 'pointer', 'margin-top': '-2px'});
   let userPictureBox = $('<div></div>').css({'position': 'relative', 'width': '100%', 'text-align': 'center'});
   $(userPictureBox).on('click', (evt)=>{

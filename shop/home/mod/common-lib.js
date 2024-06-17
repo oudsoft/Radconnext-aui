@@ -143,7 +143,7 @@ module.exports = function ( jq ) {
 
 	const calendarOptions = {
 		lang: "th",
-		years: "2020-2030",
+		years: "2020-2040",
 		sundayFirst: true,
 	};
 
