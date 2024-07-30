@@ -976,6 +976,12 @@ module.exports = function ( jq ) {
 					$('#App').append($(summaryBox).css({'padding': '5px'}));
 					resolve(ob[0]);
         });
+
+				//.off() ยกเลิกตัวจัดการเหตุการณ์ที่แนบมากับ .on()
+				/*
+				$('#SummaryBox').off('click');
+				*/
+
       } else {
 				let notFoundOrderDatbox = $('<div>ไม่พบรายการ<span id="notFoundOrderDatbox" class="sensitive-word">ออร์เดอร์</span>ของวันที่ ' + orderDate + '</div>');
 				if (common.shopSensitives.includes(shopData.id)) {
@@ -1434,6 +1440,7 @@ module.exports = function ( jq ) {
   return {
     doShowOrderList,
 		doShowCalendarDlg,
-		doOpenOrderForm
+		doOpenOrderForm,
+		doShowSummaryOrder
 	}
 }
