@@ -8,7 +8,10 @@
   },
   "author": "",
   "license": "ISC",
+
+
+
   "dependencies": {
-    "jquery": "^3.6.1"
+    "jquery": "^3.7.1"
   }
 }

@@ -43,6 +43,10 @@ module.exports = function ( jq ) {
 		$(optionSelector).append($('<option value="3M">3 เดือนที่แล้ว</option>'));
 		$(optionSelector).append($('<option value="6M">6 เดือนที่แล้ว</option>'));
 		$(optionSelector).append($('<option value="1Y">1 ปีที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="2Y">2 ปีที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="3Y">3 ปีที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="4Y">4 ปีที่แล้ว</option>'));
+		$(optionSelector).append($('<option value="5Y">5 ปีที่แล้ว</option>'));
 		return $(optionSelector);
 	}
 
